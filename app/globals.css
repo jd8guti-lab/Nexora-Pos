@@ -1,0 +1,165 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   nexora-pos — brand tokens.
+
+   Every value here comes from docs/brand/manual-de-marca.png. Nothing is
+   invented: there are no intermediate colour steps, because the manual does
+   not define any. If a state needs a variation, use opacity or brand-300.
+
+   No literal hex ever appears in a .tsx file. Only these tokens.
+--------------------------------------------------------------------------- */
+
+@theme {
+  /* -- colour ------------------------------------------------------------ */
+  --color-brand-500: #ff7a00; /* accent: surfaces, gradients, underlines */
+  --color-brand-300: #ffb347; /* gradients, hovers, soft accents */
+  --color-ink-900: #1a1d23; /* body copy, dark surfaces, footer */
+  --color-ink-500: #69707e; /* secondary copy, borders */
+  --color-paper-50: #f2f4f7; /* section backgrounds, cards */
+
+  /* Text-only orange. brand-500 on white is 2.61:1 and fails AA at every
+     size, so it must never carry copy. This is the readable one: 4.54:1 on
+     white. Never use it as a surface — see scripts/contrast.mjs. */
+  --color-brand-700: #bd5a00;
+
+  /* -- typography -------------------------------------------------------- */
+  --font-sans:
+    var(--font-poppins), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Fluid scale. Every step interpolates between 360px and 1280px viewports. */
+  --text-display: clamp(2.5rem, 1.55rem + 4.2vw, 4.5rem);
+  --text-display--line-height: 1.06;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 700;
+
+  --text-h1: clamp(2rem, 1.4rem + 2.65vw, 3.25rem);
+  --text-h1--line-height: 1.12;
+  --text-h1--letter-spacing: -0.025em;
+  --text-h1--font-weight: 700;
+
+  --text-h2: clamp(1.625rem, 1.2rem + 1.85vw, 2.5rem);
+  --text-h2--line-height: 1.18;
+  --text-h2--letter-spacing: -0.02em;
+  --text-h2--font-weight: 700;
+
+  --text-h3: clamp(1.25rem, 1.13rem + 0.53vw, 1.5rem);
+  --text-h3--line-height: 1.3;
+  --text-h3--letter-spacing: -0.01em;
+  --text-h3--font-weight: 600;
+
+  --text-lead: clamp(1.125rem, 1.01rem + 0.53vw, 1.375rem);
+  --text-lead--line-height: 1.55;
+  --text-lead--font-weight: 400;
+
+  --text-body: clamp(1rem, 0.97rem + 0.13vw, 1.0625rem);
+  --text-body--line-height: 1.65;
+  --text-body--font-weight: 400;
+
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.55;
+
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1.2;
+  --text-eyebrow--letter-spacing: 0.2em;
+  --text-eyebrow--font-weight: 600;
+
+  --tracking-eyebrow: 0.2em;
+
+  /* -- surfaces ---------------------------------------------------------- */
+  /* The manual's gradient: brand-500 to brand-300, on the diagonal. */
+  --background-image-brand-gradient: linear-gradient(
+    135deg,
+    var(--color-brand-500) 0%,
+    var(--color-brand-300) 100%
+  );
+
+  --radius-card: 1rem;
+
+  --shadow-card: 0 1px 2px rgb(26 29 35 / 0.04), 0 4px 12px rgb(26 29 35 / 0.05);
+  --shadow-card-hover: 0 2px 4px rgb(26 29 35 / 0.05), 0 12px 28px rgb(26 29 35 / 0.09);
+  --shadow-nav: 0 1px 0 rgb(26 29 35 / 0.06), 0 4px 20px rgb(26 29 35 / 0.05);
+
+  /* -- breakpoints ------------------------------------------------------- */
+  --breakpoint-sm: 40rem; /* 640 */
+  --breakpoint-md: 48rem; /* 768 */
+  --breakpoint-lg: 64rem; /* 1024 */
+  --breakpoint-xl: 80rem; /* 1280 */
+
+  /* -- motion ------------------------------------------------------------ */
+  --ease-brand: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------------------------------------------------------------------------
+   Base layer
+--------------------------------------------------------------------------- */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Sticky nav must not cover the target of an in-page anchor. */
+    scroll-padding-top: 5.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-white);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Focus ring is ink-900, not brand-500: orange on white only reaches 2.9:1,
+     short of the 3:1 that WCAG requires for non-text contrast. */
+  :focus-visible {
+    outline: 2px solid var(--color-ink-900);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* On ink-900 the ink ring would vanish, so flip it to white (16.9:1).
+     The orange band keeps the ink ring: white on brand-500 is only 2.61:1,
+     below the 3:1 that WCAG 1.4.11 requires for a focus indicator. */
+  .surface-dark :focus-visible {
+    outline-color: var(--color-white);
+  }
+
+  ::selection {
+    background-color: var(--color-brand-500);
+    color: var(--color-white);
+  }
+
+  /* Headings inherit weight from the text-* tokens; never bump them ad hoc. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion — honoured globally, not per component.
+--------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

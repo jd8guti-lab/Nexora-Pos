@@ -1,0 +1,11 @@
+# The docs are written to be read as plain text. Prettier pads markdown table
+# cells to a common width, which turns the decision log into 300-column lines.
+*.md
+
+.next
+node_modules
+public
+docs/brand
+*.png
+*.ico
+package-lock.json
