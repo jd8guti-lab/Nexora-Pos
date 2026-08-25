@@ -52,7 +52,8 @@ enganche listo.
 ## 2. Stack
 
 Next.js 15 (App Router) · TypeScript `strict` · **Tailwind CSS v4** · shadcn/ui + Radix ·
-lucide-react · Framer Motion · React Hook Form + Zod · Vitest + Testing Library · Vercel.
+lucide-react · React Hook Form + Zod · Vitest + Testing Library · Vercel.
+**Sin Framer Motion** — ver §6.
 
 Los tokens viven en `app/globals.css`, en el bloque `@theme` — **no hay `tailwind.config.ts`**;
 esa es la forma de Tailwind v3. La versión de Next está fijada a mano: `create-next-app`
@@ -211,11 +212,18 @@ FOUT. JS de la home por debajo de ~120KB gzip.
 **Animación.** Sobria y funcional: entradas suaves, hovers, nada más. Sin carruseles automáticos,
 sin parallax, sin scroll secuestrado.
 
-Toda animación de entrada pasa por `components/motion/Reveal`. **Ningún otro componente importa
-Framer Motion.** Y la regla que no se negocia: **el contenido nunca depende de JavaScript para
-poder leerse.** Framer escribe `opacity:0` en el HTML del servidor, así que `Reveal` lleva
-`data-reveal` y el `<noscript>` de `app/layout.tsx` lo neutraliza. Si añades otra animación que
-oculte contenido, tiene que llevar el mismo respaldo.
+Toda animación de entrada pasa por `components/motion/Reveal`, que es CSS más un
+`IntersectionObserver` de quince líneas. **No hay Framer Motion**: costaba 52 KB y dejaba la home
+en 155 KB, por encima del techo. No lo vuelvas a instalar para esto.
+
+Y la regla que no se negocia: **el contenido nunca depende de JavaScript para poder leerse.**
+El servidor renderiza todo visible; `Reveal` solo oculta *dentro de su propio efecto*, una línea
+antes de enganchar el observador que va a revelarlo. Ocultar y revelar son el mismo camino de
+código: si el JS no corre, no se oculta nada.
+
+Si añades otra animación que oculte contenido, tiene que cumplir lo mismo. Y **el observador no
+basta como única garantía** — en una página que no compone nunca dispara. Por eso hay además una
+comprobación geométrica inmediata y un respaldo en `scroll`.
 
 ---
 

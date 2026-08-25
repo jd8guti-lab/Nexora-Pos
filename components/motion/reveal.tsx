@@ -1,29 +1,40 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { useEffect, useRef } from "react";
 
 /**
- * The site's only entrance animation.
+ * The site's only entrance animation: a short fade and a 12px rise, once,
+ * when the element reaches the viewport.
  *
- * Everything animated goes through here, which is what keeps the motion
- * budget honest: one curve, one distance, one duration, and a single place
- * where `prefers-reduced-motion` turns it all off. No other component imports
- * framer-motion (CLAUDE.md §6: sober and functional, nothing more).
+ * Not Framer Motion. The brief allows exactly this one effect, and Framer
+ * cost 52 kB of the home page's JavaScript to provide it — past the ~120 kB
+ * budget in CLAUDE.md §6. CSS owns the animation; this component only decides
+ * when to arm it.
  *
- * It fires once, on entering the viewport, and never replays — a section that
- * re-animates every time you scroll past it is a section that gets in the way.
+ * The rule that shapes the whole design: **content must never depend on
+ * JavaScript to be readable.** Two earlier attempts failed it, so the order
+ * of operations here is deliberate:
  *
- * Note the `data-reveal` attribute. Framer bakes `opacity:0` into the
- * server-rendered markup, so without it a visitor whose JavaScript never runs
- * would get a permanently blank page. The <noscript> block in app/layout.tsx
- * targets this attribute and forces the content visible.
+ *   1. The server renders everything visible. No hidden state in the HTML.
+ *   2. Hiding happens *inside the effect*, one line before the observer is
+ *      attached. So an element is only ever hidden by the same code that has
+ *      already committed to revealing it. If scripting is blocked, if the
+ *      bundle fails, if hydration never happens — nothing is hidden.
+ *   3. A geometry check runs immediately after arming, so anything already on
+ *      screen is revealed without waiting for the observer to fire at all.
+ *
+ * Step 3 is not belt-and-braces: an IntersectionObserver in a page that is
+ * not compositing never fires, and without it the page stays blank.
+ *
+ * There is no flash from hiding after paint: content below the fold is
+ * off-screen when it happens, and content on screen is revealed in the same
+ * tick by step 3.
  */
 export function Reveal({
   children,
   delay = 0,
   className,
-  as = "div",
+  as: Tag = "div",
 }: {
   children: React.ReactNode;
   /** Seconds. Use small steps (0.05–0.15) to stagger a row of cards. */
@@ -31,27 +42,71 @@ export function Reveal({
   className?: string;
   as?: "div" | "li" | "section";
 }) {
-  const reduced = useReducedMotion();
-  const MotionTag = motion[as];
+  const ref = useRef<HTMLElement>(null);
 
-  // With reduced motion the element is simply rendered in place. No opacity
-  // fade either: a fade is still motion to a vestibular system. It has to keep
-  // the same tag — swapping an `li` for a `div` would break the list it is in.
-  if (reduced) {
-    const Tag = as;
-    return <Tag className={className}>{children}</Tag>;
-  }
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    // Nothing to animate with, so leave the element exactly as rendered.
+    if (typeof IntersectionObserver === "undefined") return;
+
+    const reveal = () => el.setAttribute("data-revealed", "");
+    const onScreen = () => {
+      const rect = el.getBoundingClientRect();
+      const viewport = window.innerHeight || document.documentElement.clientHeight;
+      return rect.top < viewport && rect.bottom > 0;
+    };
+
+    // Arm it: from here on the element is hidden, and every path below ends
+    // in reveal().
+    el.setAttribute("data-reveal-armed", "");
+
+    if (onScreen()) {
+      reveal();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          reveal();
+          observer.disconnect();
+          window.removeEventListener("scroll", onScroll);
+        }
+      },
+      // Fire slightly before the element clears the bottom edge, so the
+      // motion has finished by the time it is properly in view.
+      { rootMargin: "0px 0px -80px 0px" },
+    );
+
+    // Last resort for a browser whose observer never fires. Passive, and it
+    // unhooks itself the moment the element is shown.
+    function onScroll() {
+      if (!onScreen()) return;
+      reveal();
+      observer.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    }
+
+    observer.observe(el);
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
 
   return (
-    <MotionTag
+    <Tag
+      ref={ref as React.Ref<never>}
       data-reveal=""
-      className={cn(className)}
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "0px 0px -80px 0px" }}
-      transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
+      className={className}
+      style={delay ? { animationDelay: `${delay}s` } : undefined}
     >
       {children}
-    </MotionTag>
+    </Tag>
   );
 }

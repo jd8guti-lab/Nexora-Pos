@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-08-24 (Fase 2)
+Última actualización: 2026-08-24 (Fase 3, primera mitad)
 
 ---
 
@@ -49,8 +49,9 @@ arrastra la nav ni el footer de marketing.
 
 - **Primitivos**: `Heading` (nivel semántico separado del tamaño visual), `Eyebrow`, `Card`
   (+ `CardHeader`/`CardBody`/`CardFooter`/`CardLinkOverlay`), `Badge`, `IconTile`, `Accordion`.
-- **`Reveal`**: la única animación del sitio, con Framer Motion. Entra una vez al aparecer en
-  pantalla, se desactiva entera con `prefers-reduced-motion` y lleva un respaldo `<noscript>`.
+- **`Reveal`**: la única animación del sitio. Entra una vez al aparecer en pantalla y se
+  desactiva entera con `prefers-reduced-motion`. _(Se construyó con Framer Motion y se
+  reescribió en la Fase 3 sin él — ver la decisión 21.)_
 - **`/kitchen-sink`**: cada primitivo, en cada variante, sobre los cuatro fondos. `noindex`,
   no enlazada desde ninguna parte.
 - **Animación del acordeón** en `globals.css`, para que el bloque global de `prefers-reduced-motion`
@@ -65,19 +66,32 @@ arrastra la nav ni el footer de marketing.
   programático no activa `:focus-visible`.
 - Las cuatro variantes de botón por superficie, con sus colores medidos.
 - Cero scroll horizontal a 320px.
-- El `<noscript>` llega en el HTML servido.
 
-**Ojo con el presupuesto de JS en la Fase 3.** La home sigue en 103 kB porque todavía no usa
-`Reveal`; `/kitchen-sink` está en 167 kB precisamente porque carga Framer y todos los primitivos.
-En cuanto la home envuelva secciones en `Reveal`, Framer entra en su bundle. El techo de
-`CLAUDE.md §6` es ~120 kB, así que hay que mirar la salida de `next build` al cerrar la Fase 3, y
-si no cabe, sustituir `Reveal` por una animación CSS con `IntersectionObserver` propio.
+**El presupuesto de JS se rompió en la Fase 3 y se arregló ahí mismo** — ver la decisión 21.
+
+---
+
+### Fase 3 · Home — secciones 1 a 6
+
+- **Contenido**: `content/pillars.ts` (los 5 pilares), `content/modules.ts` (los 7 módulos con
+  copy largo para `/modulos`), `content/home.ts` (hero, comparación, intros de sección).
+- **Secciones**: `Hero` con mockup, `TrustBar`, `Problem`, `Pillars`, `Modules`.
+- **`components/mockups/dashboard.tsx`**: la pantalla de resumen del POS como marcado y SVG,
+  con los tokens de marca. Sin capturas ni fotos de stock. `aria-hidden`: es decoración, y todo
+  lo que muestra está dicho en el texto de al lado.
+- **`Grid` acepta `asChild`**, para que una grilla pueda ser un `<ul>` de verdad.
+- 38 tests en verde.
+
+**Verificado en el navegador**: un solo `h1`, cero saltos de jerarquía en 22 encabezados, todos
+los `<ul>` con solo `<li>` dentro, los 7 enlaces de módulo apuntando a su ancla, el área de clic
+de cada tarjeta cubriendo sus 282×226 px, y cero scroll horizontal a 320px y a 1280px.
 
 ---
 
 ## En curso
 
-Nada. Siguiente paso: **Fase 3 — Home**.
+**Fase 3, segunda mitad**: secciones 7 a 13 — cómo trabajamos, quiénes somos, casos de uso,
+precios, FAQ, CTA final.
 
 ---
 
@@ -87,7 +101,7 @@ Nada. Siguiente paso: **Fase 3 — Home**.
 | --------------------- | ----------------------------------------------------------------------------------------------------------- | ------ |
 | 1 · Andamiaje         | Next.js 15 + TS strict, Tailwind con tokens de marca, Poppins, assets, `content/`, layout base, Nav, Footer | ✅     |
 | 2 · Sistema de diseño | `Card`, `Badge`, `Accordion`, `Heading`, `Eyebrow`, `IconTile`, `Reveal`, página `/kitchen-sink`            | ✅     |
-| 3 · Home              | Las 13 secciones, una por una, con los mockups React/SVG                                                    | ⬜     |
+| 3 · Home              | Las 13 secciones, una por una, con los mockups React/SVG                                                    | 🔶 1-6 |
 | 4 · Páginas           | `/modulos`, `/casos`, `/precios`, `/contacto`, legales                                                      | ⬜     |
 | 5 · SEO               | Metadata por página, OG image, `sitemap.ts`, `robots.ts`, JSON-LD                                           | ⬜     |
 | 6 · Pulido            | Accesibilidad, Lighthouse, tests, responsive, SVG del logo                                                  | ⬜     |
@@ -118,8 +132,11 @@ Cada decisión técnica va aquí **con su porqué**, para no volver a discutirla
 | 16  | **`Section` solo expone cuatro fondos**                                 | Es la forma de que "el naranja es acento" sea una propiedad del código y no de la disciplina de quien maqueta                                                                                                                                                                        |
 | 17  | **Sin `shadcn init`; Radix Accordion instalado directo**                | `shadcn init` reescribe `globals.css` con sus propias variables y un bloque `.dark`, que es justo lo que la decisión 8 quería evitar. El componente que genera el CLI es un envoltorio fino de Radix; escribirlo a mano cuesta lo mismo y no toca la configuración |
 | 18  | **`AccordionTrigger` cablea `aria-controls` a mano**                    | Radix lo omite mientras el panel está cerrado, porque desmonta sus hijos. El elemento del panel sí sigue en el DOM, y el patrón WAI-ARIA de acordeón pide la referencia esté abierto o cerrado. `AccordionItem` genera un id con `useId` y se lo pasa a las dos mitades |
-| 19  | **`Reveal` lleva `data-reveal` y un `<noscript>` en el layout**         | Framer escribe `opacity:0` en el HTML del servidor. Sin JS —bloqueador, proxy, navegador de texto— todo lo envuelto quedaría invisible para siempre. El contenido no puede depender de JavaScript para leerse |
+| 19  | ~~**`Reveal` lleva `data-reveal` y un `<noscript>` en el layout**~~ **Superada por la 22.** | Framer escribía `opacity:0` en el HTML del servidor y el `<noscript>` lo neutralizaba. Se queda anotada porque el diagnóstico sigue siendo válido: el contenido no puede depender de JavaScript para leerse. Lo que cambió es el remedio |
 | 20  | **La variante `link` del `Button` no llega a 44px**                     | Es texto en línea: forzarla a 44px metería espacio en blanco dentro de una frase. WCAG 2.5.8 exime los enlaces embebidos en texto y pide 24px en el resto, que sí cumple (26px). Para una acción terciaria con área táctil real, se usa `ghost` |
+| 21  | **`Reveal` sin Framer Motion: CSS más un `IntersectionObserver` propio** | En cuanto la home usó `Reveal`, Framer metió 52 kB y la dejó en **155 kB**, por encima del techo de ~120 kB de `CLAUDE.md §6`. La animación permitida es una sola —fundido y 12px de subida, una vez— y eso son unas líneas de CSS. Al quitarlo la home bajó a **107 kB**. Framer se desinstaló: no se deja una dependencia que no se usa |
+| 22  | **`Reveal` se arma dentro del efecto, no desde el CSS ni desde el HTML** | Es la tercera versión, y las dos anteriores fallaban la regla de "el contenido no depende de JavaScript". Framer horneaba `opacity:0` en el HTML del servidor. Gatearlo tras una clase `.js` puesta por un script en línea tampoco bastaba: el script ocultaba y **otro** código tenía que revelar, así que un observer muerto dejaba la página en blanco. Ahora ocultar y observar ocurren en la misma operación, una línea seguida de la otra |
+| 23  | **Comprobación geométrica inmediata más respaldo en `scroll`**           | Un `IntersectionObserver` en una página que no compone nunca dispara. Medido: tras `scrollIntoView` el elemento estaba a 286px del borde superior, plenamente visible, y el observer no se activó. Sin estos dos respaldos la página se queda invisible |
 
 ---
 
@@ -220,7 +237,23 @@ parece que no funciona. Ninguna de las dos cosas es un fallo del componente: con
 reproduce la secuencia real, `Enter` y `Espacio` alternan exactamente una vez. Para interacción,
 fíate de los tests, no de la consola.
 
-**10. `IntersectionObserver` no existe en jsdom.**
+**10. No compiles con `next build` mientras corre `next dev`.**
+Los dos escriben en el mismo `.next/`, y el build le arranca los chunks al servidor de
+desarrollo por debajo. El síntoma es un 500 con `Cannot find module './611.js'` y
+`ENOENT: fallback-build-manifest.json`, que parece un fallo del código y no lo es. Para el
+servidor, borra `.next` y vuelve a levantarlo.
+
+**11. Un `IntersectionObserver` en una página que no compone nunca dispara.**
+No es teoría: tras `scrollIntoView` el elemento quedó a 286px del borde superior, plenamente
+visible, y el observer no se activó. Por eso `Reveal` hace una comprobación geométrica inmediata
+al armarse y deja un respaldo en `scroll`. Si alguna vez ves la página en blanco con el JS
+cargado, mira si los `[data-reveal]` tienen `data-revealed`.
+
+**12. `window.scrollTo` y `scrollTop` no mueven el panel del navegador.**
+`scrollIntoView` sí. Si estás verificando algo que dependa del scroll, usa ese, y comprueba
+`window.scrollY` después en vez de asumir que se movió.
+
+**13. `IntersectionObserver` no existe en jsdom.**
 Framer lo pide en cuanto montas un `Reveal`, y el test revienta con `ReferenceError`. Está
 poblado en `tests/setup.ts`, junto a `ResizeObserver` y `matchMedia`.
 
@@ -234,3 +267,4 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | ---------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | 2026-08-24 | Plan del sitio + Fase 1 (andamiaje completo, tokens, assets, layout, Nav/Footer, tests) | typecheck · lint · test (11/11) · build · contrast (17/17) en verde |
 | 2026-08-24 | Fase 2 (primitivos, `Reveal`, `/kitchen-sink`), push inicial al remoto | typecheck · lint · test (26/26) · build · contrast (17/17) en verde |
+| 2026-08-24 | Fase 3, secciones 1-6 (contenido, hero con mockup, barra de confianza, problema, pilares, módulos). `Reveal` reescrito sin Framer: home de 155 kB a **107 kB** | typecheck · lint · test (38/38) · build · contrast (17/17) en verde |

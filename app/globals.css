@@ -152,6 +152,24 @@
 --------------------------------------------------------------------------- */
 
 @layer components {
+  /*
+    Entrance animation for components/motion/Reveal.
+
+    Nothing is hidden until the component adds `data-reveal-armed` from
+    inside its effect, one line before it attaches the observer that will
+    reveal it. A plain [data-reveal] element — server-rendered, or in a page
+    where scripting never ran — is fully visible. Content must not depend on
+    JavaScript to be legible.
+  */
+  [data-reveal][data-reveal-armed]:not([data-revealed]) {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  [data-reveal][data-revealed] {
+    animation: reveal 500ms var(--ease-brand) backwards;
+  }
+
   /* Radix measures the panel and exposes its height as a CSS variable, which
      is what makes a real height transition possible. Declared here rather
      than inline so the reduced-motion block below can flatten it. */
@@ -161,6 +179,13 @@
 
   .accordion-content[data-state="closed"] {
     animation: accordion-up 180ms var(--ease-brand);
+  }
+}
+
+@keyframes reveal {
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -193,6 +218,15 @@
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  /* Explicit rather than relying on the blanket rule below: an armed element
+     must never be left at opacity 0 waiting for an animation that has been
+     flattened away. */
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
   }
 
   *,

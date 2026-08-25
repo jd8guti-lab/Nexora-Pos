@@ -88,6 +88,19 @@ export type FaqItem = {
   readonly answer: string;
 };
 
+/** A section's standing copy: label, title and optional standfirst. */
+export type SectionIntro = {
+  readonly eyebrow: string;
+  readonly title: string;
+  readonly lead?: string;
+};
+
+/** One side of the "enlatado vs a medida" comparison. */
+export type ComparisonColumn = {
+  readonly title: string;
+  readonly points: readonly string[];
+};
+
 export type LegalDocument = {
   readonly title: string;
   readonly updatedAt: string;

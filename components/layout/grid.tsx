@@ -1,3 +1,4 @@
+import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
@@ -23,12 +24,28 @@ const grid = cva("grid", {
   defaultVariants: { cols: 3, gap: "md" },
 });
 
-type GridProps = React.ComponentPropsWithoutRef<"div"> & VariantProps<typeof grid>;
+type GridProps = React.ComponentPropsWithoutRef<"div"> &
+  VariantProps<typeof grid> & {
+    /**
+     * Apply the grid to the child element instead of wrapping it. Use it when
+     * the grid is a real list: `<Grid asChild><ul>…</ul></Grid>` keeps the
+     * <li> children directly inside the <ul>, which a wrapper would break.
+     */
+    asChild?: boolean;
+  };
 
-export function Grid({ cols, gap, className, children, ...props }: GridProps) {
+export function Grid({
+  cols,
+  gap,
+  asChild = false,
+  className,
+  children,
+  ...props
+}: GridProps) {
+  const Comp = asChild ? Slot : "div";
   return (
-    <div className={cn(grid({ cols, gap }), className)} {...props}>
+    <Comp className={cn(grid({ cols, gap }), className)} {...props}>
       {children}
-    </div>
+    </Comp>
   );
 }

@@ -35,7 +35,9 @@ export function Nav() {
         <div className="flex h-18 items-center justify-between gap-4">
           <Link
             href="/"
-            className="shrink-0 rounded-sm"
+            // min-h-11 rather than letting the image set the height: the mark
+            // is 30px tall, which would leave the tap target under 44px.
+            className="inline-flex min-h-11 shrink-0 items-center rounded-sm"
             aria-label={`${site.name} — ir al inicio`}
           >
             <LogoLockup height={30} priority />

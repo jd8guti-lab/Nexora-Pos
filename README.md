@@ -30,8 +30,9 @@ npm run typecheck && npm run lint && npm run test && npm run contrast && npm run
 marca tiene bastante menos contraste del que aparenta, y varias combinaciones "obvias" fallan.
 Si lo rompes, te dice exactamente qué par y con qué ratio.
 
-> Estado actual: **Fases 1 y 2 terminadas** (andamiaje y sistema de diseño), los cinco en verde
-> con 26 tests. Detalle en [docs/ESTADO.md](docs/ESTADO.md).
+> Estado actual: **Fases 1 y 2 terminadas**, y la **Fase 3 a mitad** (secciones 1 a 6 de la
+> home). Los cinco en verde con 38 tests; la home va en 107 kB de JS. Detalle en
+> [docs/ESTADO.md](docs/ESTADO.md).
 
 ## Por dónde empezar a leer
 
@@ -57,7 +58,7 @@ Si lo rompes, te dice exactamente qué par y con qué ratio.
 ## Stack
 
 Next.js 15 (App Router) · TypeScript `strict` · **Tailwind CSS v4** · shadcn/ui + Radix ·
-lucide-react · Framer Motion · React Hook Form + Zod · Vitest · Vercel
+lucide-react · React Hook Form + Zod · Vitest · Vercel
 
 Los tokens de marca están en `app/globals.css` (bloque `@theme`), no en un `tailwind.config.ts`
 — Tailwind v4 los define en CSS.
