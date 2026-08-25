@@ -14,12 +14,24 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-/** jsdom implements neither of these, and Radix reaches for both. */
+/** jsdom ships neither: Radix reaches for the first, Framer for the second. */
 globalThis.ResizeObserver ??= class {
   observe() {}
   unobserve() {}
   disconnect() {}
 };
+
+globalThis.IntersectionObserver ??= class {
+  readonly root = null;
+  readonly rootMargin = "";
+  readonly thresholds: readonly number[] = [];
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+} as unknown as typeof IntersectionObserver;
 
 if (!window.matchMedia) {
   window.matchMedia = (query: string) =>

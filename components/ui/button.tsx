@@ -10,7 +10,11 @@ import { cn } from "@/lib/utils";
  * 1. The orange button carries ink-900 copy, never white. Measured, not
  *    assumed: white on brand-500 is 2.61:1, which fails AA at every size,
  *    while ink-900 on brand-500 is 6.46:1. See scripts/contrast.mjs.
- * 2. Every size is at least 44px tall, the minimum touch target.
+ * 2. Every button-shaped size is at least 44px tall. `link` is the one
+ *    exception and it is deliberate: it renders as inline text, so forcing it
+ *    to 44px would wedge whitespace into the middle of a sentence. WCAG 2.5.8
+ *    exempts links embedded in a block of text and asks 24px otherwise, which
+ *    it clears. Use `ghost` when a tertiary action needs a real tap target.
  */
 const button = cva(
   [

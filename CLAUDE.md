@@ -184,6 +184,13 @@ casos viven en `content/*.ts` con tipos explícitos. Cambiar un texto no debe to
 **Regla de diseño:** primero los primitivos y los tokens, después las secciones. Nada de valores
 mágicos de espaciado, radio o sombra: todo sale de la escala de Tailwind.
 
+**Encabezados:** usa siempre `components/ui/Heading`. Tiene `as` (el nivel semántico) separado de
+`size` (lo grande que se ve), y es lo que impide que una sección se vuelva `h4` solo porque el
+diseño la quiere pequeña. `Eyebrow` es una etiqueta, **nunca** un encabezado.
+
+**`/kitchen-sink`** muestra cada primitivo en cada variante sobre los cuatro fondos. Está en
+`noindex` y no se enlaza. Si tocas un primitivo, míralo ahí antes de seguir.
+
 ---
 
 ## 6. Calidad — no negociable
@@ -203,6 +210,12 @@ FOUT. JS de la home por debajo de ~120KB gzip.
 
 **Animación.** Sobria y funcional: entradas suaves, hovers, nada más. Sin carruseles automáticos,
 sin parallax, sin scroll secuestrado.
+
+Toda animación de entrada pasa por `components/motion/Reveal`. **Ningún otro componente importa
+Framer Motion.** Y la regla que no se negocia: **el contenido nunca depende de JavaScript para
+poder leerse.** Framer escribe `opacity:0` en el HTML del servidor, así que `Reveal` lleva
+`data-reveal` y el `<noscript>` de `app/layout.tsx` lo neutraliza. Si añades otra animación que
+oculte contenido, tiene que llevar el mismo respaldo.
 
 ---
 

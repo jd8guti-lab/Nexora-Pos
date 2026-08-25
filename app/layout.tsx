@@ -37,6 +37,18 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es-CO" className={poppins.variable}>
+      <head>
+        {/*
+          Framer Motion writes the entrance animation's starting state —
+          opacity:0 — straight into the server-rendered markup. If JavaScript
+          never runs (blocked, failed, a text browser), every revealed section
+          would stay invisible and the site would look empty. Content must not
+          depend on JavaScript to be readable.
+        */}
+        <noscript>
+          <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
+      </head>
       <body className="min-h-dvh antialiased">{children}</body>
     </html>
   );

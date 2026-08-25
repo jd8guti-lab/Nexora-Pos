@@ -20,7 +20,7 @@ describe("Button", () => {
     expect(button.className).not.toContain("text-white");
   });
 
-  it("meets the 44px touch target at every size", () => {
+  it("meets the 44px touch target at every button-shaped size", () => {
     const heights = { sm: "h-11", md: "h-12", lg: "h-14" } as const;
     for (const [size, expected] of Object.entries(heights)) {
       const { unmount } = render(
@@ -29,6 +29,19 @@ describe("Button", () => {
       expect(screen.getByRole("button").className).toContain(expected);
       unmount();
     }
+  });
+
+  it("keeps the link variant inline, with no fixed height", () => {
+    // Deliberate exception: `link` is inline text. Forcing 44px would wedge
+    // whitespace into a sentence. It still clears the 24px WCAG 2.5.8 floor.
+    render(
+      <Button variant="link" size="lg">
+        Cómo trabajamos
+      </Button>,
+    );
+    const cls = screen.getByRole("button").className;
+    expect(cls).toContain("h-auto");
+    expect(cls).not.toMatch(/\bh-(11|12|14)\b/);
   });
 
   it("renders as its child when asChild is set, without nesting a button", () => {

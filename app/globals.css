@@ -127,9 +127,11 @@
     outline-color: var(--color-white);
   }
 
+  /* ink-900 on the orange, for the same reason every other pairing is:
+     white on brand-500 is 2.61:1. */
   ::selection {
     background-color: var(--color-brand-500);
-    color: var(--color-white);
+    color: var(--color-ink-900);
   }
 
   /* Headings inherit weight from the text-* tokens; never bump them ad hoc. */
@@ -142,6 +144,45 @@
 
   p {
     text-wrap: pretty;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Components layer
+--------------------------------------------------------------------------- */
+
+@layer components {
+  /* Radix measures the panel and exposes its height as a CSS variable, which
+     is what makes a real height transition possible. Declared here rather
+     than inline so the reduced-motion block below can flatten it. */
+  .accordion-content[data-state="open"] {
+    animation: accordion-down 220ms var(--ease-brand);
+  }
+
+  .accordion-content[data-state="closed"] {
+    animation: accordion-up 180ms var(--ease-brand);
+  }
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
   }
 }
 

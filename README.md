@@ -30,8 +30,8 @@ npm run typecheck && npm run lint && npm run test && npm run contrast && npm run
 marca tiene bastante menos contraste del que aparenta, y varias combinaciones "obvias" fallan.
 Si lo rompes, te dice exactamente qué par y con qué ratio.
 
-> Estado actual: **Fase 1 (andamiaje) terminada**, los cinco en verde. Detalle en
-> [docs/ESTADO.md](docs/ESTADO.md).
+> Estado actual: **Fases 1 y 2 terminadas** (andamiaje y sistema de diseño), los cinco en verde
+> con 26 tests. Detalle en [docs/ESTADO.md](docs/ESTADO.md).
 
 ## Por dónde empezar a leer
 
@@ -51,6 +51,7 @@ Si lo rompes, te dice exactamente qué par y con qué ratio.
 | `/precios`                              | Planes y alcance de la personalización                                                         | Fase 4 |
 | `/contacto`                             | Formulario, WhatsApp y correo                                                                  | Fase 4 |
 | `/portal`                               | Placeholder del portal de clientes                                                             | ✅     |
+| `/kitchen-sink`                         | Todos los primitivos, en todas sus variantes. Solo desarrollo: `noindex`, sin enlazar          | ✅     |
 | `/legal/privacidad` · `/legal/terminos` | Legales (Ley 1581 de 2012)                                                                     | Fase 4 |
 
 ## Stack
@@ -71,7 +72,7 @@ en [CLAUDE.md](CLAUDE.md) — respétalo.
 
 Ver [docs/ESTADO.md](docs/ESTADO.md). En grande:
 
-1. Fases 2 a 6: sistema de diseño → home → páginas → SEO → pulido.
+1. Fases 3 a 6: home → páginas secundarias → SEO → pulido.
 2. Reemplazar los `TODO(guti):` de `content/` por datos reales (contacto, precios, dominio).
 3. Conectar el envío del formulario a un servicio de correo.
 4. **Assets pendientes:** el logo sobre fondo oscuro y los SVG vectoriales. Mientras no

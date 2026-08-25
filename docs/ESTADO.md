@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-08-24
+Última actualización: 2026-08-24 (Fase 2)
 
 ---
 
@@ -45,11 +45,39 @@ Comprobado además en el navegador: cero scroll horizontal a 320px; el menú mó
 el foco, cierra con `Escape` y devuelve el foco al disparador; `/portal` es `noindex` y no
 arrastra la nav ni el footer de marketing.
 
+### Fase 2 · Sistema de diseño
+
+- **Primitivos**: `Heading` (nivel semántico separado del tamaño visual), `Eyebrow`, `Card`
+  (+ `CardHeader`/`CardBody`/`CardFooter`/`CardLinkOverlay`), `Badge`, `IconTile`, `Accordion`.
+- **`Reveal`**: la única animación del sitio, con Framer Motion. Entra una vez al aparecer en
+  pantalla, se desactiva entera con `prefers-reduced-motion` y lleva un respaldo `<noscript>`.
+- **`/kitchen-sink`**: cada primitivo, en cada variante, sobre los cuatro fondos. `noindex`,
+  no enlazada desde ninguna parte.
+- **Animación del acordeón** en `globals.css`, para que el bloque global de `prefers-reduced-motion`
+  la aplane junto con todo lo demás.
+- 26 tests en verde (15 nuevos: acordeón, Heading/Eyebrow, Reveal, variante `link` del Button).
+
+**Verificado en el navegador**, no solo en tests:
+
+- Un solo `h1` en `/kitchen-sink` y **cero saltos de jerarquía** en 20 encabezados.
+- El anillo de foco es correcto en los cuatro fondos: `ink-900` sobre blanco, `paper-50` y la
+  franja naranja; blanco sobre `ink-900`. Comprobado con `Tab` real, porque `.focus()`
+  programático no activa `:focus-visible`.
+- Las cuatro variantes de botón por superficie, con sus colores medidos.
+- Cero scroll horizontal a 320px.
+- El `<noscript>` llega en el HTML servido.
+
+**Ojo con el presupuesto de JS en la Fase 3.** La home sigue en 103 kB porque todavía no usa
+`Reveal`; `/kitchen-sink` está en 167 kB precisamente porque carga Framer y todos los primitivos.
+En cuanto la home envuelva secciones en `Reveal`, Framer entra en su bundle. El techo de
+`CLAUDE.md §6` es ~120 kB, así que hay que mirar la salida de `next build` al cerrar la Fase 3, y
+si no cabe, sustituir `Reveal` por una animación CSS con `IntersectionObserver` propio.
+
 ---
 
 ## En curso
 
-Nada. Siguiente paso: **Fase 2 — Sistema de diseño**.
+Nada. Siguiente paso: **Fase 3 — Home**.
 
 ---
 
@@ -58,7 +86,7 @@ Nada. Siguiente paso: **Fase 2 — Sistema de diseño**.
 | Fase                  | Qué incluye                                                                                                 | Estado |
 | --------------------- | ----------------------------------------------------------------------------------------------------------- | ------ |
 | 1 · Andamiaje         | Next.js 15 + TS strict, Tailwind con tokens de marca, Poppins, assets, `content/`, layout base, Nav, Footer | ✅     |
-| 2 · Sistema de diseño | `Card`, `Badge`, `Accordion`, `Heading`, `Eyebrow`, `IconTile`, `Reveal`, página `/kitchen-sink`            | ⬜     |
+| 2 · Sistema de diseño | `Card`, `Badge`, `Accordion`, `Heading`, `Eyebrow`, `IconTile`, `Reveal`, página `/kitchen-sink`            | ✅     |
 | 3 · Home              | Las 13 secciones, una por una, con los mockups React/SVG                                                    | ⬜     |
 | 4 · Páginas           | `/modulos`, `/casos`, `/precios`, `/contacto`, legales                                                      | ⬜     |
 | 5 · SEO               | Metadata por página, OG image, `sitemap.ts`, `robots.ts`, JSON-LD                                           | ⬜     |
@@ -88,6 +116,10 @@ Cada decisión técnica va aquí **con su porqué**, para no volver a discutirla
 | 14  | **`scripts/contrast.mjs` como parte de la verificación**                | La paleta es naranja y el naranja engaña: parece de alto contraste y no lo es. Un script que falla es mejor que una queja de Lighthouse al final                                                                                                                                     |
 | 15  | **`LogoLockup` con tres variantes en vez de un solo logo**              | No existe artwork para fondo oscuro ni monocromo, y `CLAUDE.md §3` prohíbe recolorear la marca. `light` usa el archivo real; `dark` y `onBrand` componen el nombre en Poppins, que es un tratamiento que el propio manual muestra                                                    |
 | 16  | **`Section` solo expone cuatro fondos**                                 | Es la forma de que "el naranja es acento" sea una propiedad del código y no de la disciplina de quien maqueta                                                                                                                                                                        |
+| 17  | **Sin `shadcn init`; Radix Accordion instalado directo**                | `shadcn init` reescribe `globals.css` con sus propias variables y un bloque `.dark`, que es justo lo que la decisión 8 quería evitar. El componente que genera el CLI es un envoltorio fino de Radix; escribirlo a mano cuesta lo mismo y no toca la configuración |
+| 18  | **`AccordionTrigger` cablea `aria-controls` a mano**                    | Radix lo omite mientras el panel está cerrado, porque desmonta sus hijos. El elemento del panel sí sigue en el DOM, y el patrón WAI-ARIA de acordeón pide la referencia esté abierto o cerrado. `AccordionItem` genera un id con `useId` y se lo pasa a las dos mitades |
+| 19  | **`Reveal` lleva `data-reveal` y un `<noscript>` en el layout**         | Framer escribe `opacity:0` en el HTML del servidor. Sin JS —bloqueador, proxy, navegador de texto— todo lo envuelto quedaría invisible para siempre. El contenido no puede depender de JavaScript para leerse |
+| 20  | **La variante `link` del `Button` no llega a 44px**                     | Es texto en línea: forzarla a 44px metería espacio en blanco dentro de una frase. WCAG 2.5.8 exime los enlaces embebidos en texto y pide 24px en el resto, que sí cumple (26px). Para una acción terciaria con área táctil real, se usa `ghost` |
 
 ---
 
@@ -161,6 +193,37 @@ escala completa de dispositivos. Para una imagen de tamaño fijo, no pongas `siz
 Si hay que volver a andamiar, el scaffold trae 16.3.2. Las versiones de este proyecto están
 fijadas a mano en `package.json`.
 
+**6. Framer deja `opacity:0` en el HTML del servidor.**
+`Reveal` usa `whileInView`, y Framer escribe el estado inicial —`opacity:0;transform:translateY(12px)`—
+directamente en el marcado que sirve Next. Si el JavaScript no llega a ejecutarse, ese contenido
+queda invisible de forma permanente. Se comprueba con `curl -s localhost:3000/... | grep opacity:0`.
+Está cubierto con `data-reveal` más un `<style>` dentro de `<noscript>` en `app/layout.tsx`.
+**Cualquier animación nueva que oculte contenido tiene que llevar el mismo respaldo.**
+
+**7. Medir el foco con `.focus()` no sirve.**
+`element.focus()` desde la consola no activa `:focus-visible`, así que `getComputedStyle` devuelve
+el `outline-color` heredado (que es `currentColor`) y parece que el anillo está mal. Hay que pulsar
+`Tab` de verdad al menos una vez para que el navegador entre en modalidad teclado; a partir de ahí
+`.focus()` sí lo activa. Verifica siempre con `el.matches(':focus-visible')` antes de creerte la
+medición.
+
+**8. El panel del navegador que no compone da medidas falsas.**
+Si el panel no está visible, `document.documentElement.clientWidth` vale **0** y cualquier prueba
+de desbordamiento horizontal reporta cientos de píxeles inventados. Fija siempre un viewport
+explícito antes de medir, y desconfía de cualquier resultado con `viewport: 0`. Por la misma razón
+no disparan ni el lazy-loading de `next/image` ni el `IntersectionObserver` de Framer.
+
+**9. Los eventos de teclado sintéticos no accionan Radix.**
+`el.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter'}))` desde la consola no abre el
+acordeón, y el automatizador del navegador manda tecla **y** clic, con lo que alterna dos veces y
+parece que no funciona. Ninguna de las dos cosas es un fallo del componente: con `userEvent`, que
+reproduce la secuencia real, `Enter` y `Espacio` alternan exactamente una vez. Para interacción,
+fíate de los tests, no de la consola.
+
+**10. `IntersectionObserver` no existe en jsdom.**
+Framer lo pide en cuanto montas un `Reveal`, y el test revienta con `ReferenceError`. Está
+poblado en `tests/setup.ts`, junto a `ResizeObserver` y `matchMedia`.
+
 ---
 
 ## Bitácora
@@ -170,3 +233,4 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | Fecha      | Sesión                                                                                  | Resultado                                                           |
 | ---------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | 2026-08-24 | Plan del sitio + Fase 1 (andamiaje completo, tokens, assets, layout, Nav/Footer, tests) | typecheck · lint · test (11/11) · build · contrast (17/17) en verde |
+| 2026-08-24 | Fase 2 (primitivos, `Reveal`, `/kitchen-sink`), push inicial al remoto | typecheck · lint · test (26/26) · build · contrast (17/17) en verde |
