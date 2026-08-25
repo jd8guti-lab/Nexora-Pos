@@ -214,7 +214,12 @@ FOUT. **JS de la home por debajo de ~120KB gzip.**
 
 Ese número no es decorativo: se ha roto dos veces, y las dos por una librería que entró al bundle
 en cuanto la home usó un componente. Mira la salida de `next build` al cerrar cada fase, no al
-final. Hoy la home va en 112 KB.
+final. Hoy la home va en 111 KB.
+
+**Al medir con Lighthouse, mata primero cualquier `next start` anterior.** Si el puerto está
+ocupado el nuevo servidor no arranca, Lighthouse mide el build viejo con los assets fallando, y
+el resultado sale **más alto** porque no llega a cargar el JavaScript. Comprueba que el servidor
+respondió y que el CSS da 200 antes de creerte una cifra.
 
 **SEO.** Metadata API por página, Open Graph + Twitter card, `sitemap.ts`, `robots.ts`, JSON-LD
 (`Organization` + `SoftwareApplication`), canónicas.
@@ -222,8 +227,10 @@ final. Hoy la home va en 112 KB.
 **Animación.** Sobria y funcional: entradas suaves, hovers, nada más. Sin carruseles automáticos,
 sin parallax, sin scroll secuestrado.
 
-Toda animación de entrada pasa por `components/motion/Reveal`, que es CSS más un
-`IntersectionObserver` de quince líneas. **No hay Framer Motion**: costaba 52 KB y dejaba la home
+Toda animación de entrada pasa por `components/motion/Reveal`, que es **componente de servidor**:
+solo emite `data-reveal`. Un único `RevealObserver`, montado en el layout de marketing, los arma
+todos con un solo `IntersectionObserver`. No conviertas `Reveal` en componente cliente — quince
+fronteras de hidratación para el mismo efecto es justo lo que se quitó. **No hay Framer Motion**: costaba 52 KB y dejaba la home
 en 155 KB, por encima del techo. No lo vuelvas a instalar para esto.
 
 Y la regla que no se negocia: **el contenido nunca depende de JavaScript para poder leerse.**

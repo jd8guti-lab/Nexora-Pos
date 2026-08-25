@@ -1,57 +1,65 @@
 import { render, screen } from "@testing-library/react";
+import { act } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Reveal } from "./reveal";
+import { RevealObserver } from "./reveal-observer";
 
-type Stub = {
-  cb: IntersectionObserverCallback;
-  observed: Element[];
-  disconnected: boolean;
-};
+type Stub = { cb: IntersectionObserverCallback; observed: Element[] };
 
-/** Captures the observer so a test can drive the intersection by hand. */
+const observers: Stub[] = [];
+
 function stubObserver() {
-  const instances: Stub[] = [];
+  observers.length = 0;
   vi.stubGlobal(
     "IntersectionObserver",
     class {
       observed: Element[] = [];
-      disconnected = false;
       constructor(public cb: IntersectionObserverCallback) {
-        instances.push(this as unknown as Stub);
+        observers.push(this as unknown as Stub);
       }
       observe(el: Element) {
         this.observed.push(el);
       }
-      unobserve() {}
-      disconnect() {
-        this.disconnected = true;
+      unobserve(el: Element) {
+        this.observed = this.observed.filter((o) => o !== el);
       }
+      disconnect() {}
       takeRecords() {
         return [];
       }
     },
   );
-  return instances;
 }
 
-/** jsdom gives every element a zero rect, which reads as off-screen. */
-function placeOffScreen() {
+/** Runs the pending animation frame, where the fallback sweep sits. */
+async function flushFrame() {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+}
+
+function placeAt(top: number, bottom: number) {
   vi.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({
-    top: 5000,
-    bottom: 5200,
+    top,
+    bottom,
   } as DOMRect);
 }
 
-function placeOnScreen() {
-  vi.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({
-    top: 100,
-    bottom: 300,
-  } as DOMRect);
-}
-
-/** Only `isIntersecting` is read; the rest is geometry we do not simulate. */
 const entry = (target: Element, isIntersecting: boolean) =>
   ({ target, isIntersecting }) as unknown as IntersectionObserverEntry;
+
+function Page({ count = 3 }: { count?: number }) {
+  return (
+    <>
+      {Array.from({ length: count }, (_, i) => (
+        <Reveal key={i} delay={i * 0.06}>
+          <p>Bloque {i}</p>
+        </Reveal>
+      ))}
+      <RevealObserver />
+    </>
+  );
+}
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -59,98 +67,20 @@ afterEach(() => {
 });
 
 describe("Reveal", () => {
-  it("never hides anything when there is no IntersectionObserver", () => {
-    // The whole no-JavaScript guarantee in one assertion: an element is only
-    // ever hidden by the same code path that has committed to revealing it.
-    vi.stubGlobal("IntersectionObserver", undefined);
+  it("renders plain markup, with no client behaviour of its own", () => {
+    // It is a server component: a tag, a data attribute and a delay.
     render(
-      <Reveal>
-        <p>Inventario</p>
+      <Reveal delay={0.12}>
+        <p>Clientes</p>
       </Reveal>,
     );
-    const wrapper = screen.getByText("Inventario").parentElement!;
+    const wrapper = screen.getByText("Clientes").parentElement!;
     expect(wrapper).toHaveAttribute("data-reveal");
     expect(wrapper).not.toHaveAttribute("data-reveal-armed");
-  });
-
-  it("arms itself and then reveals, never arming without observing", () => {
-    const observers = stubObserver();
-    placeOffScreen();
-    render(
-      <Reveal>
-        <p>Crecimiento</p>
-      </Reveal>,
-    );
-
-    const wrapper = screen.getByText("Crecimiento").parentElement!;
-    expect(wrapper).toHaveAttribute("data-reveal-armed");
-    expect(wrapper).not.toHaveAttribute("data-revealed");
-
-    const observer = observers[0]!;
-    expect(observer.observed).toContain(wrapper);
-
-    observer.cb([entry(wrapper, true)], observer as unknown as IntersectionObserver);
-
-    expect(wrapper).toHaveAttribute("data-revealed");
-    // It fires once and never replays.
-    expect(observer.disconnected).toBe(true);
-  });
-
-  it("reveals on-screen content immediately, without waiting for the observer", () => {
-    // An observer in a page that is not compositing never fires. Anything
-    // already visible must not depend on it.
-    const observers = stubObserver();
-    placeOnScreen();
-    render(
-      <Reveal>
-        <p>Punto de venta</p>
-      </Reveal>,
-    );
-
-    const wrapper = screen.getByText("Punto de venta").parentElement!;
-    expect(wrapper).toHaveAttribute("data-revealed");
-    expect(observers[0]?.observed ?? []).toHaveLength(0);
-  });
-
-  it("stays hidden while it is genuinely out of view", () => {
-    const observers = stubObserver();
-    placeOffScreen();
-    render(
-      <Reveal>
-        <p>Personalización</p>
-      </Reveal>,
-    );
-    const wrapper = screen.getByText("Personalización").parentElement!;
-    const observer = observers[0]!;
-
-    observer.cb([entry(wrapper, false)], observer as unknown as IntersectionObserver);
-
-    expect(wrapper).not.toHaveAttribute("data-revealed");
-  });
-
-  it("falls back to a scroll check if the observer never fires", () => {
-    stubObserver();
-    const rect = vi
-      .spyOn(Element.prototype, "getBoundingClientRect")
-      .mockReturnValue({ top: 5000, bottom: 5200 } as DOMRect);
-
-    render(
-      <Reveal>
-        <p>Contabilidad</p>
-      </Reveal>,
-    );
-    const wrapper = screen.getByText("Contabilidad").parentElement!;
-    expect(wrapper).not.toHaveAttribute("data-revealed");
-
-    rect.mockReturnValue({ top: 100, bottom: 300 } as DOMRect);
-    window.dispatchEvent(new Event("scroll"));
-
-    expect(wrapper).toHaveAttribute("data-revealed");
+    expect(wrapper.style.animationDelay).toBe("0.12s");
   });
 
   it("keeps the requested tag, so lists stay lists", () => {
-    stubObserver();
-    placeOffScreen();
     render(
       <ul>
         <Reveal as="li">
@@ -160,17 +90,99 @@ describe("Reveal", () => {
     );
     expect(screen.getByRole("listitem")).toBeInTheDocument();
   });
+});
 
-  it("staggers with an animation delay rather than a timer", () => {
+describe("RevealObserver", () => {
+  it("arms every block and watches them with one observer", async () => {
     stubObserver();
-    placeOffScreen();
-    render(
-      <Reveal delay={0.12}>
-        <p>Reportes</p>
-      </Reveal>,
-    );
-    expect(screen.getByText("Reportes").parentElement!.style.animationDelay).toBe(
-      "0.12s",
-    );
+    placeAt(5000, 5200);
+    const { container } = render(<Page count={3} />);
+
+    const blocks = Array.from(container.querySelectorAll("[data-reveal]"));
+    expect(blocks).toHaveLength(3);
+    expect(blocks.every((b) => b.hasAttribute("data-reveal-armed"))).toBe(true);
+
+    // One observer for the page, not one per block.
+    expect(observers).toHaveLength(1);
+    expect(observers[0]!.observed).toHaveLength(3);
+  });
+
+  it("hides nothing when there is no IntersectionObserver", () => {
+    // The no-JavaScript guarantee: hiding and observing happen in the same
+    // pass, so if the observer cannot exist, nothing is ever hidden.
+    vi.stubGlobal("IntersectionObserver", undefined);
+    const { container } = render(<Page count={2} />);
+    const blocks = Array.from(container.querySelectorAll("[data-reveal]"));
+    expect(blocks.every((b) => !b.hasAttribute("data-reveal-armed"))).toBe(true);
+  });
+
+  it("reveals a block when it intersects", async () => {
+    stubObserver();
+    placeAt(5000, 5200);
+    const { container } = render(<Page count={3} />);
+    const first = container.querySelector("[data-reveal]")!;
+
+    await act(async () => {
+      observers[0]!.cb(
+        [entry(first, true)],
+        observers[0] as unknown as IntersectionObserver,
+      );
+    });
+
+    expect(first).toHaveAttribute("data-revealed");
+  });
+
+  it("does not measure anything while hydrating", () => {
+    // getBoundingClientRect during mount forces a synchronous layout; fifteen
+    // of those cost 1.3s of Style & Layout in Lighthouse.
+    stubObserver();
+    const rect = vi
+      .spyOn(Element.prototype, "getBoundingClientRect")
+      .mockReturnValue({ top: 5000, bottom: 5200 } as DOMRect);
+
+    render(<Page count={3} />);
+
+    expect(rect).not.toHaveBeenCalled();
+  });
+
+  it("reveals on-screen blocks on the next frame if the observer stays quiet", async () => {
+    // An observer in a document that is not compositing never fires, and a
+    // blank page is not an acceptable failure mode.
+    stubObserver();
+    placeAt(100, 300);
+    const { container } = render(<Page count={2} />);
+
+    await flushFrame();
+
+    const blocks = Array.from(container.querySelectorAll("[data-reveal]"));
+    expect(blocks.every((b) => b.hasAttribute("data-revealed"))).toBe(true);
+  });
+
+  it("leaves genuinely off-screen blocks hidden", async () => {
+    stubObserver();
+    placeAt(5000, 5200);
+    const { container } = render(<Page count={2} />);
+
+    await flushFrame();
+
+    const blocks = Array.from(container.querySelectorAll("[data-reveal]"));
+    expect(blocks.some((b) => b.hasAttribute("data-revealed"))).toBe(false);
+  });
+
+  it("falls back to a scroll sweep if the observer never fires", async () => {
+    stubObserver();
+    const rect = vi
+      .spyOn(Element.prototype, "getBoundingClientRect")
+      .mockReturnValue({ top: 5000, bottom: 5200 } as DOMRect);
+    const { container } = render(<Page count={2} />);
+    await flushFrame();
+
+    rect.mockReturnValue({ top: 100, bottom: 300 } as DOMRect);
+    await act(async () => {
+      window.dispatchEvent(new Event("scroll"));
+    });
+
+    const blocks = Array.from(container.querySelectorAll("[data-reveal]"));
+    expect(blocks.every((b) => b.hasAttribute("data-revealed"))).toBe(true);
   });
 });

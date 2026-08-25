@@ -1,4 +1,5 @@
 import { Footer } from "@/components/layout/footer";
+import { RevealObserver } from "@/components/motion/reveal-observer";
 import { Nav } from "@/components/layout/nav";
 
 export default function MarketingLayout({
@@ -17,6 +18,7 @@ export default function MarketingLayout({
         {children}
       </main>
       <Footer />
+      <RevealObserver />
     </div>
   );
 }

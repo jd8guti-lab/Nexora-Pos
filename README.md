@@ -30,9 +30,10 @@ npm run typecheck && npm run lint && npm run test && npm run contrast && npm run
 marca tiene bastante menos contraste del que aparenta, y varias combinaciones "obvias" fallan.
 Si lo rompes, te dice exactamente qué par y con qué ratio.
 
-> Estado actual: **Fases 1 a 5 terminadas** — el sitio está completo y navegable. Los cinco en
-> verde con 69 tests; la home va en 112 kB de JS. Queda la Fase 6 (pulido y Lighthouse) y
-> reemplazar los `TODO(guti)`. Detalle en [docs/ESTADO.md](docs/ESTADO.md).
+> Estado actual: **el sitio está completo**. Los cinco comandos en verde con 71 tests; la home
+> va en 111 kB de JS. Lighthouse da **100 en accesibilidad, buenas prácticas y SEO**, y **82–92
+> en rendimiento** — por debajo del ≥95 que pide CLAUDE.md; el detalle y lo que queda por
+> intentar está en [docs/ESTADO.md](docs/ESTADO.md).
 
 ## Por dónde empezar a leer
 
@@ -73,7 +74,8 @@ en [CLAUDE.md](CLAUDE.md) — respétalo.
 
 Ver [docs/ESTADO.md](docs/ESTADO.md). En grande:
 
-1. Fase 6: accesibilidad, Lighthouse ≥95 y pulido responsive.
+1. **Rendimiento**: llegar al ≥95 de Lighthouse. Falta medirlo en Vercel con CDN y red real,
+   que es la medición que cuenta.
 2. Reemplazar los `TODO(guti):` de `content/` por datos reales. **Hoy hay 25 visibles en la
    home**: precios, métricas, contacto y cuatro respuestas de la FAQ que son hechos del producto
    (sin internet, factura DIAN, equipos, soporte).

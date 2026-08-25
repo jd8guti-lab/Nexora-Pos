@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-08-24 (Fases 4 y 5 completas)
+Última actualización: 2026-08-25 (Fase 6 — rendimiento y accesibilidad)
 
 ---
 
@@ -136,10 +136,65 @@ bot y cuerpo no-JSON).
 
 ---
 
+### Fase 6 · Pulido
+
+**Lighthouse sobre `next start`** (build de producción, emulación móvil con estrangulamiento
+de CPU 4×, en esta máquina de desarrollo):
+
+| Página | Rendimiento | Accesibilidad | Buenas prácticas | SEO |
+|---|---|---|---|---|
+| `/` | 82 | **100** | **100** | **100** |
+| `/modulos` | 92 | **100** | **100** | **100** |
+| `/contacto` | 85 | **100** | **100** | **100** |
+
+**Accesibilidad, buenas prácticas y SEO llegan al 100. Rendimiento no llega al ≥95 que pide
+`CLAUDE.md §6`** — ver "Lo que queda pendiente de rendimiento" abajo.
+
+Lo que se arregló aquí, medido antes y después:
+
+- **`Reveal` forzaba 15 recálculos de layout sincrónicos.** Cada instancia creaba su propio
+  `IntersectionObserver` y llamaba a `getBoundingClientRect()` al montar. Lighthouse cobraba
+  **1297 ms de Style & Layout** y marcaba `forced-reflow`. Con un observador compartido y la
+  comprobación geométrica diferida a un frame: **487 ms**.
+- **`Reveal` pasó a ser componente de servidor.** Antes eran 15 fronteras de hidratación para
+  un efecto idéntico. Ahora las secciones emiten marcado plano con `data-reveal` y un único
+  `RevealObserver` los arma a todos. La página de la home bajó de 776 B a **180 B**.
+- **El menú móvil ya no se carga en escritorio.** Radix Dialog (~19 kB) hidrataba en todas las
+  páginas para un menú que solo existe bajo `lg`. Ahora el panel vive en su propio chunk y se
+  carga en el primer toque.
+- **Regresión de foco encontrada y corregida.** Al cargar el panel de forma diferida, Radix
+  perdió la referencia de a quién devolver el foco y al cerrar con `Escape` caía en `<body>`.
+  Se restaura explícitamente, y **después** del desmontaje: mientras el diálogo sigue montado
+  su trampa de foco anula cualquier `focus()`.
+
+---
+
 ## En curso
 
-Nada. Siguiente paso: **Fase 6 — pulido** (Lighthouse sobre `next start`, repaso de teclado,
-y los `TODO(guti)` cuando lleguen los datos reales).
+Nada. El sitio está completo. Queda el **rendimiento** (abajo) y los `TODO(guti)`.
+
+---
+
+## Lo que queda pendiente de rendimiento
+
+El objetivo de `CLAUDE.md §6` es Lighthouse ≥95 en las cuatro categorías. Tres están en 100;
+rendimiento se quedó entre **82 y 92**.
+
+Un aviso sobre la medición: repitiendo la misma página tres veces seguidas salió 86 / 94 / 84,
+con TBT entre 200 y 480 ms. Es mucha varianza, propia de medir en localhost sobre una máquina de
+desarrollo cargada. **No des un número por bueno sin repetirlo.**
+
+Qué queda y qué ya se descartó:
+
+- El coste dominante es la hidratación de React más el runtime de Next (103 kB compartidos). Lo
+  que quedaba nuestro ya se quitó.
+- `Nav` sigue siendo componente cliente por la nav translúcida al hacer scroll y por
+  `usePathname` para el `aria-current`. Es lo siguiente a mirar si hace falta apretar más.
+- **Los polyfills no son el problema**, aunque Lighthouse mencione JavaScript heredado: Next los
+  sirve con `noModule`, así que un navegador moderno ni los descarga. Se probó restringir
+  `browserslist` a navegadores modernos y **no cambió nada**, así que se revirtió — no tiene
+  sentido recortar compatibilidad a cambio de nada.
+- Falta medirlo en Vercel, con CDN y red real. Es la medición que de verdad cuenta.
 
 ---
 
@@ -152,7 +207,7 @@ y los `TODO(guti)` cuando lleguen los datos reales).
 | 3 · Home              | Las 13 secciones, una por una, con los mockups React/SVG                                                    | ✅     |
 | 4 · Páginas           | `/modulos`, `/casos`, `/precios`, `/contacto`, legales                                                      | ✅     |
 | 5 · SEO               | Metadata por página, OG image, `sitemap.ts`, `robots.ts`, JSON-LD                                           | ✅     |
-| 6 · Pulido            | Accesibilidad, Lighthouse, tests, responsive, SVG del logo                                                  | ⬜     |
+| 6 · Pulido            | Accesibilidad, Lighthouse, tests, responsive, SVG del logo                                                  | 🔶 a11y/BP/SEO en 100; rendimiento 82-92 |
 
 ---
 
@@ -191,6 +246,9 @@ Cada decisión técnica va aquí **con su porqué**, para no volver a discutirla
 | 27  | **El honeypot no se valida en el schema de Zod**                         | Al probar la API salió que un bot recibía **422 con `{"website": ["Invalid input"]}`** — es decir, el endpoint le decía cuál era la trampa y cómo esquivarla. Ahora `website` es un campo libre en el schema y `looksLikeBot()` lo decide aparte; la ruta responde **200 en silencio** y nunca llama a `sendLead`. Sigue sin haber reCAPTCHA: un acertijo castiga al visitante por lo que hace el spammer |
 | 28  | **`Field` usa render prop en vez de clonar hijos**                       | El `id` tiene que llegar al control para que `htmlFor`, `aria-describedby` y `aria-invalid` queden atados. Clonar los hijos para inyectar props es magia que se rompe en silencio en cuanto alguien envuelve el input |
 | 29  | **JSON-LD sin `offers` ni `aggregateRating`**                            | Los precios siguen siendo `TODO(guti)` y no hay reseñas. Los datos estructurados son el último sitio donde poner una suposición favorecedora, porque el buscador los trata como una afirmación sobre el mundo y los repite |
+| 30  | **`Reveal` es componente de servidor; un solo `RevealObserver` los arma** | Quince fronteras de hidratación para un efecto idéntico en todas. Como marcado plano más un observador único, la página de la home pasó de 776 B a 180 B y desapareció el `forced-reflow` que costaba 1297 ms de Style & Layout |
+| 31  | **El panel del menú móvil se carga en el primer toque**                  | Radix Dialog hidrataba en **todas** las páginas por un menú que solo existe bajo `lg`. En una visita de escritorio no se abre nunca. Ahora vive en su propio chunk |
+| 32  | **El foco se devuelve a mano, y después del desmontaje**                 | Al diferir el panel, Radix perdió a quién devolver el foco y `Escape` lo dejaba en `<body>`. Hacerlo dentro del handler tampoco sirve: la trampa de foco lo recaptura mientras el diálogo sigue montado. Va en un efecto disparado al cerrarse |
 
 ---
 
@@ -336,7 +394,15 @@ En `app/opengraph-image.tsx`, cualquier `<div>` con más de un hijo tiene que de
 build falla con `Expected <div> to have explicit "display: flex"`. Rompe el build entero, no solo
 la imagen.
 
-**19. `IntersectionObserver` no existe en jsdom.**
+**19. Mata el `next start` viejo antes de medir con Lighthouse.**
+Costó dos mediciones inventadas. Un `next start` anterior seguía ocupando el puerto, el nuevo
+fallaba con `EADDRINUSE` sin que se notara, y Lighthouse medía el build viejo sirviendo assets
+con 400 — lo que da un rendimiento **más alto** porque no llega a cargar el JS. Salieron un 89 y
+un 97 falsos. Antes de creerte una cifra: comprueba que el servidor arrancó y que el CSS
+responde 200. En Windows, `pkill` no basta; usa `Get-NetTCPConnection -LocalPort N` y
+`Stop-Process`.
+
+**20. `IntersectionObserver` no existe en jsdom.**
 Framer lo pide en cuanto montas un `Reveal`, y el test revienta con `ReferenceError`. Está
 poblado en `tests/setup.ts`, junto a `ResizeObserver` y `matchMedia`.
 
@@ -353,3 +419,4 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | 2026-08-24 | Fase 3, secciones 1-6 (contenido, hero con mockup, barra de confianza, problema, pilares, módulos). `Reveal` reescrito sin Framer: home de 155 kB a **107 kB** | typecheck · lint · test (38/38) · build · contrast (17/17) en verde |
 | 2026-08-24 | Fase 3 completa: proceso, quiénes somos, casos, precios, FAQ y franja de cierre. Acordeón de Radix cambiado por `<details>` nativo: home de 131 kB a **112 kB** | typecheck · lint · test (47/47) · build · contrast (25/25) en verde |
 | 2026-08-24 | Fases 4 y 5: las seis páginas secundarias, formulario con API, y SEO completo (metadata, OG, sitemap, robots, JSON-LD) | typecheck · lint · test (69/69) · build (16 rutas) · contrast (25/25) en verde |
+| 2026-08-25 | Fase 6: `Reveal` a componente de servidor, menú móvil diferido, foco corregido. Lighthouse a11y/BP/SEO en 100; rendimiento 82-92, **sin llegar al ≥95** | typecheck · lint · test (71/71) · build · contrast (25/25) en verde |
