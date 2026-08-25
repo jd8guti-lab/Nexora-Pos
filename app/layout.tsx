@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
+import { JsonLd } from "@/components/seo/json-ld";
 import { site } from "@/content/site";
 import { siteUrl } from "@/lib/config";
+import { organizationJsonLd } from "@/lib/seo";
 import "./globals.css";
 
 /**
@@ -37,7 +39,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es-CO" className={poppins.variable}>
-      <body className="min-h-dvh antialiased">{children}</body>
+      <body className="min-h-dvh antialiased">
+        {children}
+        <JsonLd data={organizationJsonLd()} />
+      </body>
     </html>
   );
 }

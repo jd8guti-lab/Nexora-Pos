@@ -1,3 +1,4 @@
+import { JsonLd } from "@/components/seo/json-ld";
 import { About } from "@/components/sections/about";
 import { CtaBand } from "@/components/sections/cta";
 import { Faq } from "@/components/sections/faq";
@@ -9,6 +10,14 @@ import { Problem } from "@/components/sections/problem";
 import { Process } from "@/components/sections/process";
 import { TrustBar } from "@/components/sections/trust-bar";
 import { UseCases } from "@/components/sections/use-cases";
+import { site } from "@/content/site";
+import { buildMetadata, softwareJsonLd } from "@/lib/seo";
+
+export const metadata = buildMetadata({
+  title: site.tagline,
+  description: site.description,
+  path: "/",
+});
 
 /**
  * Home.
@@ -33,6 +42,7 @@ export default function HomePage() {
       <Pricing />
       <Faq />
       <CtaBand />
+      <JsonLd data={softwareJsonLd()} />
     </>
   );
 }

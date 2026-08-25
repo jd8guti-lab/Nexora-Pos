@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-08-24 (Fase 3 completa)
+Última actualización: 2026-08-24 (Fases 4 y 5 completas)
 
 ---
 
@@ -103,10 +103,43 @@ Es un artefacto de medición, no un fallo: comprueba `scrollLeft`, no solo `scro
 
 ---
 
+### Fase 4 · Páginas secundarias
+
+- `/modulos` — un bloque por módulo con su ancla, más un índice de saltos en la cabecera.
+- `/casos` — los seis tipos de negocio, con enlace desde cada etiqueta al módulo que usa.
+- `/precios` — reusa las secciones de la home y añade "qué significa a medida en la factura",
+  que es la pregunta que ningún plan responde.
+- `/contacto` — formulario con React Hook Form y Zod, honeypot, y `app/api/contacto/route.ts`
+  revalidando el **mismo** schema. El envío queda detrás de `sendLead()` en `lib/lead.ts`.
+- `/legal/privacidad` y `/legal/terminos` — estructura de la Ley 1581 de 2012.
+  **`content/legal.ts` tiene que revisarlo un abogado antes de publicar.**
+- `components/layout/PageHeader` — dueño del único `<h1>` de cada página secundaria.
+- `components/ui/Field` — liga label, hint y error con `aria-describedby` y `aria-invalid`
+  mediante render prop, para que un error nunca quede visible pero sin anunciar.
+
+### Fase 5 · SEO
+
+- `lib/seo.ts` con `buildMetadata()`: título, descripción, canónica, Open Graph y Twitter card
+  desde un solo sitio.
+- `app/opengraph-image.tsx` con `next/og`, embebiendo el isotipo real en base64.
+- `app/sitemap.ts` (7 rutas públicas) y `app/robots.ts`, ambos excluyendo `/portal`,
+  `/kitchen-sink` y `/api/`.
+- JSON-LD `Organization` en el layout y `SoftwareApplication` en la home, vía
+  `components/seo/JsonLd`. **Sin `offers` ni `aggregateRating`**: los precios todavía no
+  existen y una calificación inventada es una mentira que el buscador repite.
+
+**Verificado**: las 12 rutas responden 200; `robots.txt` y `sitemap.xml` con el contenido
+correcto; una sola `<h1>` y **cero saltos de jerarquía** en las siete páginas públicas; ninguna
+imagen sin `alt`; cero desplazamiento horizontal a 320px; los seis campos del formulario
+etiquetados y de 48px; y la API probada de punta a punta con los cuatro casos (válido, inválido,
+bot y cuerpo no-JSON).
+
+---
+
 ## En curso
 
-Nada. Siguiente paso: **Fase 4 — páginas secundarias** (`/modulos`, `/casos`, `/precios`,
-`/contacto`, legales).
+Nada. Siguiente paso: **Fase 6 — pulido** (Lighthouse sobre `next start`, repaso de teclado,
+y los `TODO(guti)` cuando lleguen los datos reales).
 
 ---
 
@@ -117,8 +150,8 @@ Nada. Siguiente paso: **Fase 4 — páginas secundarias** (`/modulos`, `/casos`,
 | 1 · Andamiaje         | Next.js 15 + TS strict, Tailwind con tokens de marca, Poppins, assets, `content/`, layout base, Nav, Footer | ✅     |
 | 2 · Sistema de diseño | `Card`, `Badge`, `Accordion`, `Heading`, `Eyebrow`, `IconTile`, `Reveal`, página `/kitchen-sink`            | ✅     |
 | 3 · Home              | Las 13 secciones, una por una, con los mockups React/SVG                                                    | ✅     |
-| 4 · Páginas           | `/modulos`, `/casos`, `/precios`, `/contacto`, legales                                                      | ⬜     |
-| 5 · SEO               | Metadata por página, OG image, `sitemap.ts`, `robots.ts`, JSON-LD                                           | ⬜     |
+| 4 · Páginas           | `/modulos`, `/casos`, `/precios`, `/contacto`, legales                                                      | ✅     |
+| 5 · SEO               | Metadata por página, OG image, `sitemap.ts`, `robots.ts`, JSON-LD                                           | ✅     |
 | 6 · Pulido            | Accesibilidad, Lighthouse, tests, responsive, SVG del logo                                                  | ⬜     |
 
 ---
@@ -155,6 +188,9 @@ Cada decisión técnica va aquí **con su porqué**, para no volver a discutirla
 | 24  | **`<details>` nativo en vez del acordeón de Radix**                      | Con la FAQ completa la home volvió a pasarse: **131 kB** contra un techo de ~120. Medido aislando la sección: Radix Accordion costaba **19 kB**, y sin él la home queda en **112 kB**. El navegador ya hace este trabajo, y lo hace mejor donde importa: abre sin JavaScript, el teclado y el anuncio de expandido vienen de fábrica, y la búsqueda del navegador encuentra texto dentro de un panel cerrado. `<details name="faq">` da apertura exclusiva de forma nativa; los navegadores sin soporte simplemente dejan abrir varios, que no rompe nada. Radix Accordion se desinstaló |
 | 25  | **`components/ui/Disclosure` compartido por la FAQ y la tabla de precios** | Las dos son lo mismo: un panel que se abre. Tenerlo en un primitivo evita que la tabla y la FAQ se separen visualmente, y deja un solo sitio donde está el reset del marcador de `<summary>` |
 | 26  | **Los precios y varias respuestas de la FAQ se publican con `TODO(guti)` visible** | Un precio inventado es una promesa que alguien tiene que sostener después, y "¿funciona sin internet?" o "¿emite factura DIAN?" son hechos del producto que no puedo verificar. Se renderizan tal cual en la página, a propósito: un hueco honesto se ve y se arregla; una respuesta inventada no |
+| 27  | **El honeypot no se valida en el schema de Zod**                         | Al probar la API salió que un bot recibía **422 con `{"website": ["Invalid input"]}`** — es decir, el endpoint le decía cuál era la trampa y cómo esquivarla. Ahora `website` es un campo libre en el schema y `looksLikeBot()` lo decide aparte; la ruta responde **200 en silencio** y nunca llama a `sendLead`. Sigue sin haber reCAPTCHA: un acertijo castiga al visitante por lo que hace el spammer |
+| 28  | **`Field` usa render prop en vez de clonar hijos**                       | El `id` tiene que llegar al control para que `htmlFor`, `aria-describedby` y `aria-invalid` queden atados. Clonar los hijos para inyectar props es magia que se rompe en silencio en cuanto alguien envuelve el input |
+| 29  | **JSON-LD sin `offers` ni `aggregateRating`**                            | Los precios siguen siendo `TODO(guti)` y no hay reseñas. Los datos estructurados son el último sitio donde poner una suposición favorecedora, porque el buscador los trata como una afirmación sobre el mundo y los repite |
 
 ---
 
@@ -286,7 +322,21 @@ sobre su fondo y audita también estas parejas. **Si usas un token con `/NN`, ag
 `{items.map(x => ( {/* nota */} <Comp/> ))}` es un error de sintaxis con un mensaje que no ayuda
 ("')' expected"). El comentario va antes del `map`, o dentro de un fragmento.
 
-**16. `IntersectionObserver` no existe en jsdom.**
+**16. Un honeypot dentro del schema delata la trampa.**
+Si el campo señuelo forma parte de la validación, el 422 nombra el campo y el bot aprende a
+dejarlo vacío. Se comprueba con `curl`, no de cabeza: manda el formulario con el honeypot lleno
+y confirma que responde **200** y que el cuerpo no menciona `website`.
+
+**17. `getByLabelText` no respeta `aria-hidden`.**
+Un test que afirmaba "el honeypot no se anuncia" pasaba por razones equivocadas. Las consultas
+por rol (`getByRole`) sí respetan `aria-hidden` y `display:none`; las de label, no.
+
+**18. satori pide `display: flex` explícito.**
+En `app/opengraph-image.tsx`, cualquier `<div>` con más de un hijo tiene que declararlo o el
+build falla con `Expected <div> to have explicit "display: flex"`. Rompe el build entero, no solo
+la imagen.
+
+**19. `IntersectionObserver` no existe en jsdom.**
 Framer lo pide en cuanto montas un `Reveal`, y el test revienta con `ReferenceError`. Está
 poblado en `tests/setup.ts`, junto a `ResizeObserver` y `matchMedia`.
 
@@ -302,3 +352,4 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | 2026-08-24 | Fase 2 (primitivos, `Reveal`, `/kitchen-sink`), push inicial al remoto | typecheck · lint · test (26/26) · build · contrast (17/17) en verde |
 | 2026-08-24 | Fase 3, secciones 1-6 (contenido, hero con mockup, barra de confianza, problema, pilares, módulos). `Reveal` reescrito sin Framer: home de 155 kB a **107 kB** | typecheck · lint · test (38/38) · build · contrast (17/17) en verde |
 | 2026-08-24 | Fase 3 completa: proceso, quiénes somos, casos, precios, FAQ y franja de cierre. Acordeón de Radix cambiado por `<details>` nativo: home de 131 kB a **112 kB** | typecheck · lint · test (47/47) · build · contrast (25/25) en verde |
+| 2026-08-24 | Fases 4 y 5: las seis páginas secundarias, formulario con API, y SEO completo (metadata, OG, sitemap, robots, JSON-LD) | typecheck · lint · test (69/69) · build (16 rutas) · contrast (25/25) en verde |

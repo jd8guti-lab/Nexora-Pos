@@ -30,8 +30,9 @@ npm run typecheck && npm run lint && npm run test && npm run contrast && npm run
 marca tiene bastante menos contraste del que aparenta, y varias combinaciones "obvias" fallan.
 Si lo rompes, te dice exactamente qué par y con qué ratio.
 
-> Estado actual: **Fases 1, 2 y 3 terminadas** — la home está completa. Los cinco en verde con
-> 47 tests; la home va en 112 kB de JS. Detalle en [docs/ESTADO.md](docs/ESTADO.md).
+> Estado actual: **Fases 1 a 5 terminadas** — el sitio está completo y navegable. Los cinco en
+> verde con 69 tests; la home va en 112 kB de JS. Queda la Fase 6 (pulido y Lighthouse) y
+> reemplazar los `TODO(guti)`. Detalle en [docs/ESTADO.md](docs/ESTADO.md).
 
 ## Por dónde empezar a leer
 
@@ -46,13 +47,13 @@ Si lo rompes, te dice exactamente qué par y con qué ratio.
 | Ruta                                    | Qué es                                                                                         | Estado |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------- | ------ |
 | `/`                                     | Home larga: hero, problema, pilares, módulos, proceso, quiénes somos, casos, precios, FAQ, CTA | ✅     |
-| `/modulos`                              | Detalle de los 7 módulos                                                                       | Fase 4 |
-| `/casos`                                | Casos de uso por tipo de negocio                                                               | Fase 4 |
-| `/precios`                              | Planes y alcance de la personalización                                                         | Fase 4 |
-| `/contacto`                             | Formulario, WhatsApp y correo                                                                  | Fase 4 |
+| `/modulos`                              | Detalle de los 7 módulos                                                                       | ✅     |
+| `/casos`                                | Casos de uso por tipo de negocio                                                               | ✅     |
+| `/precios`                              | Planes y alcance de la personalización                                                         | ✅     |
+| `/contacto`                             | Formulario, WhatsApp y correo                                                                  | ✅     |
 | `/portal`                               | Placeholder del portal de clientes                                                             | ✅     |
 | `/kitchen-sink`                         | Todos los primitivos, en todas sus variantes. Solo desarrollo: `noindex`, sin enlazar          | ✅     |
-| `/legal/privacidad` · `/legal/terminos` | Legales (Ley 1581 de 2012)                                                                     | Fase 4 |
+| `/legal/privacidad` · `/legal/terminos` | Legales (Ley 1581 de 2012)                                                                     | ✅     |
 
 ## Stack
 
@@ -72,15 +73,17 @@ en [CLAUDE.md](CLAUDE.md) — respétalo.
 
 Ver [docs/ESTADO.md](docs/ESTADO.md). En grande:
 
-1. Fases 4 a 6: páginas secundarias → SEO → pulido.
+1. Fase 6: accesibilidad, Lighthouse ≥95 y pulido responsive.
 2. Reemplazar los `TODO(guti):` de `content/` por datos reales. **Hoy hay 25 visibles en la
    home**: precios, métricas, contacto y cuatro respuestas de la FAQ que son hechos del producto
    (sin internet, factura DIAN, equipos, soporte).
-3. Conectar el envío del formulario a un servicio de correo.
-4. **Assets pendientes:** el logo sobre fondo oscuro y los SVG vectoriales. Mientras no
+3. Conectar el envío del formulario a un servicio de correo — solo hay que reemplazar el
+   cuerpo de `sendLead()` en [lib/lead.ts](lib/lead.ts).
+4. **Que un abogado revise [content/legal.ts](content/legal.ts)** antes de publicar.
+5. **Assets pendientes:** el logo sobre fondo oscuro y los SVG vectoriales. Mientras no
    existan, sobre `ink-900` y sobre la franja naranja el nombre se compone en Poppins con
    los tokens de marca — nunca se recolorea el PNG.
-5. El portal de clientes — proyecto aparte.
+6. El portal de clientes — proyecto aparte.
 
 > **Ojo:** ningún componente lleva copy hardcodeado. Si quieres cambiar un texto, se cambia en
 > `content/`, no en el JSX.
