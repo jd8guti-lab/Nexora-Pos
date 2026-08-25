@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-08-24 (Fase 3, primera mitad)
+Última actualización: 2026-08-24 (Fase 3 completa)
 
 ---
 
@@ -71,7 +71,7 @@ arrastra la nav ni el footer de marketing.
 
 ---
 
-### Fase 3 · Home — secciones 1 a 6
+### Fase 3 · Home — completa
 
 - **Contenido**: `content/pillars.ts` (los 5 pilares), `content/modules.ts` (los 7 módulos con
   copy largo para `/modulos`), `content/home.ts` (hero, comparación, intros de sección).
@@ -82,16 +82,31 @@ arrastra la nav ni el footer de marketing.
 - **`Grid` acepta `asChild`**, para que una grilla pueda ser un `<ul>` de verdad.
 - 38 tests en verde.
 
-**Verificado en el navegador**: un solo `h1`, cero saltos de jerarquía en 22 encabezados, todos
-los `<ul>` con solo `<li>` dentro, los 7 enlaces de módulo apuntando a su ancla, el área de clic
-de cada tarjeta cubriendo sus 282×226 px, y cero scroll horizontal a 320px y a 1280px.
+**Secciones 7 a 13**: `Process` (línea de tiempo, horizontal en escritorio y vertical en móvil),
+`About` (la "N" contada como conexión, flujo y crecimiento, con el isotipo grande), `UseCases`
+(6 tipos de negocio), `Pricing` (3 planes más tabla comparativa plegable), `Faq` (10 preguntas)
+y `CtaBand` (la única franja naranja de la página). Contenido nuevo en `content/process.ts`,
+`use-cases.ts`, `pricing.ts` y `faq.ts`.
+
+**El acordeón de Radix se cambió por `<details>` nativo** — ver la decisión 24.
+
+**Verificado en el navegador**: un solo `h1` y **cero saltos de jerarquía en 44 encabezados**;
+ningún `<ul>`/`<ol>` con hijos que no sean `<li>`; el `<dl>` de "Quiénes somos" con solo
+`dt`/`dd`/`div`; **una sola franja naranja** (el tope son dos); los 7 enlaces de módulo a su
+ancla; el área de clic de cada tarjeta cubriendo sus 282×226 px; apertura exclusiva de la FAQ
+sin una línea de JavaScript; y cero scroll horizontal a 320px y a 1280px.
+
+**Sobre el desbordamiento de la tabla de precios a 320px:** `html.scrollWidth` reporta 493 con la
+tabla abierta, pero **la página no se desplaza en horizontal** — `scrollLeft` se queda en 0 y
+`body.scrollWidth` es exactamente 320. La tabla vive en su propia caja con `overflow-x: auto`.
+Es un artefacto de medición, no un fallo: comprueba `scrollLeft`, no solo `scrollWidth`.
 
 ---
 
 ## En curso
 
-**Fase 3, segunda mitad**: secciones 7 a 13 — cómo trabajamos, quiénes somos, casos de uso,
-precios, FAQ, CTA final.
+Nada. Siguiente paso: **Fase 4 — páginas secundarias** (`/modulos`, `/casos`, `/precios`,
+`/contacto`, legales).
 
 ---
 
@@ -101,7 +116,7 @@ precios, FAQ, CTA final.
 | --------------------- | ----------------------------------------------------------------------------------------------------------- | ------ |
 | 1 · Andamiaje         | Next.js 15 + TS strict, Tailwind con tokens de marca, Poppins, assets, `content/`, layout base, Nav, Footer | ✅     |
 | 2 · Sistema de diseño | `Card`, `Badge`, `Accordion`, `Heading`, `Eyebrow`, `IconTile`, `Reveal`, página `/kitchen-sink`            | ✅     |
-| 3 · Home              | Las 13 secciones, una por una, con los mockups React/SVG                                                    | 🔶 1-6 |
+| 3 · Home              | Las 13 secciones, una por una, con los mockups React/SVG                                                    | ✅     |
 | 4 · Páginas           | `/modulos`, `/casos`, `/precios`, `/contacto`, legales                                                      | ⬜     |
 | 5 · SEO               | Metadata por página, OG image, `sitemap.ts`, `robots.ts`, JSON-LD                                           | ⬜     |
 | 6 · Pulido            | Accesibilidad, Lighthouse, tests, responsive, SVG del logo                                                  | ⬜     |
@@ -137,6 +152,9 @@ Cada decisión técnica va aquí **con su porqué**, para no volver a discutirla
 | 21  | **`Reveal` sin Framer Motion: CSS más un `IntersectionObserver` propio** | En cuanto la home usó `Reveal`, Framer metió 52 kB y la dejó en **155 kB**, por encima del techo de ~120 kB de `CLAUDE.md §6`. La animación permitida es una sola —fundido y 12px de subida, una vez— y eso son unas líneas de CSS. Al quitarlo la home bajó a **107 kB**. Framer se desinstaló: no se deja una dependencia que no se usa |
 | 22  | **`Reveal` se arma dentro del efecto, no desde el CSS ni desde el HTML** | Es la tercera versión, y las dos anteriores fallaban la regla de "el contenido no depende de JavaScript". Framer horneaba `opacity:0` en el HTML del servidor. Gatearlo tras una clase `.js` puesta por un script en línea tampoco bastaba: el script ocultaba y **otro** código tenía que revelar, así que un observer muerto dejaba la página en blanco. Ahora ocultar y observar ocurren en la misma operación, una línea seguida de la otra |
 | 23  | **Comprobación geométrica inmediata más respaldo en `scroll`**           | Un `IntersectionObserver` en una página que no compone nunca dispara. Medido: tras `scrollIntoView` el elemento estaba a 286px del borde superior, plenamente visible, y el observer no se activó. Sin estos dos respaldos la página se queda invisible |
+| 24  | **`<details>` nativo en vez del acordeón de Radix**                      | Con la FAQ completa la home volvió a pasarse: **131 kB** contra un techo de ~120. Medido aislando la sección: Radix Accordion costaba **19 kB**, y sin él la home queda en **112 kB**. El navegador ya hace este trabajo, y lo hace mejor donde importa: abre sin JavaScript, el teclado y el anuncio de expandido vienen de fábrica, y la búsqueda del navegador encuentra texto dentro de un panel cerrado. `<details name="faq">` da apertura exclusiva de forma nativa; los navegadores sin soporte simplemente dejan abrir varios, que no rompe nada. Radix Accordion se desinstaló |
+| 25  | **`components/ui/Disclosure` compartido por la FAQ y la tabla de precios** | Las dos son lo mismo: un panel que se abre. Tenerlo en un primitivo evita que la tabla y la FAQ se separen visualmente, y deja un solo sitio donde está el reset del marcador de `<summary>` |
+| 26  | **Los precios y varias respuestas de la FAQ se publican con `TODO(guti)` visible** | Un precio inventado es una promesa que alguien tiene que sostener después, y "¿funciona sin internet?" o "¿emite factura DIAN?" son hechos del producto que no puedo verificar. Se renderizan tal cual en la página, a propósito: un hueco honesto se ve y se arregla; una respuesta inventada no |
 
 ---
 
@@ -253,7 +271,22 @@ cargado, mira si los `[data-reveal]` tienen `data-revealed`.
 `scrollIntoView` sí. Si estás verificando algo que dependa del scroll, usa ese, y comprueba
 `window.scrollY` después en vez de asumir que se movió.
 
-**13. `IntersectionObserver` no existe en jsdom.**
+**13. Vigila el presupuesto de JS al cerrar cada fase, no al final.**
+Se pasó dos veces y las dos por la misma razón: una librería que entra al bundle en cuanto la
+home usa un componente. Framer Motion (52 kB) y Radix Accordion (19 kB). Para aislar el culpable,
+quita la sección del `page.tsx` —**y también su `import`**, o el lint tumba el build— compila y
+compara. En los dos casos el reemplazo nativo salió mejor, no solo más liviano.
+
+**14. Las opacidades de Tailwind hay que medirlas.**
+`text-ink-900/75` sobre el naranja da **4.29:1** y falla; `/85` da 5.16 y pasa. La opacidad es
+cómoda de escribir e imposible de estimar a ojo. `scripts/contrast.mjs` ahora aplana el color
+sobre su fondo y audita también estas parejas. **Si usas un token con `/NN`, agrégalo ahí.**
+
+**15. Un comentario JSX no cabe en el `return` de una arrow function.**
+`{items.map(x => ( {/* nota */} <Comp/> ))}` es un error de sintaxis con un mensaje que no ayuda
+("')' expected"). El comentario va antes del `map`, o dentro de un fragmento.
+
+**16. `IntersectionObserver` no existe en jsdom.**
 Framer lo pide en cuanto montas un `Reveal`, y el test revienta con `ReferenceError`. Está
 poblado en `tests/setup.ts`, junto a `ResizeObserver` y `matchMedia`.
 
@@ -268,3 +301,4 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | 2026-08-24 | Plan del sitio + Fase 1 (andamiaje completo, tokens, assets, layout, Nav/Footer, tests) | typecheck · lint · test (11/11) · build · contrast (17/17) en verde |
 | 2026-08-24 | Fase 2 (primitivos, `Reveal`, `/kitchen-sink`), push inicial al remoto | typecheck · lint · test (26/26) · build · contrast (17/17) en verde |
 | 2026-08-24 | Fase 3, secciones 1-6 (contenido, hero con mockup, barra de confianza, problema, pilares, módulos). `Reveal` reescrito sin Framer: home de 155 kB a **107 kB** | typecheck · lint · test (38/38) · build · contrast (17/17) en verde |
+| 2026-08-24 | Fase 3 completa: proceso, quiénes somos, casos, precios, FAQ y franja de cierre. Acordeón de Radix cambiado por `<details>` nativo: home de 131 kB a **112 kB** | typecheck · lint · test (47/47) · build · contrast (25/25) en verde |

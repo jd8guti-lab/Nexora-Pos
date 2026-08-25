@@ -40,6 +40,30 @@ const ratio = (a, b) => {
 /** kind: normal text (4.5), large text >=24px or >=18.66px bold (3), ui (3). */
 const THRESHOLD = { normal: 4.5, large: 3, ui: 3 };
 
+const rgb = (hex) => {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+};
+
+const hex = (c) =>
+  "#" +
+  c
+    .map((v) => Math.round(v).toString(16).padStart(2, "0"))
+    .join("")
+    .toUpperCase();
+
+/**
+ * Flatten a translucent colour onto its background.
+ *
+ * Tailwind's `/NN` opacity suffix is easy to reach for and impossible to
+ * eyeball: `text-ink-900/75` on the orange band measures 4.29:1 and fails,
+ * while `/85` clears it. Any token used with an opacity belongs below.
+ */
+const composite = (fg, bg, alpha) => {
+  const [f, b] = [rgb(fg), rgb(bg)];
+  return hex(f.map((v, i) => alpha * v + (1 - alpha) * b[i]));
+};
+
 /**
  * Only pairings the site actually uses. Combinations that were measured and
  * then banned from the design system are listed at the bottom as `banned`,
@@ -65,11 +89,39 @@ const checks = [
   ["Borde ink-500 sobre blanco", "ink-500", "white", "ui"],
 ];
 
+/**
+ * Translucent text, flattened onto the surface it sits on.
+ * [nombre, token, alfa, fondo, tipo]
+ */
+const translucent = [
+  ["Cierre: lead ink-900/85 sobre naranja", "ink-900", 0.85, "brand-500", "normal"],
+  [
+    "Cierre: lead ink-900/85 al final del degradado",
+    "ink-900",
+    0.85,
+    "brand-300",
+    "normal",
+  ],
+  ["Eyebrow onBrand ink-900/85 sobre naranja", "ink-900", 0.85, "brand-500", "normal"],
+  ["Footer: enlaces paper-50/85 sobre ink-900", "paper-50", 0.85, "ink-900", "normal"],
+  ["Footer: cuerpo paper-50/75 sobre ink-900", "paper-50", 0.75, "ink-900", "normal"],
+  [
+    "Footer: © y etiquetas paper-50/60 sobre ink-900",
+    "paper-50",
+    0.6,
+    "ink-900",
+    "normal",
+  ],
+  ["Eyebrow inverse paper-50/70 sobre ink-900", "paper-50", 0.7, "ink-900", "normal"],
+  ["Portal: cuerpo paper-50/65 sobre ink-900", "paper-50", 0.65, "ink-900", "normal"],
+];
+
 /** Measured, failed, and therefore forbidden. Documented, not used. */
 const banned = [
   ["Blanco sobre brand-500", "white", "brand-500", "Boton y franja usan ink-900"],
   ["Blanco sobre brand-300", "white", "brand-300", "Extremo claro del degradado"],
   ["brand-500 como color de texto sobre blanco", "brand-500", "white", "Usa brand-700"],
+  ["ink-900 al 75% sobre brand-500", "ink-900", "brand-500", "Usa /85", 0.75],
   [
     "brand-500 como color de texto sobre paper-50",
     "brand-500",
@@ -87,6 +139,15 @@ const rows = checks.map(([name, fg, bg, kind]) => {
   return { name, fg, bg, kind, r, need, ok };
 });
 
+/** Same treatment for the translucent pairs, flattened first. */
+const translucentRows = translucent.map(([name, fg, alpha, bg, kind]) => {
+  const r = ratio(composite(palette[fg], palette[bg], alpha), palette[bg]);
+  const need = THRESHOLD[kind];
+  const ok = r >= need;
+  if (!ok) failed += 1;
+  return { name, r, need, ok };
+});
+
 const pad = (s, n) => String(s).padEnd(n);
 console.log(`\n  ${pad("PAR", 46)} ${pad("RATIO", 9)} ${pad("MINIMO", 8)} ESTADO`);
 console.log("  " + "-".repeat(78));
@@ -99,12 +160,26 @@ for (const row of rows) {
   );
 }
 console.log("  " + "-".repeat(78));
-console.log(`  ${rows.length - failed}/${rows.length} pasan`);
+console.log(`\n  TRANSLUCIDOS — el color aplanado sobre su fondo:`);
+for (const row of translucentRows) {
+  console.log(
+    `  ${pad(row.name, 46)} ${pad(row.r.toFixed(2) + ":1", 9)} ${pad(
+      row.need.toFixed(1) + ":1",
+      8,
+    )} ${row.ok ? "OK" : "FALLA"}`,
+  );
+}
+
+const total = rows.length + translucentRows.length;
+console.log("  " + "-".repeat(78));
+console.log(`  ${total - failed}/${total} pasan`);
 
 console.log(`\n  PROHIBIDOS — medidos, fallan, no se usan en ninguna parte:`);
-for (const [name, fg, bg, why] of banned) {
+for (const [name, fg, bg, why, alpha] of banned) {
+  const front =
+    alpha === undefined ? palette[fg] : composite(palette[fg], palette[bg], alpha);
   console.log(
-    `  ${pad(name, 46)} ${pad(ratio(palette[fg], palette[bg]).toFixed(2) + ":1", 9)} ${why}`,
+    `  ${pad(name, 46)} ${pad(ratio(front, palette[bg]).toFixed(2) + ":1", 9)} ${why}`,
   );
 }
 console.log();

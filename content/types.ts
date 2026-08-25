@@ -82,6 +82,13 @@ export type PricingPlan = {
   readonly featured: boolean;
 };
 
+/** One row of the plan comparison table. */
+export type PricingFeatureRow = {
+  readonly feature: string;
+  /** Keyed by plan id. `true`/`false`, or a short string like "Hasta 2". */
+  readonly values: Readonly<Record<string, boolean | string>>;
+};
+
 export type FaqItem = {
   readonly id: string;
   readonly question: string;

@@ -17,7 +17,7 @@ const eyebrow = cva("text-eyebrow tracking-eyebrow uppercase", {
       accent: "text-brand-700",
       muted: "text-ink-500",
       inverse: "text-paper-50/70",
-      onBrand: "text-ink-900/75",
+      onBrand: "text-ink-900/85",
     },
   },
   defaultVariants: { tone: "muted" },

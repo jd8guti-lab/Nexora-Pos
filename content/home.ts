@@ -50,6 +50,55 @@ export const pillarsIntro: SectionIntro = {
   title: "Cinco cosas que no negociamos",
 } as const;
 
+/**
+ * "Quiénes somos", built on the meaning of the isotype: the "N" stands for
+ * connection, flow and growth (CLAUDE.md §3). That trio is the narrative
+ * thread, so it is the structure of the section rather than a decoration.
+ *
+ * The closing paragraph is honest about the size of the team. TODO(guti):
+ * ajústalo cuando quieras — es lo único aquí que habla de ti.
+ */
+export const about = {
+  intro: {
+    eyebrow: "Quiénes somos",
+    title: "Por qué la N",
+    lead: "El isotipo no es un adorno. Las tres ideas que lo forman son las mismas con las que construimos el software.",
+  } satisfies SectionIntro,
+
+  meanings: [
+    {
+      id: "conexion",
+      title: "Conexión",
+      description:
+        "Caja, inventario, proveedores y cuentas dejan de ser islas. Lo que pasa en una se ve en las otras.",
+    },
+    {
+      id: "flujo",
+      title: "Flujo",
+      description:
+        "El sistema sigue el orden en que tú ya trabajas. No te obliga a dar vueltas para hacer lo de siempre.",
+    },
+    {
+      id: "crecimiento",
+      title: "Crecimiento",
+      description:
+        "Empiezas con lo que necesitas hoy y activas lo demás cuando el negocio lo pida, sin cambiar de sistema.",
+    },
+  ],
+
+  body: [
+    "Somos un equipo pequeño. Construimos este POS para un negocio real, resolviendo problemas reales, y funcionó lo suficientemente bien como para querer llevarlo a más gente.",
+    "No tenemos un call center ni un departamento de ventas. Cuando escribes, te contesta alguien que conoce el código por dentro. Es más lento de escalar y mucho mejor para ti.",
+  ],
+} as const;
+
+export const cta = {
+  title: "Hecho para ti. Pensado para crecer contigo.",
+  body: "Cuéntanos cómo trabajas y te mostramos cómo quedaría tu sistema. Sin compromiso y sin presentación de ventas.",
+  primary: { label: "Agendar demo", href: "/contacto" },
+  secondary: { label: "Ver precios", href: "/precios" },
+} as const;
+
 export const modulesIntro: SectionIntro = {
   eyebrow: "Módulos",
   title: "Siete módulos. Activas los que necesitas.",

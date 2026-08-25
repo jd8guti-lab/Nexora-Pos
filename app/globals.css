@@ -170,15 +170,21 @@
     animation: reveal 500ms var(--ease-brand) backwards;
   }
 
-  /* Radix measures the panel and exposes its height as a CSS variable, which
-     is what makes a real height transition possible. Declared here rather
-     than inline so the reduced-motion block below can flatten it. */
-  .accordion-content[data-state="open"] {
-    animation: accordion-down 220ms var(--ease-brand);
+  /* Native <details>. Removing the default marker takes both of these:
+     Safari and older Chrome use the pseudo-element, everything else honours
+     list-style on the summary itself. */
+  summary::-webkit-details-marker {
+    display: none;
   }
 
-  .accordion-content[data-state="closed"] {
-    animation: accordion-up 180ms var(--ease-brand);
+  summary::marker {
+    content: "";
+  }
+
+  /* The panel fades in. Height cannot be transitioned on <details> without
+     scripting, and a fade reads better than a jump. */
+  details[open] > .disclosure-panel {
+    animation: disclosure 200ms var(--ease-brand);
   }
 }
 
@@ -189,25 +195,14 @@
   }
 }
 
-@keyframes accordion-down {
+@keyframes disclosure {
   from {
-    height: 0;
     opacity: 0;
+    transform: translateY(-4px);
   }
   to {
-    height: var(--radix-accordion-content-height);
     opacity: 1;
-  }
-}
-
-@keyframes accordion-up {
-  from {
-    height: var(--radix-accordion-content-height);
-    opacity: 1;
-  }
-  to {
-    height: 0;
-    opacity: 0;
+    transform: none;
   }
 }
 

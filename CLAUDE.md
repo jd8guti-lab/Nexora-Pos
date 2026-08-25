@@ -197,14 +197,24 @@ diseño la quiere pequeña. `Eyebrow` es una etiqueta, **nunca** un encabezado.
 ## 6. Calidad — no negociable
 
 **Accesibilidad.** HTML semántico. Un solo `h1` por página. Jerarquía de headings sin saltos.
-`alt` descriptivo. Foco visible. Navegación completa con teclado. ARIA correcto en acordeón y
-menú móvil. `prefers-reduced-motion` respetado.
+`alt` descriptivo. Foco visible. Navegación completa con teclado. `prefers-reduced-motion`
+respetado.
+
+**Prefiere el elemento nativo antes que el componente.** La FAQ y la tabla de precios usan
+`components/ui/Disclosure`, que es `<details>`/`<summary>`: abre sin JavaScript, el teclado y el
+anuncio de expandido vienen de fábrica, y no hay ARIA que equivocar. Un `name` compartido da
+apertura exclusiva. Sustituyó a un acordeón de Radix que costaba 19 KB. El único sitio donde sí
+hace falta Radix es el menú móvil, por el atrapado de foco.
 
 **Responsive.** Móvil primero. Breakpoints 640/768/1024/1280. Área táctil ≥44px. Cero scroll
 horizontal a 320px.
 
 **Rendimiento.** Lighthouse ≥95 en las cuatro categorías. `next/image` siempre. `next/font` sin
-FOUT. JS de la home por debajo de ~120KB gzip.
+FOUT. **JS de la home por debajo de ~120KB gzip.**
+
+Ese número no es decorativo: se ha roto dos veces, y las dos por una librería que entró al bundle
+en cuanto la home usó un componente. Mira la salida de `next build` al cerrar cada fase, no al
+final. Hoy la home va en 112 KB.
 
 **SEO.** Metadata API por página, Open Graph + Twitter card, `sitemap.ts`, `robots.ts`, JSON-LD
 (`Organization` + `SoftwareApplication`), canónicas.

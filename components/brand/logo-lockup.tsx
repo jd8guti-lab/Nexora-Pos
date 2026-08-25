@@ -52,7 +52,7 @@ export function LogoLockup({
         "tracking-eyebrow block",
         variant === "dark" ? "text-paper-50/80" : "",
         variant === "light" ? "text-ink-500" : "",
-        variant === "onBrand" ? "text-ink-900/75" : "",
+        variant === "onBrand" ? "text-ink-900/85" : "",
       )}
       style={{ fontSize: descriptorSize, fontWeight: 600 }}
     >

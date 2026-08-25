@@ -12,15 +12,10 @@ import { LogoLockup } from "@/components/brand/logo-lockup";
 import { Grid } from "@/components/layout/grid";
 import { Section } from "@/components/layout/section";
 import { Reveal } from "@/components/motion/reveal";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { Disclosure } from "@/components/ui/disclosure";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Heading } from "@/components/ui/heading";
 import { IconTile } from "@/components/ui/icon-tile";
@@ -250,15 +245,16 @@ export default function KitchenSinkPage() {
         </div>
       </Section>
 
-      {/* -------------------------------------------------------- accordion */}
+      {/* ------------------------------------------------------- disclosure */}
       <Section size="sm">
         <Heading as="h2">Acordeón</Heading>
         <p className="text-body text-ink-500 mt-3 max-w-2xl">
-          Navegable con teclado: <kbd>Tab</kbd> para llegar, <kbd>Enter</kbd> o{" "}
-          <kbd>Espacio</kbd> para abrir, flechas para moverse entre preguntas,{" "}
-          <kbd>Inicio</kbd> y <kbd>Fin</kbd> para saltar a los extremos.
+          <code>&lt;details&gt;</code> nativo: <kbd>Tab</kbd> para llegar,{" "}
+          <kbd>Enter</kbd> o <kbd>Espacio</kbd> para abrir. Comparten el mismo{" "}
+          <code>name</code>, así que abrir uno cierra los otros — sin una línea de
+          JavaScript. Funciona igual con el JS desactivado.
         </p>
-        <Accordion type="single" collapsible className="mt-8 max-w-3xl">
+        <div className="border-ink-500/20 mt-8 max-w-3xl border-t">
           {[
             {
               q: "¿Mis datos son míos?",
@@ -270,15 +266,14 @@ export default function KitchenSinkPage() {
             },
             {
               q: "¿Cuánto tarda la implementación?",
-              a: "Ejemplo de respuesta con dos líneas de texto para comprobar la animación de altura del panel cuando el contenido es más largo de lo habitual.",
+              a: "Ejemplo de respuesta con dos líneas de texto para comprobar cómo se ve el panel cuando el contenido es más largo de lo habitual.",
             },
-          ].map((item, i) => (
-            <AccordionItem key={item.q} value={`item-${i}`}>
-              <AccordionTrigger>{item.q}</AccordionTrigger>
-              <AccordionContent>{item.a}</AccordionContent>
-            </AccordionItem>
+          ].map((item) => (
+            <Disclosure key={item.q} name="ks" summary={item.q}>
+              {item.a}
+            </Disclosure>
           ))}
-        </Accordion>
+        </div>
       </Section>
 
       {/* ----------------------------------------------------------- motion */}
