@@ -13,10 +13,37 @@ const palette = {
   "brand-500": "#FF7A00",
   "brand-300": "#FFB347",
   "brand-700": "#BD5A00",
+  "brand-600": "#E86F00",
   "ink-900": "#1A1D23",
-  "ink-500": "#69707E",
-  "paper-50": "#F2F4F7",
+  "ink-500": "#626976",
+  "paper-50": "#EDEDED",
   white: "#FFFFFF",
+
+  /* Not brand tokens: the two worst-case backdrops the hero copy can land on.
+     The hero image is full-bleed and the copy sits over it, so the backdrop is
+     pixels — and since 2026-08-27 there is no scrim veiling them, so these are
+     the raw darkest pixels of the plate itself, not a veiled floor:
+
+       hero-bg-min  darkest pixel in the copy column (4%-32% wide, 8%-92%
+                    tall) of public/brand/hero-mockup.png. 0.672 luminance.
+       hero-bg-h1   darkest pixel in the band the claim actually occupies
+                    (4%-40% wide, 18%-62% tall). 0.752 luminance.
+
+     The 8%-92% bound excludes the plate's outermost edges, where the orange
+     band runs: the copy is centred in the section and never reaches them.
+     That is an assumption about layout, not a fact about the image, which is
+     why step 4 of the rule in CLAUDE.md §3 is not optional — the browser
+     measurement over the composited pixels is what confirms it.
+
+     Both were read off the image pixel by pixel, not sampled on a grid.
+     Recompute them if the plate, the column width or the copy order change. */
+  /* The "Cómo trabajamos" background art, veiled: white at 65% over its
+     darkest pixel (#BAA3A0, 0.392 luminance). Recompute if the art or the
+     veil changes — the veil is what decides whether body copy can sit here. */
+  "process-bg": "#E7DFDE",
+
+  "hero-bg-min": "#FDCDA4",
+  "hero-bg-h1": "#FEDBB7",
 };
 
 const channel = (v) => {
@@ -78,6 +105,17 @@ const checks = [
   ["Texto secundario sobre ink-900", "paper-50", "ink-900", "normal"],
   ["Acento de texto naranja sobre blanco", "brand-700", "white", "normal"],
   ["Acento de texto naranja sobre paper-50", "brand-700", "paper-50", "large"],
+  [
+    "Barra de confianza: valores brand-700 sobre paper-50",
+    "brand-700",
+    "paper-50",
+    "large",
+  ],
+  ["Acento del h1 (brand-600, texto grande) sobre blanco", "brand-600", "white", "large"],
+  ["Hero: lead ink-900 sobre el plate", "ink-900", "hero-bg-min", "normal"],
+  ["Proceso: titulares ink-900 sobre el fondo velado", "ink-900", "process-bg", "normal"],
+  ["Hero: eyebrow ink-900 sobre el plate", "ink-900", "hero-bg-min", "normal"],
+
   ["Boton primario: ink-900 sobre brand-500", "ink-900", "brand-500", "normal"],
   ["Boton primario hover: ink-900 sobre brand-300", "ink-900", "brand-300", "normal"],
   ["Franja naranja: ink-900 sobre brand-500", "ink-900", "brand-500", "normal"],
@@ -114,6 +152,14 @@ const translucent = [
   ],
   ["Eyebrow inverse paper-50/70 sobre ink-900", "paper-50", 0.7, "ink-900", "normal"],
   ["Portal: cuerpo paper-50/65 sobre ink-900", "paper-50", 0.65, "ink-900", "normal"],
+  ["Hero: cuerpo ink-900/80 sobre el plate", "ink-900", 0.8, "hero-bg-min", "normal"],
+  [
+    "Proceso: cuerpo ink-900/80 sobre el fondo velado",
+    "ink-900",
+    0.8,
+    "process-bg",
+    "normal",
+  ],
 ];
 
 /** Measured, failed, and therefore forbidden. Documented, not used. */
@@ -127,6 +173,30 @@ const banned = [
     "brand-500",
     "paper-50",
     "Usa brand-700",
+  ],
+  [
+    "brand-600 como texto normal (no grande) sobre blanco",
+    "brand-600",
+    "white",
+    "Solo texto grande (>=24px o >=18.66px bold); usa brand-700 en cuerpo",
+  ],
+  [
+    "Eyebrow brand-700 sobre paper-50 (13px cuenta como texto normal)",
+    "brand-700",
+    "paper-50",
+    "Por eso las secciones con eyebrow naranja van en blanco",
+  ],
+  [
+    "ink-500 sobre el fondo velado de Proceso",
+    "ink-500",
+    "process-bg",
+    "Por eso el cuerpo de esa seccion va en ink-900/80",
+  ],
+  [
+    "ink-500 sobre el plate del hero",
+    "ink-500",
+    "hero-bg-min",
+    "El eyebrow va en ink-900",
   ],
 ];
 
@@ -173,6 +243,46 @@ for (const row of translucentRows) {
 const total = rows.length + translucentRows.length;
 console.log("  " + "-".repeat(78));
 console.log(`  ${total - failed}/${total} pasan`);
+
+/**
+ * Pairs that FAIL AA and are used anyway, because the owner of the brand chose
+ * them with the measured number in front of him. They are listed and printed on
+ * every run — never silently passed — but they do not fail the audit.
+ *
+ * Adding one is not a developer's call: ask, show the ratio, and only then.
+ */
+const authorisedExceptions = [
+  [
+    "Acento del h1 del hero en brand-500",
+    "brand-500",
+    "hero-bg-h1",
+    3,
+    "Decision del usuario 2026-08-27: quiere el mismo naranja del boton",
+  ],
+  [
+    "Eyebrow de seccion en brand-500 sobre blanco",
+    "brand-500",
+    "white",
+    4.5,
+    "Decision del usuario: quiere el naranja brillante. La opcion que cumple es brand-700 (4.54:1)",
+  ],
+  [
+    "Acento del h2 de El problema en brand-500",
+    "brand-500",
+    "white",
+    3,
+    "Decision del usuario. Texto grande, pide 3:1. brand-600 cumpliria con 3.13:1",
+  ],
+];
+
+console.log(
+  `\n  EXCEPCIONES AUTORIZADAS — fallan AA y se usan igual, por decision expresa:`,
+);
+for (const [name, fg, bg, min, why] of authorisedExceptions) {
+  console.log(
+    `  ${pad(name, 46)} ${pad(ratio(palette[fg], palette[bg]).toFixed(2) + ":1", 9)} ${pad("min " + min + ":1", 9)} ${why}`,
+  );
+}
 
 console.log(`\n  PROHIBIDOS — medidos, fallan, no se usan en ninguna parte:`);
 for (const [name, fg, bg, why, alpha] of banned) {

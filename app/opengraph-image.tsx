@@ -81,7 +81,7 @@ export default async function OpenGraphImage() {
             color: INK,
           }}
         >
-          {site.claim.lead}&nbsp;
+          {site.claim.underlined} {site.claim.middle}&nbsp;
           <span style={{ color: "#BD5A00" }}>{site.claim.accent}</span>
         </div>
 

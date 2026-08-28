@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { faq } from "@/content/faq";
 import { pricingComparison, pricingPlans } from "@/content/pricing";
 import { processSteps } from "@/content/process";
-import { useCases } from "@/content/use-cases";
+import { useCasesEmpty, useCasesIntro } from "@/content/use-cases";
 import { About } from "./about";
 import { CtaBand } from "./cta";
 import { Faq } from "./faq";
@@ -47,20 +47,37 @@ describe("About", () => {
 });
 
 describe("UseCases", () => {
-  it("renders every business type with its modules", () => {
-    render(<UseCases />);
-    const items = within(screen.getByRole("list")).getAllByRole("listitem");
-    expect(items).toHaveLength(useCases.length);
-    for (const useCase of useCases) {
-      expect(screen.getByRole("heading", { name: useCase.business })).toBeInTheDocument();
-    }
+  // The grid is empty on purpose while the content is decided, so what is
+  // fixed here is the section's contract with the nav: it renders, it keeps
+  // its id, and it still offers the appointment. The six cases stay written in
+  // content/use-cases.ts and are not asserted while nothing renders them.
+  it("keeps its heading and its #casos anchor, which the nav links to", () => {
+    const { container } = render(<UseCases />);
+    // The accessible name is title + accent: the heading is split in two
+    // spans so the tail can be underlined in brand orange.
+    expect(
+      screen.getByRole("heading", {
+        name: `${useCasesIntro.title} ${useCasesIntro.titleAccent}`,
+        level: 2,
+      }),
+    ).toBeInTheDocument();
+    expect(container.querySelector("#casos")).not.toBeNull();
   });
 
-  it("says out loud that these are business types, not clients", () => {
-    // CLAUDE.md §7: a grid of categories reads as a customer list unless the
-    // page states otherwise, and we have no customers to name.
+  it("still offers the appointment", () => {
     render(<UseCases />);
-    expect(screen.getByText(/no clientes nuestros/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /agendar una cita/i })).toBeInTheDocument();
+  });
+
+  it("says why it is empty instead of inventing a case", () => {
+    // The section now promises real implementations, and there are none. §7
+    // forbids implying customers we do not have, so the empty state has to
+    // stay on the page until a real one replaces it.
+    render(<UseCases />);
+    expect(
+      screen.getByRole("heading", { name: useCasesEmpty.title }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(useCasesEmpty.body)).toBeInTheDocument();
   });
 });
 

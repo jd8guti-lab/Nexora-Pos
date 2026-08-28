@@ -1,5 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { problem } from "@/content/home";
 import { modules } from "@/content/modules";
 import { pillars } from "@/content/pillars";
 import { trustMetrics } from "@/content/site";
@@ -9,10 +10,11 @@ import { Problem } from "./problem";
 import { TrustBar } from "./trust-bar";
 
 describe("Pillars", () => {
-  it("renders the five pillars from the manual, and only those", () => {
+  it("renders the six pillars from the manual, and only those", () => {
     render(<Pillars />);
     const items = within(screen.getByRole("list")).getAllByRole("listitem");
-    expect(items).toHaveLength(5);
+    expect(items).toHaveLength(6);
+    expect(pillars).toHaveLength(6);
     for (const pillar of pillars) {
       expect(
         screen.getByRole("heading", { name: pillar.title, level: 3 }),
@@ -77,13 +79,34 @@ describe("Problem", () => {
     expect(within(tailored!).getAllByRole("listitem")).toHaveLength(5);
   });
 
+  it("keeps the VS badge out of the accessibility tree", () => {
+    const { container } = render(<Problem />);
+    // "versus" is what two columns titled this way already mean; announcing
+    // "VS" between them adds nothing. The lists carry the comparison.
+    const badge = [...container.querySelectorAll("span")].find(
+      (el) => el.textContent === "VS",
+    );
+    expect(badge).toBeDefined();
+    expect(badge).toHaveAttribute("aria-hidden");
+  });
+
+  it("shows each column's subtitle and the emphasis of every point", () => {
+    render(<Problem />);
+    for (const column of [problem.canned, problem.tailored]) {
+      expect(screen.getByText(column.subtitle)).toBeInTheDocument();
+      for (const point of column.points) {
+        expect(screen.getByText(point.emphasis)).toBeInTheDocument();
+      }
+    }
+  });
+
   it("uses h3 for the column titles, under the section's h2", () => {
     render(<Problem />);
     expect(
-      screen.getByRole("heading", { name: "Con un POS enlatado", level: 3 }),
+      screen.getByRole("heading", { name: problem.canned.title, level: 3 }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "Con nexora-pos", level: 3 }),
+      screen.getByRole("heading", { name: problem.tailored.title, level: 3 }),
     ).toBeInTheDocument();
   });
 });

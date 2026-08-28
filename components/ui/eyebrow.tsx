@@ -13,14 +13,25 @@ import { cn } from "@/lib/utils";
 const eyebrow = cva("text-eyebrow tracking-eyebrow uppercase", {
   variants: {
     tone: {
-      /** brand-500 fails AA as text, so the accent tone uses brand-700. */
-      accent: "text-brand-700",
+      /**
+       * `brand-500`, the bright brand orange, **and it does not pass AA**.
+       *
+       * At 13px this is body-sized text, so AA asks 4.5:1 and this gives
+       * 2.61:1 on white. The user was shown that number and asked for the
+       * bright orange anyway, twice; it is listed under authorised exceptions
+       * in scripts/contrast.mjs, which reprints it on every run. The compliant
+       * one is `brand-700` at 4.54:1.
+       */
+      accent: "text-brand-500",
       muted: "text-ink-500",
       inverse: "text-paper-50/70",
       onBrand: "text-ink-900/85",
     },
   },
-  defaultVariants: { tone: "muted" },
+  // Accent by default since 2026-08-27: every section label on the site is
+  // meant to be orange, so the default is the common case and `muted` is the
+  // exception rather than the other way round.
+  defaultVariants: { tone: "accent" },
 });
 
 type EyebrowProps = React.ComponentPropsWithoutRef<"p"> &

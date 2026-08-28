@@ -30,10 +30,14 @@ npm run typecheck && npm run lint && npm run test && npm run contrast && npm run
 marca tiene bastante menos contraste del que aparenta, y varias combinaciones "obvias" fallan.
 Si lo rompes, te dice exactamente qué par y con qué ratio.
 
-> Estado actual: **el sitio está completo**. Los cinco comandos en verde con 71 tests; la home
-> va en 111 kB de JS. Lighthouse da **100 en accesibilidad, buenas prácticas y SEO**, y **82–92
-> en rendimiento** — por debajo del ≥95 que pide CLAUDE.md; el detalle y lo que queda por
-> intentar está en [docs/ESTADO.md](docs/ESTADO.md).
+> Estado actual: **el sitio está completo**. Los cinco comandos en verde con 73 tests.
+> Lighthouse daba **100 en accesibilidad, buenas prácticas y SEO** y **82–92 en rendimiento**
+> — por debajo del ≥95 que pide CLAUDE.md.
+>
+> **Ojo con el peso del JS.** `next build` dice 111 kB para la home, pero ese número no cuenta
+> el chunk del layout. Medido en el cable son **124 kB** (sin polyfills, que un navegador
+> moderno no baja). Framer Motion se probó para el efecto del nav y se quitó: costaba 29 kB en
+> todas las páginas. Ver [docs/ESTADO.md](docs/ESTADO.md) → decisiones 42-43 y trampa 25.
 
 ## Por dónde empezar a leer
 
@@ -67,7 +71,7 @@ Los tokens de marca están en `app/globals.css` (bloque `@theme`), no en un `tai
 ## Marca en corto
 
 `nexora-pos` siempre en minúscula. Naranja `#FF7A00` como **acento**, nunca como fondo
-mayoritario. Poppins. Español de Colombia, tuteo, sin humo, sin emojis. El detalle completo está
+mayoritario. Plus Jakarta Sans (Poppins solo para el wordmark). Español de Colombia, tuteo, sin humo, sin emojis. El detalle completo está
 en [CLAUDE.md](CLAUDE.md) — respétalo.
 
 ## Lo que falta
@@ -83,7 +87,7 @@ Ver [docs/ESTADO.md](docs/ESTADO.md). En grande:
    cuerpo de `sendLead()` en [lib/lead.ts](lib/lead.ts).
 4. **Que un abogado revise [content/legal.ts](content/legal.ts)** antes de publicar.
 5. **Assets pendientes:** el logo sobre fondo oscuro y los SVG vectoriales. Mientras no
-   existan, sobre `ink-900` y sobre la franja naranja el nombre se compone en Poppins con
+   existan, sobre `ink-900` y sobre la franja naranja el nombre se compone en Poppins (token `font-wordmark`) con
    los tokens de marca — nunca se recolorea el PNG.
 6. El portal de clientes — proyecto aparte.
 

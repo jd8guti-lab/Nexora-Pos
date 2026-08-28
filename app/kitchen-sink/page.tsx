@@ -126,18 +126,18 @@ export default function KitchenSinkPage() {
           <div className="mt-8 flex flex-col gap-8">
             {surface.bg === "ink" ? (
               <Row title="Variantes">
-                <Button variant="inverse">Agendar demo</Button>
+                <Button variant="inverse">Agendar una cita</Button>
                 <Button variant="inverseOutline">Ingresar al portal</Button>
               </Row>
             ) : surface.bg === "brand" ? (
               <Row title="Variantes">
-                <Button variant="onBrand">Agendar demo</Button>
+                <Button variant="onBrand">Agendar una cita</Button>
                 <Button variant="secondary">Ver módulos</Button>
               </Row>
             ) : (
               <>
                 <Row title="Variantes">
-                  <Button>Agendar demo</Button>
+                  <Button>Agendar una cita</Button>
                   <Button variant="secondary">Ver módulos</Button>
                   <Button variant="ghost">Ingresar al portal</Button>
                   <Button variant="link">Cómo trabajamos</Button>

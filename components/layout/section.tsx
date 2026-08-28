@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
+import { ConstellationGridLazy } from "@/components/ui/constellation-grid-lazy";
 import { cn } from "@/lib/utils";
 import { Container } from "./container";
 
@@ -36,6 +37,15 @@ type SectionProps = React.ComponentPropsWithoutRef<"section"> &
     /** Render the children without the standard Container wrapper. */
     bleed?: boolean;
     containerClassName?: string;
+    /**
+     * Paint the constellation mesh behind the section.
+     *
+     * It is a canvas and a frame loop, so it is opt-in per section rather than
+     * something every `Section` drags in: the sections that do not ask for it
+     * stay server-rendered markup with no client component inside them. The
+     * mesh itself is loaded after hydration — see ConstellationGridLazy.
+     */
+    mesh?: boolean;
   };
 
 export function Section({
@@ -44,11 +54,16 @@ export function Section({
   bleed = false,
   className,
   containerClassName,
+  mesh = false,
   children,
   ...props
 }: SectionProps) {
   return (
-    <section className={cn(section({ bg, size }), className)} {...props}>
+    <section
+      className={cn(section({ bg, size }), mesh && "relative isolate", className)}
+      {...props}
+    >
+      {mesh ? <ConstellationGridLazy /> : null}
       {bleed ? (
         children
       ) : (

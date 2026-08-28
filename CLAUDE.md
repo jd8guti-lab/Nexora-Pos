@@ -53,7 +53,17 @@ enganche listo.
 
 Next.js 15 (App Router) · TypeScript `strict` · **Tailwind CSS v4** · shadcn/ui + Radix ·
 lucide-react · React Hook Form + Zod · Vitest + Testing Library · Vercel.
-**Sin Framer Motion** — ver §6.
+
+**Sin Framer Motion.** Se instaló el 2026-08-26 para el efecto de letras del nav y se desinstaló
+el mismo día: costaba **29 kB gzip en todas las páginas** (el nav está en todas) y dejaba la home
+en 153 kB, muy por encima del techo de ~120 kB. El efecto quedó en CSS puro —
+`components/ui/RandomLetterSwap`, componente de **servidor**, con las reglas en `globals.css` —
+y es visualmente el mismo a 0 kB. La home volvió a 124 kB. Decisiones 21, 42 y 43 en
+`docs/ESTADO.md`: **es la tercera vez que una librería de animación se cae por el presupuesto.**
+
+**Cuidado con el número que reporta `next build`.** Dice 111 kB para `/` pero no atribuye a la
+ruta el chunk del layout de marketing. Para saber lo que de verdad baja el visitante hay que
+sumar los `<script>` de la página servida — `docs/ESTADO.md` → Trampa 25.
 
 Los tokens viven en `app/globals.css`, en el bloque `@theme` — **no hay `tailwind.config.ts`**;
 esa es la forma de Tailwind v3. La versión de Next está fijada a mano: `create-next-app`
@@ -73,7 +83,10 @@ Es un manual, no una sugerencia.
 - Nombre: **`nexora-pos`** — siempre en minúscula, con guion.
 - Descriptor: `SOFTWARE A MEDIDA · PERSONALIZABLE · ESCALABLE`
 - Claim: `Tu negocio. Tu forma. Nuestro software.` — las dos primeras frases en `ink-900`,
-  la tercera en `brand-500`.
+  la tercera en `brand-500` — **la única excepción autorizada** a la regla de abajo: no pasa AA
+  (2,0:1 sobre el fondo del hero contra el 3:1 que pide) y se usa igual, por decisión expresa
+  del 2026-08-27, para que coincida con el naranja del botón. Está listada en
+  `scripts/contrast.mjs` bajo "excepciones autorizadas", que la reimprime en cada ejecución.
 - Cierre: `Hecho para ti. Pensado para crecer contigo.`
 
 ### Color
@@ -82,10 +95,11 @@ Es un manual, no una sugerencia.
 | -------------- | --------- | ---------------------------------------------------------------- |
 | `brand-500`    | `#FF7A00` | Acento: **fondos**, degradados, subrayados, íconos decorativos   |
 | `brand-300`    | `#FFB347` | Degradados, hovers, acentos suaves                               |
-| `brand-700`    | `#BD5A00` | **El único naranja que puede llevar texto** sobre fondo claro    |
+| `brand-700`    | `#BD5A00` | El naranja de texto normal sobre fondo claro (4.54:1)            |
+| `brand-600`    | `#E86F00` | Naranja de texto **solo para texto grande** (≥24px o ≥18.66px bold). 3.13:1 **sobre blanco**: pasa el umbral AA de texto grande (3:1), no el de texto normal (4.5:1). Hoy no se usa: sobre el plate del hero, su único sitio, se queda en 2.16:1 |
 | `ink-900`      | `#1A1D23` | Texto principal, fondos oscuros, footer, **texto sobre naranja** |
-| `ink-500`      | `#69707E` | Texto secundario, bordes                                         |
-| `paper-50`     | `#F2F4F7` | Fondos de sección, tarjetas                                      |
+| `ink-500`      | `#626976` | Texto secundario, bordes (oscurecido el 2026-08-27 para permitir el gris más oscuro) |
+| `paper-50`     | `#EDEDED` | Fondos de sección, tarjetas. Gris neutro, no azulado |
 
 Reglas duras:
 
@@ -104,18 +118,65 @@ menos contraste del que aparenta. Cuatro combinaciones están **prohibidas**:
 | Blanco sobre `brand-500`                         | 2.61:1 | `text-ink-900` (6.46:1)   |
 | Blanco sobre `brand-300`                         | 1.78:1 | `text-ink-900` (9.48:1)   |
 | `brand-500` como color de texto sobre blanco     | 2.61:1 | `text-brand-700` (4.54:1) |
-| `brand-500` como color de texto sobre `paper-50` | 2.37:1 | `text-brand-700` (4.12:1) |
+| `brand-500` como color de texto sobre `paper-50` | 2.23:1 | `text-brand-700` (3.88:1) |
+
+**Hay tres excepciones autorizadas**, todas en `brand-500` y todas por decisión expresa del
+usuario, que vio la medida en cada caso y pidió el naranja brillante igual:
+
+| Dónde                                   | Mide   | Pide   | La que sí cumple    |
+| --------------------------------------- | ------ | ------ | ------------------- |
+| Acento del `h1` del hero, sobre la imagen | 2,0:1  | 3:1    | `brand-700`         |
+| Eyebrow de sección, 13px sobre blanco   | 2,61:1 | 4,5:1  | `brand-700` (4,54)  |
+| Acento del `h2` de "El problema"        | 2,61:1 | 3:1    | `brand-600` (3,13)  |
+
+Viven en la lista de excepciones de `scripts/contrast.mjs`, que las imprime en cada ejecución en
+vez de darlas por buenas. (Hubo una cuarta —los valores de la barra de confianza— revertida el
+mismo día porque no gustó cómo se veía.) **Añadir otra no es decisión de quien programa**: se
+pregunta, se enseña el número, y solo entonces.
 
 Por eso la franja naranja de cierre y el botón primario llevan texto `ink-900`, no blanco.
 El anillo de foco es `ink-900`, y solo se vuelve blanco sobre `ink-900`.
+`brand-600` (`#E86F00`) es más brillante y da 3.13:1 **sobre blanco**, que es su mejor caso:
+pasa el umbral de **texto grande** (≥24px o ≥18.66px bold, que pide 3:1) pero no el de texto
+normal (4.5:1), y en cuanto el fondo se entibia deja de pasar. Hoy no se usa en ninguna parte
+— el acento del `h1` del hero, que era su único sitio, pasó a `brand-700`.
+
+**Texto sobre una imagen: la paleta no te cubre.** El hero pone copy encima de la imagen de
+producto, y ahí el fondo son píxeles que van de crema casi blanco a negro puro. La regla:
+
+1. Mide la imagen antes de maquetar — píxel a píxel con `sharp`, no a ojo — para saber qué
+   zonas son seguras y hasta dónde puede llegar la columna de texto.
+2. Si el peor caso no da, hay dos salidas: **cambiar el color del texto** o **velar la imagen**.
+   Velar tiñe el arte de blanco, así que es la segunda opción, no la primera. Hoy no hay velo:
+   el eyebrow y el lead van en `ink-900` y el cuerpo en `ink-900/80`. El acento del claim es
+   la excepción autorizada de arriba y no pasa AA.
+3. Mete ese peor caso en `scripts/contrast.mjs` como pseudo-token, para que quede auditado.
+   Hoy son `hero-bg-min` (`#FDB870`) y `hero-bg-h1` (`#FBCEA9`).
+4. Compruébalo en el navegador sobre los píxeles compuestos reales, no solo en el modelo. Y
+   **mide la caja de las letras, no la del bloque**: un `span` a todo el ancho de la columna
+   arrastra la medición sobre píxeles que el texto nunca toca, y te hace perseguir un fallo
+   que no existe.
+
+`ink-500` **no vale** sobre la imagen (3.23:1 contra el peor caso): usa `ink-900`.
+Está contado en `docs/ESTADO.md` → Trampas 21 y 22.
 Los íconos en `brand-500` **sí** se quedan: siempre van junto a su etiqueta de texto, y
 WCAG 1.4.11 exime lo decorativo. Un ícono que comunique algo por sí solo va en `brand-700`.
 
 ### Tipografía
 
-**Poppins** vía `next/font/google`. Bold 700 títulos · SemiBold 600 subtítulos y botones ·
-Medium 500 · Regular 400 cuerpo · Light 300. Etiquetas y descriptores en mayúscula con
-`tracking-[0.2em]`. Escala tipográfica fluida con `clamp()`.
+**Figtree** vía `next/font/google`, en `--font-sans`. Bold 700 títulos · SemiBold 600
+subtítulos y botones · Medium 500 · Regular 400 cuerpo · Light 300. Etiquetas y descriptores en
+mayúscula con `tracking-[0.2em]`. Escala tipográfica fluida con `clamp()`.
+
+Sustituyó a Poppins el 2026-08-26 y se afinó a Figtree el 2026-08-27 midiendo el arte de referencia (decisiones 41 y 44). Es geométrica igual, así que la marca sigue
+leyéndose moderna, pero tiene las contraformas más estrechas y la altura de x mayor, que es lo
+que la sostiene en tamaños de cuerpo y en interfaz densa en vez de parecer tipografía de cartel.
+
+**Poppins se queda, solo para el wordmark.** `LogoLockup` compone "nexora-pos" con tipografía
+sobre fondo oscuro y sobre naranja porque no hay artwork para esos fondos; esa composición
+sustituye al logotipo real, así que **no puede seguir a un cambio de fuente de cuerpo**. Vive en
+el token `--font-wordmark` (clase `font-wordmark`) y carga un solo peso. Si algún día llegan los
+SVG del logo, este token y esa carga desaparecen.
 
 ### Isotipo y assets
 
@@ -138,7 +199,7 @@ trabajo real: inventario, caja, facturas, proveedores, cuadre del día. **Cero e
 
 ---
 
-## 4. Los 7 módulos y los 5 pilares
+## 4. Los 7 módulos y los 6 pilares
 
 Son la columna vertebral del contenido. No se inventan otros ni se renombran.
 
@@ -153,6 +214,7 @@ Son la columna vertebral del contenido. No se inventan otros ni se renombran.
 | Modular        | Activa solo lo que necesitas, cuando lo necesitas. |
 | Seguro         | Tu información siempre protegida.                  |
 | Soporte real   | Estamos contigo en cada paso del camino.           |
+| Escalable      | Crece sin límites. Tu sistema crece contigo.       |
 
 ---
 
@@ -188,6 +250,11 @@ mágicos de espaciado, radio o sombra: todo sale de la escala de Tailwind.
 **Encabezados:** usa siempre `components/ui/Heading`. Tiene `as` (el nivel semántico) separado de
 `size` (lo grande que se ve), y es lo que impide que una sección se vuelva `h4` solo porque el
 diseño la quiere pequeña. `Eyebrow` es una etiqueta, **nunca** un encabezado.
+
+**La altura del nav es el token `--spacing-nav`.** El hero mide una pantalla menos el nav —
+**como mínimo, no como altura fija**: fijarla recortaba el copy en ventanas bajas, y ninguna
+regla de maquetación vale un texto cortado. El `scroll-padding-top` de los anclas también lo lee. Si cambias la barra, cambia el
+token: escribir la altura a mano en el hero ya rompió el encaje una vez, en silencio.
 
 **`/kitchen-sink`** muestra cada primitivo en cada variante sobre los cuatro fondos. Está en
 `noindex` y no se enlaza. Si tocas un primitivo, míralo ahí antes de seguir.
@@ -230,8 +297,9 @@ sin parallax, sin scroll secuestrado.
 Toda animación de entrada pasa por `components/motion/Reveal`, que es **componente de servidor**:
 solo emite `data-reveal`. Un único `RevealObserver`, montado en el layout de marketing, los arma
 todos con un solo `IntersectionObserver`. No conviertas `Reveal` en componente cliente — quince
-fronteras de hidratación para el mismo efecto es justo lo que se quitó. **No hay Framer Motion**: costaba 52 KB y dejaba la home
-en 155 KB, por encima del techo. No lo vuelvas a instalar para esto.
+fronteras de hidratación para el mismo efecto es justo lo que se quitó. **`Reveal` no vuelve a
+Framer Motion**: costaba 52 KB y dejaba la home en 155 KB, por encima del techo. Que el paquete
+esté instalado otra vez (§2) no cambia esto — para las entradas al hacer scroll, `Reveal` gana.
 
 Y la regla que no se negocia: **el contenido nunca depende de JavaScript para poder leerse.**
 El servidor renderiza todo visible; `Reveal` solo oculta *dentro de su propio efecto*, una línea
@@ -252,8 +320,13 @@ experiencia, ni número de instalaciones, ni logos de terceros.
 Donde falte un dato real: `TODO(guti):` visible en `content/` y una línea en `docs/ESTADO.md`.
 Un sitio con un placeholder honesto es mejor que uno con una mentira bonita.
 
-Lo mismo para los mockups del producto: se construyen como componentes React/SVG con los colores
-de la marca. **Nada de fotos de stock ni capturas falsas.**
+Lo mismo para los mockups del producto: por defecto se construyen como componentes React/SVG con
+los colores de la marca. **Nada de fotos de stock.**
+
+**Excepción autorizada:** el mockup del hero (`public/brand/hero-mockup.png`) es una imagen de
+producto con cifras de ejemplo, no datos reales de la empresa ni de un cliente. Se aceptó así
+explícitamente — ver decisión 33 en `docs/ESTADO.md`. No es precedente para otros mockups: uno
+nuevo sigue construyéndose como componente React/SVG salvo que se pida y documente lo contrario.
 
 ---
 

@@ -15,20 +15,55 @@
   --color-brand-500: #ff7a00; /* accent: surfaces, gradients, underlines */
   --color-brand-300: #ffb347; /* gradients, hovers, soft accents */
   --color-ink-900: #1a1d23; /* body copy, dark surfaces, footer */
-  --color-ink-500: #69707e; /* secondary copy, borders */
-  --color-paper-50: #f2f4f7; /* section backgrounds, cards */
+  /* Secondary copy and borders. Darkened from #69707E on 2026-08-27: it is
+     what pays for the darker paper-50 below. On the old paper it measured
+     4.517:1 — over the 4.5 line by nothing at all — so the grey could not be
+     darkened without moving this first. */
+  --color-ink-500: #626976;
+
+  /* Section backgrounds and cards. Darkened from #F2F4F7, which was cool and
+     blue-cast; the reference art uses a neutral grey in the #F0F0F0-#EDEDED
+     band (sampled by histogram, not by eye). Neutral also reads heavier than
+     the old blue tint at the same lightness, which is the "un poco más
+     oscuro" that was asked for. */
+  --color-paper-50: #ededed;
 
   /* Text-only orange. brand-500 on white is 2.61:1 and fails AA at every
      size, so it must never carry copy. This is the readable one: 4.54:1 on
      white. Never use it as a surface — see scripts/contrast.mjs. */
   --color-brand-700: #bd5a00;
 
+  /* Brighter text-only orange, for large text ONLY (>=24px, or >=18.66px
+     bold — WCAG's "large text" AA threshold of 3:1, not 4.5:1). 3.13:1 on
+     white — as bright as the palette allows while keeping real margin above
+     that 3:1 floor (one step brighter and it's a rounding error from
+     failing). The h1 accent is 40px+ bold, well above that floor at every
+     viewport; nothing set in body-copy sizes may use this token — use
+     brand-700 there instead. See scripts/contrast.mjs. */
+  --color-brand-600: #e86f00;
+
   /* -- typography -------------------------------------------------------- */
   --font-sans:
-    var(--font-poppins), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    var(--font-sans-brand), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+
+  /* Poppins, kept for the composed wordmark only — see app/layout.tsx. */
+  --font-wordmark: var(--font-poppins-wordmark), var(--font-sans-brand), sans-serif;
 
   /* Fluid scale. Every step interpolates between 360px and 1280px viewports. */
-  --text-display: clamp(2.5rem, 1.55rem + 4.2vw, 4.5rem);
+  /* Raised at the small end on 2026-08-27 and held at 72px on the large one.
+     84px was tried and reverted the same day: at that size "Nuestro software."
+     runs to 43% of the screen and lands on the orange curve of the hero plate,
+     where orange text measures 1.11:1. The pale field it has to stay on ends
+     between 34% and 35%.
+
+     The slope is 4.4vw with no rem offset on purpose. The claim's longest line
+     is about 7.8 times the font size and the column it lives in is 36vw wide,
+     so anything steeper makes it wrap at the narrow end of the range — which
+     is what a fixed offset did at 1280. It went from 3.7vw to 4.2vw when the
+     floating icons were painted out of the plate and the pale field grew from
+     35% of the width to 39%. The hero is the only place this token is used. */
+  --text-display: clamp(2.5rem, 4.4vw, 5.5rem);
   --text-display--line-height: 1.06;
   --text-display--letter-spacing: -0.03em;
   --text-display--font-weight: 700;
@@ -52,6 +87,13 @@
   --text-lead--line-height: 1.55;
   --text-lead--font-weight: 400;
 
+  /* The nav's own size. It sits between body and lead: the bar is full width
+     and 5rem tall, so body-sized links looked lost in it, and `text-lead`
+     (22px at 1920) came out bigger than the buttons beside them. */
+  --text-nav: clamp(1.0625rem, 1rem + 0.28vw, 1.25rem);
+  --text-nav--line-height: 1;
+  --text-nav--font-weight: 500;
+
   --text-body: clamp(1rem, 0.97rem + 0.13vw, 1.0625rem);
   --text-body--line-height: 1.65;
   --text-body--font-weight: 400;
@@ -59,7 +101,10 @@
   --text-small: 0.875rem;
   --text-small--line-height: 1.55;
 
-  --text-eyebrow: 0.75rem;
+  /* 0.8125rem since 2026-08-27: the user found 12px too small to register.
+     Raising it is also what lets the accent tone keep its contrast — see the
+     note on the `accent` variant in components/ui/eyebrow.tsx. */
+  --text-eyebrow: 0.8125rem;
   --text-eyebrow--line-height: 1.2;
   --text-eyebrow--letter-spacing: 0.2em;
   --text-eyebrow--font-weight: 600;
@@ -88,6 +133,14 @@
 
   /* -- motion ------------------------------------------------------------ */
   --ease-brand: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* -- layout ------------------------------------------------------------ */
+  /* Total height of the sticky header: the full-width bar is `h-[4.5rem]` and
+     has no padding of its own. It was 5rem until the user asked for a slightly
+     slimmer bar. The hero is exactly one screen minus this (decision
+     38), and the anchor scroll padding clears it — both read the token, so
+     changing the bar's height in one place cannot silently break either. */
+  --spacing-nav: 4.5rem;
 }
 
 /* ---------------------------------------------------------------------------
@@ -98,7 +151,7 @@
   html {
     scroll-behavior: smooth;
     /* Sticky nav must not cover the target of an in-page anchor. */
-    scroll-padding-top: 5.5rem;
+    scroll-padding-top: calc(var(--spacing-nav) + 0.5rem);
     -webkit-text-size-adjust: 100%;
   }
 
@@ -186,6 +239,51 @@
   details[open] > .disclosure-panel {
     animation: disclosure 200ms var(--ease-brand);
   }
+
+  /*
+    components/ui/RandomLetterSwap — the nav's letter swap.
+
+    All of it lives here so the component can stay a server component and
+    ship zero JavaScript. The stagger is a per-letter `--letter-delay` set
+    inline; the hover state is read off the interactive ancestor, so the
+    component never needs to know it is being hovered.
+
+    Both copies of every letter are real text in the server markup, so the
+    word is legible with scripting off — CLAUDE.md §6.
+  */
+  .letter-swap {
+    display: inline-flex;
+    vertical-align: bottom;
+  }
+
+  .letter-swap-char {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+  }
+
+  .letter-swap-char > span {
+    display: inline-block;
+    transition: transform 600ms var(--ease-brand);
+    transition-delay: var(--letter-delay, 0ms);
+  }
+
+  /* The understudy waits one line below, in the clipped box. */
+  .letter-swap-char > span:last-child {
+    position: absolute;
+    left: 0;
+    transform: translateY(100%);
+  }
+
+  :is(a, button):hover .letter-swap-char > span:first-child,
+  :is(a, button):focus-visible .letter-swap-char > span:first-child {
+    transform: translateY(-100%);
+  }
+
+  :is(a, button):hover .letter-swap-char > span:last-child,
+  :is(a, button):focus-visible .letter-swap-char > span:last-child {
+    transform: translateY(0);
+  }
 }
 
 @keyframes reveal {
@@ -231,5 +329,11 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* The blanket rule flattens durations but not delays, and a stagger made
+     of delays would still play. Kill it explicitly. */
+  .letter-swap-char > span {
+    transition-delay: 0ms !important;
   }
 }

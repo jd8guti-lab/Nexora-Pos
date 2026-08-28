@@ -2,7 +2,8 @@ import type { ProcessStep, SectionIntro } from "./types";
 
 export const processIntro: SectionIntro = {
   eyebrow: "Cómo trabajamos",
-  title: "Cuatro pasos, sin sorpresas",
+  title: "Cuatro pasos,",
+  titleAccent: "sin sorpresas",
   lead: "No te entregamos un instalador y te deseamos suerte. Entramos a ver cómo trabajas, montamos el sistema alrededor de eso y nos quedamos hasta que esté andando.",
 } as const;
 

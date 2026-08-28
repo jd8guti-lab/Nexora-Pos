@@ -1,63 +1,48 @@
-import { Grid } from "@/components/layout/grid";
 import { Section } from "@/components/layout/section";
-import { Reveal } from "@/components/motion/reveal";
-import { Badge } from "@/components/ui/badge";
+import { SectionCta } from "@/components/sections/section-cta";
+import { SectionHeading } from "@/components/sections/section-heading";
 import { Card } from "@/components/ui/card";
-import { Eyebrow } from "@/components/ui/eyebrow";
 import { Heading } from "@/components/ui/heading";
-import { IconTile } from "@/components/ui/icon-tile";
-import { modules } from "@/content/modules";
-import { useCases, useCasesIntro } from "@/content/use-cases";
-
-/** Module id to display name, so a case only has to store ids. */
-const moduleName = new Map(modules.map((m) => [m.id, m.name]));
+import { useCasesEmpty, useCasesIntro } from "@/content/use-cases";
 
 /**
- * Use cases by business type.
+ * Real implementations — **and there are none published yet.**
  *
- * The intro says out loud that these are business types and not clients — a
- * grid of categories on a marketing page reads as a customer list otherwise,
- * and CLAUDE.md §7 forbids implying customers we do not have.
+ * The section changed subject at the user's request: it used to show six
+ * business *types*, and now it promises real customers. That promise cannot be
+ * half-kept, so instead of categories dressed up as clients it shows an empty
+ * state that says why it is empty. CLAUDE.md §7: no invented customers.
+ *
+ * It keeps its heading and its id because the nav and the hero both link to
+ * `#casos`, and an anchor pointing at a section that does not render is a link
+ * that silently does nothing.
+ *
+ * The six old business types are still written in `content/use-cases.ts`, and
+ * the markup that rendered them is in git.
+ *
+ * The top rule and the taller padding are the seam with "Cómo trabajamos":
+ * both sections are white now, and without them the two ran together.
+ *
+ * TODO(guti): decide qué va aquí. Mientras tanto la sección solo presenta y
+ * ofrece la cita.
  */
 export function UseCases() {
   return (
-    <Section bg="paper" id="casos">
-      <div className="max-w-2xl">
-        <Eyebrow>{useCasesIntro.eyebrow}</Eyebrow>
-        <Heading as="h2" className="mt-4">
-          {useCasesIntro.title}
+    <Section id="casos" size="lg" className="border-ink-500/15 border-t">
+      <SectionHeading intro={useCasesIntro} />
+
+      {/* The empty state is a real block, not a gap: a section that announces
+          real cases and then shows nothing reads as broken. It says why it is
+          empty, which is also the honest thing — see content/use-cases.ts. */}
+      <Card variant="plain" padding="lg" className="mt-10 max-w-3xl">
+        <Heading as="h3" size="h3">
+          {useCasesEmpty.title}
         </Heading>
-        {useCasesIntro.lead ? (
-          <p className="text-lead text-ink-500 mt-5">{useCasesIntro.lead}</p>
-        ) : null}
-      </div>
+        <p className="text-lead text-ink-900/80 mt-4">{useCasesEmpty.body}</p>
+        <p className="text-body text-ink-500 mt-4">{useCasesEmpty.cta}</p>
+      </Card>
 
-      <Grid cols={3} gap="lg" className="mt-12" asChild>
-        <ul>
-          {useCases.map((useCase, i) => (
-            <Reveal as="li" key={useCase.id} delay={(i % 3) * 0.07} className="h-full">
-              <Card variant="plain" padding="lg" className="h-full">
-                <IconTile icon={useCase.icon} />
-                <Heading as="h3" size="h3" className="mt-5">
-                  {useCase.business}
-                </Heading>
-
-                <p className="text-body text-ink-500 mt-3">{useCase.pain}</p>
-                <p className="text-body text-ink-900 mt-3">{useCase.outcome}</p>
-
-                <div className="mt-6 flex flex-wrap gap-2">
-                  <span className="sr-only">Módulos que usa:</span>
-                  {useCase.modules.map((id) => (
-                    <Badge key={id} tone="neutral">
-                      {moduleName.get(id) ?? id}
-                    </Badge>
-                  ))}
-                </div>
-              </Card>
-            </Reveal>
-          ))}
-        </ul>
-      </Grid>
+      <SectionCta />
     </Section>
   );
 }

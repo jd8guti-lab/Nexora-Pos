@@ -1,11 +1,6 @@
 import { JsonLd } from "@/components/seo/json-ld";
-import { About } from "@/components/sections/about";
 import { CtaBand } from "@/components/sections/cta";
-import { Faq } from "@/components/sections/faq";
 import { Hero } from "@/components/sections/hero";
-import { Modules } from "@/components/sections/modules";
-import { Pillars } from "@/components/sections/pillars";
-import { Pricing } from "@/components/sections/pricing";
 import { Problem } from "@/components/sections/problem";
 import { Process } from "@/components/sections/process";
 import { TrustBar } from "@/components/sections/trust-bar";
@@ -22,11 +17,21 @@ export const metadata = buildMetadata({
 /**
  * Home.
  *
- * One long page with anchors. Each section is its own component and takes all
- * its copy from content/, so changing a sentence never means touching JSX.
+ * Five blocks and the footer, and that is the whole page: hero, the trust
+ * band, the problem, how we work, and who it is for. It used to run eleven
+ * sections deep — pillars, modules, who we are, pricing, FAQ and a closing
+ * band — and the user cut it back on purpose: shorter and more direct.
  *
- * Surfaces alternate white / paper so the page has rhythm without leaning on
- * the accent colour. There is exactly one orange band, at the end.
+ * The cut sections still exist under components/sections and their copy still
+ * lives in content/. `Pricing`, `Faq` and `CtaBand` are still used by the
+ * secondary pages; `Pillars`, `Modules` and `About` are now on no page at all
+ * and are kept only because a decision to shorten is easy to reverse.
+ *
+ * Each section takes all its copy from content/, so changing a sentence never
+ * means touching JSX. Surfaces alternate white / paper for rhythm, and the
+ * closing orange band is the page's only one — CLAUDE.md §3 allows two.
+ *
+ * Every section also ends in `SectionCta`, which books straight over WhatsApp.
  */
 export default function HomePage() {
   return (
@@ -34,13 +39,8 @@ export default function HomePage() {
       <Hero />
       <TrustBar />
       <Problem />
-      <Pillars />
-      <Modules />
       <Process />
-      <About />
       <UseCases />
-      <Pricing />
-      <Faq />
       <CtaBand />
       <JsonLd data={softwareJsonLd()} />
     </>

@@ -61,7 +61,7 @@ export function organizationJsonLd() {
     url: siteUrl,
     logo: `${siteUrl}/brand/logo.png`,
     description: site.description,
-    slogan: `${site.claim.lead} ${site.claim.accent}`,
+    slogan: site.claim.full,
   };
 }
 

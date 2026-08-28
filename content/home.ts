@@ -1,3 +1,4 @@
+import { whatsapp } from "./site";
 import type { ComparisonColumn, SectionIntro } from "./types";
 
 /**
@@ -11,43 +12,48 @@ import type { ComparisonColumn, SectionIntro } from "./types";
 export const hero = {
   lead: "Un POS que se adapta a cómo tú ya trabajas, no al revés.",
   body: "Cada negocio tiene su forma de vender, de manejar el inventario y de cuadrar el día. En vez de pedirte que cambies la tuya, construimos el sistema alrededor de ella.",
-  primaryCta: { label: "Agendar demo", href: "/contacto" },
-  secondaryCta: { label: "Ver los módulos", href: "/modulos" },
+  primaryCta: { label: "Agendar una cita", href: whatsapp.href, external: true },
+  // Points at the section further down, not at /modulos: the modules page is
+  // no longer part of what the home talks about, and the nav stays in-page.
+  secondaryCta: { label: "Ver casos reales", href: "/#casos" },
 } as const;
 
 export const problem = {
   intro: {
     eyebrow: "El problema",
-    title: "El software enlatado te pone a trabajar para él",
+    title: "El software genérico te obliga a adaptarte.",
+    titleAccent: "El nuestro se adapta a ti.",
     lead: "No es que los sistemas de caja sean malos. Es que están hechos para un negocio promedio, y el tuyo no lo es.",
   } satisfies SectionIntro,
 
   canned: {
-    title: "Con un POS enlatado",
+    title: "Plantilla única",
+    subtitle: "Tú te adaptas al sistema",
     points: [
-      "Pagas por módulos que nunca vas a abrir.",
-      "Acomodas tu forma de trabajar a lo que el programa permite.",
-      "Lo que te falta se resuelve por fuera, en un cuaderno o en Excel.",
-      "Pedir un cambio es abrir un ticket y esperar sin fecha.",
-      "El soporte lo atiende alguien que no sabe cómo funciona tu negocio.",
+      { emphasis: "Funciones", rest: "que no necesitas y no puedes quitar." },
+      { emphasis: "Procesos rígidos", rest: "que no se ajustan a tu negocio." },
+      { emphasis: "Reportes limitados", rest: "o que no responden lo que buscas." },
+      { emphasis: "Cambios", rest: "costosos, lentos o simplemente no disponibles." },
+      { emphasis: "Soporte genérico", rest: "que no entiende tu negocio." },
     ],
   } satisfies ComparisonColumn,
 
   tailored: {
     title: "Con nexora-pos",
+    subtitle: "El sistema se adapta a ti",
     points: [
-      "Activas los módulos que usas y no pagas por el resto.",
-      "El sistema se ajusta a tus procesos, incluso a los raros.",
-      "Los campos y reportes que necesitas están dentro, no aparte.",
-      "Si necesitas algo nuevo, hablamos y lo construimos.",
-      "El soporte lo da quien escribió el software.",
+      { emphasis: "Activas solo lo que usas.", rest: "Sin pagar de más." },
+      { emphasis: "Se ajusta a tu forma de trabajar,", rest: "no al revés." },
+      { emphasis: "Campos y reportes", rest: "hechos para lo que realmente necesitas." },
+      { emphasis: "Si necesitas algo nuevo,", rest: "lo hablamos y lo construimos." },
+      { emphasis: "El soporte", rest: "lo da quien desarrolló el sistema." },
     ],
   } satisfies ComparisonColumn,
 } as const;
 
 export const pillarsIntro: SectionIntro = {
   eyebrow: "Lo que nos define",
-  title: "Cinco cosas que no negociamos",
+  title: "Seis cosas que no negociamos",
 } as const;
 
 /**
@@ -92,11 +98,33 @@ export const about = {
   ],
 } as const;
 
+/**
+ * The closing band, which is also the page's contact section: the nav links to
+ * it as "Contacto".
+ *
+ * It used to offer "Ver precios" beside the appointment. That button is gone
+ * with the pricing section — pointing at a page the home no longer talks about
+ * was the kind of loose end the user spotted immediately.
+ */
 export const cta = {
+  eyebrow: "Contacto",
   title: "Hecho para ti. Pensado para crecer contigo.",
   body: "Cuéntanos cómo trabajas y te mostramos cómo quedaría tu sistema. Sin compromiso y sin presentación de ventas.",
-  primary: { label: "Agendar demo", href: "/contacto" },
-  secondary: { label: "Ver precios", href: "/precios" },
+  primary: { label: "Agendar una cita", href: whatsapp.href, external: true },
+} as const;
+
+/**
+ * The call to action that closes every section of the home.
+ *
+ * One line and one button, the same in all of them: the user asked for a way
+ * to book without scrolling to the end. The `note` changes nothing about where
+ * it goes — it only says out loud that it opens WhatsApp, because a button
+ * that leaves the site should say so before it is tapped.
+ */
+export const sectionCta = {
+  label: "Agendar una cita",
+  note: "Te escribimos por WhatsApp, sin formularios.",
+  href: whatsapp.href,
 } as const;
 
 export const modulesIntro: SectionIntro = {

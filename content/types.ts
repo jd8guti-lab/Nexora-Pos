@@ -33,7 +33,7 @@ export type TrustMetric = {
   readonly label: string;
 };
 
-/** One of the five brand pillars. The set is fixed by the manual. */
+/** One of the six brand pillars. The set is fixed by the manual. */
 export type Pillar = {
   readonly id: string;
   readonly title: string;
@@ -99,13 +99,35 @@ export type FaqItem = {
 export type SectionIntro = {
   readonly eyebrow: string;
   readonly title: string;
+  /**
+   * The tail of the title, set in the brand orange.
+   *
+   * Split here and not in the component: which half of a sentence carries the
+   * emphasis is a decision about the copy, and a component slicing on the
+   * first full stop would put it somewhere else the day the sentence changes.
+   */
+  readonly titleAccent?: string;
   readonly lead?: string;
 };
 
-/** One side of the "enlatado vs a medida" comparison. */
+/**
+ * One line of a comparison column. The sentence is split because the art sets
+ * its opening in bold — the emphasis is part of the copy, so it is decided
+ * here and not by a component slicing the string (CLAUDE.md §5).
+ */
+export type ComparisonPoint = {
+  /** The opening words, set in bold. */
+  readonly emphasis: string;
+  /** The rest of the sentence. */
+  readonly rest: string;
+};
+
+/** One side of the "plantilla única vs a medida" comparison. */
 export type ComparisonColumn = {
   readonly title: string;
-  readonly points: readonly string[];
+  /** One line under the title, naming who adapts to whom. */
+  readonly subtitle: string;
+  readonly points: readonly ComparisonPoint[];
 };
 
 export type LegalDocument = {

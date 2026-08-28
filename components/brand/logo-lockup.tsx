@@ -80,7 +80,9 @@ export function LogoLockup({
     <span className="inline-flex flex-col">
       <span
         className={cn(
-          "leading-none font-bold tracking-[-0.03em]",
+          // font-wordmark, not the body font: this composition stands in for
+          // the real logotype, so it must not follow a body-font change.
+          "font-wordmark leading-none font-bold tracking-[-0.03em]",
           variant === "dark" ? "text-white" : "text-ink-900",
         )}
         style={{ fontSize: Math.round(height * 0.72) }}

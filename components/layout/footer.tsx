@@ -62,6 +62,10 @@ export function Footer() {
                   {channel.href ? (
                     <a
                       href={channel.href}
+                      // WhatsApp opens in another app; mail and tel do not.
+                      {...(channel.href.startsWith("http")
+                        ? { target: "_blank", rel: "noreferrer" }
+                        : {})}
                       className="text-body text-paper-50/85 inline-flex min-h-11 items-center gap-2 hover:text-white"
                     >
                       {body}

@@ -56,9 +56,18 @@ export function NavMobilePanel({ onClose }: { onClose: () => void }) {
             <ul className="border-ink-500/15 flex flex-col border-t">
               {navLinks.map((link) => (
                 <li key={link.href} className="border-ink-500/15 border-b">
+                  {/* Closing on the click, not on a route change: these are
+                      in-page anchors now, so the pathname never changes and
+                      the menu would stay open over the section it just
+                      scrolled to. */}
                   <Link
                     href={link.href}
-                    aria-current={pathname === link.href ? "page" : undefined}
+                    onClick={onClose}
+                    aria-current={
+                      !link.href.includes("#") && pathname === link.href
+                        ? "page"
+                        : undefined
+                    }
                     className="text-h3 text-ink-900 flex min-h-14 items-center font-semibold"
                   >
                     {link.label}
@@ -70,7 +79,13 @@ export function NavMobilePanel({ onClose }: { onClose: () => void }) {
 
           <div className="flex shrink-0 flex-col gap-3 px-5 pt-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6">
             <Button asChild size="lg">
-              <Link href={primaryCta.href}>{primaryCta.label}</Link>
+              <Link
+                href={primaryCta.href}
+                {...(primaryCta.external ? { target: "_blank", rel: "noreferrer" } : {})}
+                onClick={onClose}
+              >
+                {primaryCta.label}
+              </Link>
             </Button>
             <Button asChild variant="secondary" size="lg">
               <Link

@@ -1,10 +1,30 @@
 import { Hammer, PencilRuler, Sprout, Store, Truck, Utensils } from "lucide-react";
 import type { SectionIntro, UseCase } from "./types";
 
+/**
+ * The section is about **real implementations** from now on, not business
+ * types. That is a promise the site cannot keep yet, so it says so: §7 of
+ * CLAUDE.md forbids implying customers we do not have, and an empty shelf with
+ * a date is honest where six invented categories would not be.
+ *
+ * TODO(guti): cuando haya un caso real —con permiso del cliente— reemplaza
+ * `useCasesEmpty` por el caso y quita esta nota.
+ */
 export const useCasesIntro: SectionIntro = {
-  eyebrow: "Casos de uso",
-  title: "Para negocios que no caben en una plantilla",
-  lead: "Estos son tipos de negocio, no clientes nuestros. Sirven para que veas cómo cambia el sistema según lo que vendes y cómo lo vendes.",
+  eyebrow: "Casos reales",
+  // Not "Negocios que ya trabajan con nexora-pos": with the empty state right
+  // under it, a title in the present tense reads as a claim about customers we
+  // have not published. This one states the policy instead.
+  title: "Casos reales,",
+  titleAccent: "no ejemplos inventados",
+  lead: "Aquí van implementaciones reales: qué negocio es, qué necesitaba y cómo quedó su sistema.",
+} as const;
+
+/** Shown while there is no real case published. */
+export const useCasesEmpty = {
+  title: "Todavía no hay casos publicados",
+  body: "Preferimos no llenar esta sección con ejemplos inventados. En cuanto tengamos el permiso de un cliente para contar su caso, lo publicamos aquí.",
+  cta: "Mientras tanto, cuéntanos el tuyo y te mostramos cómo quedaría.",
 } as const;
 
 /**

@@ -16,10 +16,20 @@ export const site = {
   descriptorShort: "SOFTWARE A MEDIDA · PERSONALIZABLE",
   tagline: "Software de punto de venta a medida, personalizable y modular.",
 
-  /** The claim. Rendered in three parts: the last one goes in brand-500. */
+  /**
+   * The claim, in the pieces the hero needs to style it.
+   *
+   * `underlined` carries the brand underline, `accent` the brand colour, and
+   * `middle` is the plain sentence between them. Splitting it here rather
+   * than in JSX keeps the rule of CLAUDE.md §5: changing a text never means
+   * touching a component.
+   */
   claim: {
-    lead: "Tu negocio. Tu forma.",
+    underlined: "Tu negocio.",
+    middle: "Tu forma.",
     accent: "Nuestro software.",
+    /** The whole thing, for places that need it as one string. */
+    full: "Tu negocio. Tu forma. Nuestro software.",
   },
 
   /** The closing line, used on the final CTA band. */
@@ -38,12 +48,29 @@ export const site = {
  * Contact channels for the footer and /contacto.
  * TODO(guti): número de WhatsApp, correo y ciudad reales.
  */
+/**
+ * The one number the site books appointments through.
+ *
+ * Every "Agendar una cita" on the site points here — nav, hero, the CTA at the
+ * end of each section and the closing band — so the destination is decided in
+ * one place. The message is prefilled so the conversation starts with context
+ * instead of "Hola".
+ *
+ * `wa.me` wants the number with country code and nothing else: no +, no spaces.
+ */
+export const whatsapp = {
+  number: "+57 313 271 2410",
+  href: `https://wa.me/573132712410?text=${encodeURIComponent(
+    "Hola, quiero agendar una cita para ver nexora-pos.",
+  )}`,
+} as const;
+
 export const contact: readonly ContactChannel[] = [
   {
     kind: "whatsapp",
     label: "WhatsApp",
-    value: "TODO(guti): número",
-    href: null,
+    value: whatsapp.number,
+    href: whatsapp.href,
   },
   {
     kind: "email",
@@ -64,12 +91,19 @@ export const contact: readonly ContactChannel[] = [
  * about the company — CLAUDE.md §7 forbids inventing client counts, years of
  * experience or installations.
  *
- * TODO(guti): confirma que las cuatro son ciertas hoy. Si "Funciona sin
- * internet" todavía no aplica, dímelo y la cambiamos por otra real.
+ * The five are restatements of the pillars in §4 of CLAUDE.md, which is the
+ * only way to keep them honest: nothing here is a figure about the company.
+ *
+ * The labels are short on purpose — 24 characters or fewer. At the size the
+ * band uses, that is what fits on one line in its column; the moment one wraps,
+ * that column grows and the row stops reading as a single glance.
+ *
+ * TODO(guti): confirma que las cinco son ciertas hoy.
  */
 export const trustMetrics: readonly TrustMetric[] = [
   { value: "100%", label: "Personalizable" },
-  { value: "7", label: "Módulos que activas cuando los necesitas" },
-  { value: "Cifrados", label: "Tus datos, siempre protegidos" },
-  { value: "Directo", label: "Soporte con quien construyó el software" },
+  { value: "A medida", label: "Se ajusta a tus procesos" },
+  { value: "Modular", label: "Activas solo lo que usas" },
+  { value: "Cifrados", label: "Tus datos, protegidos" },
+  { value: "Directo", label: "Soporte de quien lo hizo" },
 ] as const;

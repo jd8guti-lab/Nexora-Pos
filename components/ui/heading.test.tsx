@@ -22,12 +22,14 @@ describe("Heading", () => {
     expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
   });
 
-  it("uses brand-700 for the accent tone, never brand-500", () => {
-    // brand-500 as text is 2.61:1 on white and fails AA at every size.
+  it("uses brand-500 for the accent tone — an authorised exception, not a slip", () => {
+    // This one FAILS AA: 2.61:1 on white where 13px text needs 4.5:1. The user
+    // asked for the bright orange with that number in front of him, and it is
+    // listed in scripts/contrast.mjs under authorised exceptions. The test
+    // exists so that changing it back is a deliberate act, not a drive-by.
     render(<Eyebrow tone="accent">Sistema de diseño</Eyebrow>);
     const el = screen.getByText("Sistema de diseño");
-    expect(el.className).toContain("text-brand-700");
-    expect(el.className).not.toContain("text-brand-500");
+    expect(el.className).toContain("text-brand-500");
   });
 
   it("renders an eyebrow as a paragraph, not a heading", () => {

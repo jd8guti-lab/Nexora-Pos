@@ -61,7 +61,7 @@ export function NavMobile() {
         onClick={() => setOpen(true)}
         aria-expanded={open}
         aria-label="Abrir el menú"
-        className="ease-brand text-ink-900 hover:bg-paper-50 -mr-2 inline-flex size-11 items-center justify-center rounded-full transition-colors duration-200 lg:hidden"
+        className="ease-brand text-ink-900 hover:bg-paper-50 -mr-2 inline-flex size-11 items-center justify-center rounded-full transition-colors duration-200 xl:hidden"
       >
         <Menu className="size-6" aria-hidden />
       </button>

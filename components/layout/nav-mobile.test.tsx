@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeAll, describe, expect, it } from "vitest";
+import { navLinks } from "@/content/nav";
 import { NavMobile } from "./nav-mobile";
 
 /**
@@ -56,10 +57,10 @@ describe("NavMobile", () => {
     await user.click(screen.getByRole("button", { name: "Abrir el menú" }));
     await screen.findByRole("dialog");
 
-    for (const label of ["Módulos", "Casos", "Precios", "Contacto"]) {
+    for (const label of navLinks.map((l) => l.label)) {
       expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
     }
-    expect(screen.getByRole("link", { name: "Agendar demo" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Agendar una cita" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Ingresar al portal" })).toBeInTheDocument();
   });
 });
