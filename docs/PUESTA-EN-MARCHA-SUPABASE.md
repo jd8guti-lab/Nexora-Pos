@@ -1,18 +1,53 @@
 # Puesta en marcha de Supabase
 
 Los pasos para dejar el portal funcionando con datos reales. Se hacen **una vez** para el proyecto,
-y después un bloque corto por cada empresa cliente nueva.
+y después un bloque corto por cada empresa o usuario nuevo (§8).
 
 Está escrito para hacerse de arriba abajo. Si algo falla a mitad, no sigas: casi todo lo de aquí
 toca datos de un negocio que factura.
 
-> **Qué se pudo verificar y qué no.** El esquema, las políticas RLS, las funciones de escritura y
-> el aislamiento entre empresas están probados contra un Postgres real (`npm run test` en el repo
-> de Papas El Labrador levanta uno y corre el SQL entero). Lo que **no** se ha podido probar sin un
-> proyecto de Supabase de verdad es: Supabase Auth, Realtime, y que PostgREST acepte las consultas
-> con tablas embebidas. Eso es lo que hay que mirar con atención en el paso 7.
-
 ---
+
+## Dónde está todo
+
+Son **dos repositorios**, y hay que clonar los dos:
+
+| Repositorio | Qué es | Rama con este trabajo |
+|---|---|---|
+| [`jd8guti-lab/Nexora-Pos`](https://github.com/jd8guti-lab/Nexora-Pos) | El sitio público y **el portal**: login, middleware y los scripts | `feat/portal-clientes` |
+| [`jd8guti-lab/Papas-el-Labrador`](https://github.com/jd8guti-lab/Papas-el-Labrador) | La aplicación del cliente y **el esquema SQL** | `feat/supabase-multi-tenant` |
+
+**Ninguna de las dos está fusionada a `main` todavía.** Se dejaron en rama a propósito: hasta que
+los pasos de este documento estén hechos y verificados, `main` sigue teniendo la versión anterior,
+que funciona.
+
+Archivos que vas a tocar:
+
+| Archivo | Repo | Para qué |
+|---|---|---|
+| `docs/esquema-supabase.sql` | Papas | El SQL completo. Paso 1 |
+| `scripts/crear-usuario-portal.mjs` | Nexora | Crea usuarios. Paso 3 |
+| `scripts/sync-tenant-app.mjs` | Nexora | Construye y trae la app del cliente. Paso 6 |
+| `.env.example` | Nexora | La plantilla de variables. Paso 5 |
+
+## Qué está hecho y qué no
+
+**Hecho, y probado contra un Postgres real** (`npm run test` en el repo de Papas levanta uno con
+PGlite y corre el esquema entero — no hace falta Docker):
+
+- El esquema multi-tenant: 18 tablas con `tenant_id` y RLS, más `tenants` y `configuracion`.
+- El aislamiento entre empresas: que una no lea ni escriba los datos de otra.
+- Las escrituras atómicas (`aplicar_lote`, `registrar_pedido`) y el consecutivo de factura sin
+  huecos ni repeticiones.
+- El adaptador de Supabase de la aplicación: sus 30 métodos.
+- El portal: login, resolución de tenant en el middleware, y que sin sesión no baje ni el
+  JavaScript de la app.
+
+**Falta, y es lo que hace este documento:** conectar un proyecto de Supabase real, crear el
+usuario, sembrar los datos y desplegar.
+
+**No se pudo probar sin ese proyecto**, así que hay que mirarlo con atención en el paso 7:
+Supabase Auth de verdad, Realtime, y que PostgREST acepte las consultas con tablas embebidas.
 
 ## Antes de empezar
 
@@ -179,10 +214,75 @@ Con el portal desplegado, y **antes** de entregárselo al negocio:
    rebotarte a la tuya.
 9. **La factura.** Imprime una y cuádrala contra `docs/PRUEBA-ACEPTACION.md` del repo de Papas.
 
-## 8. Empresas siguientes
+## 8. Agregar un perfil nuevo
 
-Para el próximo cliente, solo los pasos 2, 3, 4 y 6, con su propio slug. El esquema y las
-políticas ya están.
+"Perfil nuevo" puede ser dos cosas muy distintas. **Los dos casos ya funcionan sin tocar código**,
+pero el camino no es el mismo.
+
+### 8.a — Otro USUARIO de la misma empresa
+
+Por ejemplo: el dueño y su hija, los dos entrando a El Labrador. Es solo correr el script del paso
+3 otra vez con otro correo y el **mismo slug**:
+
+```bash
+SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/crear-usuario-portal.mjs hija@empresa.com papas-el-labrador
+```
+
+No hay nada más que hacer: no se toca el esquema, ni se construye nada, ni se despliega.
+
+**Lo que hay que saber antes de ofrecerlo:** dentro de la aplicación **no hay roles**. Los dos
+usuarios ven exactamente lo mismo —las ganancias, las deudas, todo— y los dos pueden borrar. Fue
+decisión del dueño de El Labrador (un solo perfil), y el sistema no simula nada intermedio. Si
+alguna vez hacen falta permisos por persona, hay que reintroducir la entidad completa (`usuarios`,
+`auth_id`, políticas por rol); no quedó nada a medias esperando.
+
+Lo único que sí distingue a las personas es el texto de "Atendió" en la factura y el campo
+`registrado_por` de cada documento, que se escriben a mano.
+
+### 8.b — Otra EMPRESA cliente
+
+Por ejemplo: subir un segundo negocio a la plataforma, al lado de El Labrador. Tiene su propia
+aplicación, su propia base de datos aislada y su propia URL.
+
+**Si esa empresa usa la misma aplicación que El Labrador** (es decir, otro comercializador de papa
+con el mismo sistema), son cuatro pasos:
+
+1. **Paso 2** con su slug, nombre y NIT, más su fila de `configuracion` (¡su propio prefijo y
+   consecutivo de factura!).
+2. **Paso 3** para crear su usuario, con ese slug.
+3. **Paso 6** para construir y copiar su aplicación:
+   ```bash
+   node scripts/sync-tenant-app.mjs el-slug-nuevo "ruta/al/proyecto"
+   ```
+   Queda en `public/portal/el-slug-nuevo/`. Se commitea.
+4. Desplegar.
+
+El esquema, las políticas RLS y el middleware ya sirven a cualquier número de empresas: no hay que
+tocarlos. El aislamiento se prueba solo con que existan dos.
+
+**Si esa empresa usa una aplicación DISTINTA** (otro giro de negocio, otro proyecto), es lo mismo:
+el portal no sabe ni le importa qué hay dentro de `public/portal/<slug>/`. Lo único que ese
+proyecto tiene que cumplir, sea cual sea su stack:
+
+| Requisito | Por qué |
+|---|---|
+| Construir con la ruta base `/portal/<slug>/` | Si no, sus assets dan 404 |
+| Que su router use esa misma base | Si no, recargar en una ruta interna manda al inicio |
+| Dejar un `index.html` en la raíz de su build | Es a donde el middleware reescribe las rutas |
+
+Si además guarda datos en el mismo Supabase, sus tablas necesitan `tenant_id` y RLS con el mismo
+patrón del esquema actual. **Si crea tablas sin RLS, esa empresa expone sus datos a las demás** —
+la comprobación del paso 1 (`... and not relrowsecurity` tiene que dar 0) hay que volver a
+correrla después de cada tabla nueva.
+
+### Lo que NO hay que hacer nunca
+
+- **No reutilizar un slug.** Es la carpeta y es lo que compara el middleware.
+- **No copiar la fila de `configuracion` de una empresa a otra sin cambiar el consecutivo.** Dos
+  empresas con el mismo prefijo y el mismo número emitirían facturas duplicadas.
+- **No poner el `tenant_id` en `user_metadata`.** El script lo pone en `app_metadata` por una razón:
+  `user_metadata` lo puede editar el propio usuario desde el navegador, y podría reasignarse a otra
+  empresa.
 
 ---
 
@@ -194,8 +294,9 @@ Conviene decirlo antes de entregar, no después:
   conexión, y el propio código del negocio anota que en la bodega se cae la señal. Fue una decisión
   consciente para poder entregar. Si el negocio se para un día por esto, la solución es
   offline-first con sincronización, no un parche.
-- **Un solo usuario por empresa.** Por decisión del dueño de El Labrador, dentro de la app no hay
-  roles ni perfiles: quien entra ve todo. Quién registró cada documento se guarda como texto.
+- **No hay roles.** Se pueden crear los usuarios que se quieran para una empresa (§8.a), pero
+  **todos ven y pueden hacer lo mismo**: las ganancias, las deudas, y borrar. Fue decisión del dueño
+  de El Labrador. Quién registró cada documento se guarda como texto, no como usuario.
 - **No hay "olvidé mi contraseña".** Se cambia corriendo otra vez el script del paso 3.
 - **No hay límite de intentos de login.** Lo trae Supabase por su cuenta hasta cierto punto; si
   hace falta más, se configura en el panel.

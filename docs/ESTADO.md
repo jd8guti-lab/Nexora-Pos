@@ -206,6 +206,25 @@ pesa 219 kB, pero solo lo baja quien entra a él.
 Realtime, y que PostgREST acepte los `select` con tablas embebidas. Está en el paso 7 del
 instructivo, y hay que mirarlo antes de entregar.
 
+### Cómo sigue — para quien retome
+
+**El código está terminado; lo que falta es conectar un Supabase real.** El documento a seguir es
+**[`docs/PUESTA-EN-MARCHA-SUPABASE.md`](PUESTA-EN-MARCHA-SUPABASE.md)**: ocho pasos, nueve
+comprobaciones manuales, y cómo agregar un usuario o una empresa nueva (§8).
+
+Está en las ramas `feat/portal-clientes` (aquí) y `feat/supabase-multi-tenant` (repo de Papas),
+ya subidas. **Ninguna se fusionó a `main` a propósito**: hasta que los pasos estén hechos y
+verificados, `main` conserva la versión que funciona.
+
+Dos cosas que sorprenden si no se saben:
+
+1. **`public/portal/` no existe todavía.** La app del cliente se genera con
+   `scripts/sync-tenant-app.mjs`, y el script **se niega a construir sin configuración de
+   Supabase**: Vite la incrusta en el bundle, así que sin ella se desplegaría una app que arranca
+   y falla al primer clic.
+2. **Sin las variables, el portal falla cerrado.** La página de login sigue en pie, pero nadie
+   entra a ninguna aplicación. Es deliberado.
+
 ---
 
 ## Lo que queda pendiente de rendimiento
