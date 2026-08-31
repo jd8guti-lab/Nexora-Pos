@@ -61,6 +61,6 @@ describe("NavMobile", () => {
       expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
     }
     expect(screen.getByRole("link", { name: "Agendar una cita" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Ingresar al portal" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Acceso clientes" })).toBeInTheDocument();
   });
 });

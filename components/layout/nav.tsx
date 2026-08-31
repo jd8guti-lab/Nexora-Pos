@@ -99,7 +99,7 @@ export function Nav() {
           </nav>
 
           <div className="hidden shrink-0 items-center gap-2 xl:flex">
-            <Button asChild variant="ghost" size="md">
+            <Button asChild variant="secondary" size="md">
               <Link
                 href={portalLink.href}
                 {...(portalLink.external ? { target: "_blank", rel: "noreferrer" } : {})}

@@ -127,7 +127,7 @@ export default function KitchenSinkPage() {
             {surface.bg === "ink" ? (
               <Row title="Variantes">
                 <Button variant="inverse">Agendar una cita</Button>
-                <Button variant="inverseOutline">Ingresar al portal</Button>
+                <Button variant="inverseOutline">Acceso clientes</Button>
               </Row>
             ) : surface.bg === "brand" ? (
               <Row title="Variantes">
@@ -139,7 +139,7 @@ export default function KitchenSinkPage() {
                 <Row title="Variantes">
                   <Button>Agendar una cita</Button>
                   <Button variant="secondary">Ver módulos</Button>
-                  <Button variant="ghost">Ingresar al portal</Button>
+                  <Button variant="ghost">Acceso clientes</Button>
                   <Button variant="link">Cómo trabajamos</Button>
                 </Row>
                 <Row title="Tamaños — todos ≥44px">
