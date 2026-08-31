@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-08-30 (**el portal de clientes**: login, resolución de tenant y la app de El Labrador servida bajo `/portal/`)
+Última actualización: 2026-08-31 (**la factura de El Labrador**: impresión silenciosa, tipografía más grande y el pie de nexora-pos — hecho en el repo del cliente, pendiente de sincronizar aquí)
 
 ---
 
@@ -225,6 +225,30 @@ Dos cosas que sorprenden si no se saben:
 2. **Sin las variables, el portal falla cerrado.** La página de login sigue en pie, pero nadie
    entra a ninguna aplicación. Es deliberado.
 
+#### La factura de El Labrador cambió el 2026-08-31 — pendiente de sincronizar
+
+El dueño imprimió por primera vez en la impresora térmica y trajo el papel. Se arregló **en el repo
+de Papas El Labrador** (rama `feat/supabase-multi-tenant`, commit `ef723ee`), porque la aplicación
+del cliente no se compila aquí:
+
+- **Impresión silenciosa.** El ticket ya no se imprime desde la página: se monta en un iframe con su
+  propio documento y se imprime ahí. Eso quita el diálogo *nuestro* del camino, pero **el diálogo
+  del navegador no se puede quitar por código** — `window.print()` siempre lo abre. Se consigue
+  abriendo Chrome con `--kiosk-printing`, y eso es configuración del equipo del negocio. El
+  instructivo es `docs/IMPRESION.md` de aquel repo.
+- **El ancho lo pone ahora el driver de la impresora** (`@page { size: auto }`) en vez de los 78,5 mm
+  escritos a mano, que era parte del papel en blanco que sobraba.
+- **La letra subió a 13 px con peso 600 y negro puro**; una térmica quema puntos y lo fino sale gris.
+- **Pie de nexora-pos en el recibo**: `Software de operación` / `nexora-pos` /
+  `www.nexora-pos.online`, igual que XUMA-POS imprime el suyo. Va fijo en el componente, no
+  configurable por negocio: es la marca del software.
+
+**Todavía no se refleja en este repositorio.** `public/portal/papas-el-labrador/` no existe, y
+`scripts/sync-tenant-app.mjs` se niega a construir sin las variables de Supabase (probado: falla con
+"No hay configuración de Supabase para el build"). En cuanto exista el `.env.local` del paso 5 del
+instructivo, la primera sincronización trae ya esta versión de la factura — no hay nada extra que
+hacer aquí.
+
 #### La tarea siguiente: agregar un perfil nuevo
 
 Está pedida y todavía no empezada. **"Perfil" puede ser dos cosas distintas y el camino no es el
@@ -379,6 +403,7 @@ Cada decisión técnica va aquí **con su porqué**, para no volver a discutirla
 | 88  | **"Casos de uso" cambia de tema a implementaciones reales, y admite que no hay** | Pedido del usuario. Antes eran seis tipos de negocio; ahora la sección promete clientes reales, y esa promesa no se puede cumplir a medias: en vez de categorías disfrazadas de clientes hay un **estado vacío que dice por qué está vacío**. El título pasa a "Casos reales, no ejemplos inventados" y no a "Negocios que ya trabajan con nexora-pos", que con el bloque vacío justo debajo se leería como una afirmación sobre clientes que no tenemos (§7). `TODO(guti)` para reemplazarlo cuando haya uno con permiso |
 | 89  | **`SectionHeading`: un solo sitio para el encabezado de las secciones**  | Pedido del usuario: que "Cómo trabajamos" y "Casos reales" se vean como "El problema" — mismo tamaño y con parte subrayada. En vez de copiar el marcado por tercera vez se extrae a `components/sections/section-heading.tsx`, y con eso **la excepción de contraste del naranja brillante vive en un único archivo** en vez de propagarse por copia. La partición del título sigue en `content/`, y el nav pasa a decir "Casos reales" |
 | 90  | **Los cuatro pasos suben un escalón, y solo uno**                        | Pedido del usuario: más notorios pero "tampoco tanto". La ficha del número pasa de 48 a **56px** con el dígito en `text-h2` (40px), y la descripción de `text-body` a `text-lead` (22px). **El título del paso se queda en `h3`**: a `h2` se parte en tres líneas dentro de una columna de 282px, que es más grande y peor. El filete de la línea de tiempo se mueve de `left-6` a `left-7` para seguir cruzando el centro de la ficha |
+| 91  | La factura del cliente se imprime desde un iframe aparte, y el ancho lo pone el driver           | Imprimir la página obligaba a esconder la aplicación con `@media print`, y eso ya había sacado el recibo en hoja carta una vez y en blanco otra. Un documento con solo el ticket adentro no tiene entorno que se cuele en el papel. Y el ancho escrito a mano (78,5 mm) hacía maquetar sobre un papel que puede no ser el que la impresora tiene puesto. **Vive en el repo de Papas El Labrador**, no aquí |
 
 ---
 
@@ -640,3 +665,4 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | 2026-08-27 | Nav a todo el ancho con `--text-nav` y botones `md` (48), altura del nav como token (49); hero con el claim a tres líneas y CTA secundario en placa blanca (50, 51) | typecheck · lint · test (73/73) · contrast (30/30) · build en verde. Nav + hero = exactamente el viewport a 1920×1080, 1280×800 y 375×812. Contraste del acento medido sobre los píxeles compuestos: **3.12:1** a 1920 y **3.13:1** a 1280 |
 | 2026-08-27 | Sexto pilar "Escalable" y copy nuevo de "El problema" (46, 47); nav rehecho como barra flotante siguiendo el arte (48) | typecheck · lint · test (73/73) · contrast (30/30) · build en verde. Verificado en el navegador: activo en `brand-700` 44px, estado con scroll translúcido + desenfoque, cero desplazamiento horizontal a 320px y disparador móvil de 44×44 |
 | 2026-08-27 | Efecto del nav reescrito en CSS puro y `framer-motion` desinstalado (43): home de 153 a **124 kB**. Fuente afinada a **Figtree** midiendo el arte de referencia (44). `paper-50` a `#EDEDED` y `ink-500` a `#626976` (45) | typecheck · lint · test (73/73) · contrast (30/30) · build en verde. JS real en el cable: **124 kB** |
+| 2026-08-31 | Factura de El Labrador: impresión desde un iframe aparte, ancho a cargo del driver, letra a 13 px/600 y pie `www.nexora-pos.online`. **Cambio hecho en el repo del cliente**; aquí solo documentación | En Papas El Labrador: typecheck · lint · test (659/659) · build en verde, y comprobado en el navegador. Aquí: sin cambios de código — `sync-tenant-app.mjs` sigue bloqueado sin Supabase |
