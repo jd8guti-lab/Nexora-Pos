@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-08-30 (scripts de puesta en marcha implementados)
+Última actualización: 2026-08-30 (infraestructura multi-tenant y scripts de producción listos)
 
 ---
 
@@ -33,9 +33,12 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 - **`middleware.ts`** vacío, con el comentario de dónde va la resolución de tenant.
 - **Vitest + Testing Library**: 11 tests en verde.
 - **`scripts/contrast.mjs`**: auditoría WCAG de la paleta, 17/17.
-- **Scripts de puesta en marcha** (2026-08-30): `crear-usuario-portal.mjs` (PASO 3) y
-  `sync-tenant-app.mjs` (PASO 6). Documentación en `docs/PUESTA-EN-MARCHA.md` con checklist de
-  los 8 pasos, comandos concretos, y guía de troubleshooting.
+- **Scripts de puesta en marcha** (2026-08-30): `crear-tenant.mjs` (PASO 2),
+  `crear-usuario-portal.mjs` (PASO 3), `validar-flujo-negocio.mjs` (PASO 4) y
+  `sync-tenant-app.mjs` (PASO 6). Documentación en `docs/PUESTA-EN-MARCHA.md` con checklist
+  de los 8 pasos, comandos concretos, y guía de troubleshooting.
+- **Schema multi-tenant real**: `backend/esquema-supabase.sql` con `tenants`, `profiles` y
+  `business_config` para registrar el negocio y asociar el usuario del portal al tenant correcto.
 
 **Verificación de la fase** — los cuatro en verde más el de contraste:
 

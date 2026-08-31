@@ -61,74 +61,87 @@ async function main() {
   }
 
   try {
-    // Verificar que el tenant existe
     const { data: tenant, error: tenantError } = await supabase
       .from("tenants")
       .select("id, slug, nombre")
       .eq("slug", tenantSlug)
-      .single();
+      .maybeSingle();
 
     if (tenantError) {
+      console.error(`❌ Error consultando el tenant ${tenantSlug}: ${tenantError.message}`);
+      process.exit(1);
+    }
+
+    if (!tenant) {
       console.error(`❌ Tenant no encontrado: ${tenantSlug}`);
-      console.error(tenantError.message);
+      console.error("   Primero crea el tenant con el schema y el script de creación del negocio.");
       process.exit(1);
     }
 
     console.log(`✓ Tenant encontrado: ${tenant.nombre} (ID: ${tenant.id})`);
 
-    // Crear o actualizar el usuario
-    const { data: existingUser } = await supabase.auth.admin.getUserById(
-      // Primero intentamos buscar por email
-      // Supabase Auth no tiene un `getByEmail` en admin, así que intentamos crear
-      // y si existe, actualizamos
-    );
+    const { data: users, error: listUsersError } = await supabase.auth.admin.listUsers();
 
-    // En la práctica, usamos upsert: buscamos, y si no existe creamos
-    const { data: authData, error: authError } =
-      await supabase.auth.admin.createUser({
-        email,
+    if (listUsersError) {
+      console.error(`❌ No se pudo buscar usuarios: ${listUsersError.message}`);
+      process.exit(1);
+    }
+
+    const user = users.users.find((item) => item.email?.toLowerCase() === email.toLowerCase());
+
+    if (user) {
+      const { error: updateError } = await supabase.auth.admin.updateUserById(user.id, {
         password,
-        app_metadata: { tenant_id: tenant.id, tenant_slug: tenantSlug },
-        email_confirm: true,
+        app_metadata: {
+          tenant_id: tenant.id,
+          tenant_slug: tenantSlug,
+          role: "admin",
+        },
       });
-
-    if (authError && authError.message.includes("already exists")) {
-      // El usuario existe, actualizamos su contraseña y metadata
-      const { data: users, error: searchError } =
-        await supabase.auth.admin.listUsers();
-
-      if (searchError) {
-        console.error(`❌ No se pudo buscar el usuario: ${searchError.message}`);
-        process.exit(1);
-      }
-
-      const user = users.users.find((u) => u.email === email);
-
-      if (!user) {
-        console.error(`❌ Usuario no encontrado después de búsqueda.`);
-        process.exit(1);
-      }
-
-      const { error: updateError } = await supabase.auth.admin.updateUserById(
-        user.id,
-        {
-          password,
-          app_metadata: { tenant_id: tenant.id, tenant_slug: tenantSlug },
-        }
-      );
 
       if (updateError) {
         console.error(`❌ Error actualizando usuario: ${updateError.message}`);
         process.exit(1);
       }
 
-      console.log(`✓ Contraseña actualizada para ${email}`);
-    } else if (authError) {
-      console.error(`❌ Error creando usuario: ${authError.message}`);
-      process.exit(1);
+      console.log(`✓ Usuario existente actualizado: ${email}`);
+      console.log(`✓ Tenant asignado en app_metadata: ${tenantSlug}`);
     } else {
+      const { error: createError } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        app_metadata: {
+          tenant_id: tenant.id,
+          tenant_slug: tenantSlug,
+          role: "admin",
+        },
+        email_confirm: true,
+      });
+
+      if (createError) {
+        console.error(`❌ Error creando usuario: ${createError.message}`);
+        process.exit(1);
+      }
+
       console.log(`✓ Usuario creado: ${email}`);
       console.log(`✓ Tenant asignado en app_metadata: ${tenantSlug}`);
+    }
+
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .upsert(
+        {
+          email,
+          tenant_id: tenant.id,
+          nombre: email.split("@")[0],
+          rol: "admin",
+        },
+        { onConflict: "tenant_id,email" }
+      );
+
+    if (profileError) {
+      console.error(`❌ Error creando perfil del usuario: ${profileError.message}`);
+      process.exit(1);
     }
 
     console.log("\n✅ Listo. El usuario puede entrar en el portal.\n");

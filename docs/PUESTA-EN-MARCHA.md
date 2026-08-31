@@ -13,15 +13,17 @@
 |---|---|---|
 | URL del proyecto | `NEXT_PUBLIC_SUPABASE_URL` | No |
 | Anon Key | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | No |
-| Service Role Key | Solo en terminal, paso 3 | **SÍ** |
+| Service Role Key | Solo en terminal, pasos 2 y 3 | **SÍ** |
 
 ### Lo que ya existe en este repo
 
-- [x] Código del portal completo (`Nexora-Pos`)
-- [x] Código de la app del cliente (rama `feat/supabase-multi-tenant` en Papas)
-- [x] Esquema SQL multi-tenant (en Papas: `backend/esquema-supabase.sql`)
-- [x] Script de creación de usuarios: `scripts/crear-usuario-portal.mjs`
+- [x] Infraestructura de Nexora ya preparada (`Nexora-Pos`)
+- [x] Portal de clientes preparado en la rama `portal-clientes`
+- [x] Script de creación de tenant: `scripts/crear-tenant.mjs`
+- [x] Script de creación de usuario: `scripts/crear-usuario-portal.mjs`
+- [x] Script de validación del flujo: `scripts/validar-flujo-negocio.mjs`
 - [x] Script de sincronización de app: `scripts/sync-tenant-app.mjs`
+- [x] Schema SQL multi-tenant: `backend/esquema-supabase.sql`
 - [x] Variables de entorno preparadas (`.env.example`)
 
 ---
@@ -30,20 +32,39 @@
 
 | # | Paso | Dónde | Estado | Comando o archivo |
 |---|---|---|---|---|
-| 1 | Correr esquema SQL | Panel Supabase | ⏳ | Papas: `backend/esquema-supabase.sql` |
-| 2 | Registrar empresa | SQL query | ⏳ | Paso 2 de la guía completa |
-| 3 | Crear usuario | Terminal | ⏳ | `node scripts/crear-usuario-portal.mjs` |
-| 4 | Sembrar datos | App local → Respaldo | ⏳ | Paso 4 de la guía completa |
+| 1 | Crear schema SQL | Panel Supabase | ⏳ | `backend/esquema-supabase.sql` |
+| 2 | Registrar tenant | Terminal | ⏳ | `node scripts/crear-tenant.mjs` |
+| 3 | Crear usuario del portal | Terminal | ⏳ | `node scripts/crear-usuario-portal.mjs` |
+| 4 | Validar schema y datos | Terminal | ⏳ | `node scripts/validar-flujo-negocio.mjs` |
 | 5 | Variables de entorno | `.env.local` + Vercel | ⏳ | Ver `.env.example` |
 | 6 | Construir y copiar app | Terminal | ⏳ | `node scripts/sync-tenant-app.mjs` |
-| 7 | Verificar en producción | Navegador | ⏳ | 9 comprobaciones en la guía |
-| 8 | Agregar otro usuario/empresa | Terminal o SQL | ⏳ | Opciones 8.a y 8.b |
+| 7 | Verificar en producción | Navegador | ⏳ | Comprobaciones de negocio |
+| 8 | Agregar otro usuario/empresa | Terminal o SQL | ⏳ | Scripts adicionales |
 
 ---
 
 ## Comandos concretos
 
-### PASO 3 — Crear usuario para El Labrador
+### PASO 1 — Ejecutar el schema real en Supabase
+
+En el SQL editor de Supabase, pega y ejecuta:
+
+```sql
+-- Ver archivo: backend/esquema-supabase.sql
+```
+
+### PASO 2 — Registrar un tenant
+
+```bash
+cd C:\Users\GHOSTBOY\OneDrive\Documentos\ProyectosINF\Nexora-Pos
+SUPABASE_URL=https://TU-PROYECTO.supabase.co \
+SUPABASE_SERVICE_ROLE_KEY=LA-LLAVE-SUPER-SECRETA \
+node scripts/crear-tenant.mjs papas-el-labrador "Papas el Labrador" papasellabrador@user.com
+```
+
+Esto crea el tenant, el perfil del administrador y la relación con el usuario del portal.
+
+### PASO 3 — Crear o actualizar usuario del portal
 
 ```bash
 cd C:\Users\GHOSTBOY\OneDrive\Documentos\ProyectosINF\Nexora-Pos
@@ -52,7 +73,16 @@ SUPABASE_SERVICE_ROLE_KEY=LA-LLAVE-SUPER-SECRETA \
 node scripts/crear-usuario-portal.mjs papasellabrador@user.com papas-el-labrador
 ```
 
-(Pide la contraseña por teclado.)
+Pide la contraseña por teclado.
+
+### PASO 4 — Validar el flujo de negocio real
+
+```bash
+cd C:\Users\GHOSTBOY\OneDrive\Documentos\ProyectosINF\Nexora-Pos
+SUPABASE_URL=https://TU-PROYECTO.supabase.co \
+SUPABASE_SERVICE_ROLE_KEY=LA-LLAVE-SUPER-SECRETA \
+node scripts/validar-flujo-negocio.mjs papas-el-labrador
+```
 
 ### PASO 6 — Sincronizar app del cliente
 
@@ -109,7 +139,7 @@ VITE_PERSISTENCIA="supabase"
 - `/app/(portal)` — El portal (middleware, login, etc.)
 - `/public/portal/` — Aquí se copian las apps de los clientes
 - `/scripts/` — Scripts de administración
-- `backend/esquema-supabase.sql` — Schema SQL (en Papas)
+- `/backend/esquema-supabase.sql` — Schema SQL multi-tenant real
 
 ---
 
@@ -118,10 +148,10 @@ VITE_PERSISTENCIA="supabase"
 **Cuando ejecutes cada paso, marca aquí lo que hiciste:**
 
 ```
-Paso 1 (esquema SQL):    [ ] Ejecutado el 20XX-XX-XX
+Paso 1 (schema SQL):     [ ] Ejecutado el 20XX-XX-XX
 Paso 2 (tenant):         [ ] Ejecutado el 20XX-XX-XX
 Paso 3 (usuario):        [ ] Ejecutado el 20XX-XX-XX
-Paso 4 (datos):          [ ] Ejecutado el 20XX-XX-XX
+Paso 4 (flujo):          [ ] Ejecutado el 20XX-XX-XX
 Paso 5 (env vars):       [ ] Ejecutado el 20XX-XX-XX
 Paso 6 (sync app):       [ ] Ejecutado el 20XX-XX-XX
 Paso 7 (verificar):      [ ] Ejecutado el 20XX-XX-XX
@@ -130,18 +160,19 @@ Paso 8 (usuarios extras):[ ] Ejecutado el 20XX-XX-XX
 
 ---
 
-## Guía completa
+## Checklist real de producción
 
-Para entender en profundidad cada paso y las comprobaciones, lee:
+Antes de dar el sistema por listo: 
 
-📄 **Archivo adjunto en la conversación:** "GUÍA COMPLETA: PUESTA EN MARCHA DE SUPABASE Y PORTAL"
+1. Ejecutar el schema SQL en Supabase.
+2. Registrar el tenant real del negocio.
+3. Crear el usuario administrador del portal.
+4. Validar que el usuario vea solo su tenant.
+5. Confirmar que la app cliente se sirve con el tenant correcto.
+6. Probar login real, sesión y datos del negocio.
+7. Confirmar permisos, roles y negocio operativo.
 
-Tiene:
-- Explicación detallada de cada paso
-- SQL completo
-- Qué verificar en producción
-- Cómo agregar más usuarios o empresas
-- Lo que NO hay que hacer nunca
+Eso es lo que convierte la infraestructura preparada en un negocio funcional.
 
 ---
 
