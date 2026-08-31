@@ -225,6 +225,24 @@ Dos cosas que sorprenden si no se saben:
 2. **Sin las variables, el portal falla cerrado.** La página de login sigue en pie, pero nadie
    entra a ninguna aplicación. Es deliberado.
 
+#### La tarea siguiente: agregar un perfil nuevo
+
+Está pedida y todavía no empezada. **"Perfil" puede ser dos cosas distintas y el camino no es el
+mismo** — el §8 del instructivo las separa:
+
+- **Otro usuario de la misma empresa** (§8.a): correr `scripts/crear-usuario-portal.mjs` con otro
+  correo y el mismo slug. No se toca código. Ojo: **no hay roles**, los dos usuarios ven y pueden
+  exactamente lo mismo.
+- **Otra empresa cliente** (§8.b): fila en `tenants`, su usuario, su aplicación en
+  `public/portal/<slug>/`, desplegar. El esquema y el middleware ya sirven a cualquier número de
+  empresas.
+
+Lo primero que hay que preguntar al empezar es **cuál de las dos es**.
+
+Decisiones ya tomadas sobre la facturación, para no reabrirlas: el consecutivo **arranca en 0**
+(el negocio estrena sistema) y el prefijo **se queda en `JOS-LL-`**, el mismo de XUMA-POS. Las dos
+las tomó el dueño el 30 de agosto de 2026.
+
 ---
 
 ## Lo que queda pendiente de rendimiento

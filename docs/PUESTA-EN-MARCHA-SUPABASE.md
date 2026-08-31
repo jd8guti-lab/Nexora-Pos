@@ -125,14 +125,15 @@ Es el número de la factura. Cada ticket que el negocio imprime lleva uno que su
 sistema y empieza la cuenta limpia, no continúa la serie de XUMA-POS —el software que usaban
 antes—, que iba por 38326.
 
-> **Lo único a tener en cuenta.** El prefijo sigue siendo el mismo que usaba XUMA-POS
-> (`JOS-LL-`), así que los primeros tickets del sistema nuevo van a repetir números que ese
-> sistema ya emitió hace años. Para la operación diaria da igual; si alguna vez hay que cruzar
-> facturas viejas con nuevas, se confunden.
+> **El prefijo se queda como está: `JOS-LL-`, el mismo de XUMA-POS.** Se planteó cambiarlo y el
+> dueño decidió dejarlo (30 de agosto de 2026). **No lo cambies por tu cuenta.**
 >
-> Si prefieres evitarlo, es **cambiar una palabra**: pon otro prefijo, por ejemplo `LAB-`, aquí y
-> en `construirConfiguracion()` de `src/core/seed/catalogo.ts`. A partir de ahí las dos series no
-> se tocan nunca.
+> La consecuencia, para que nadie se sorprenda: los primeros tickets del sistema nuevo repiten
+> números que XUMA-POS ya emitió hace años. Para la operación diaria no molesta; solo se notaría
+> cruzando facturas viejas con nuevas —un contador revisando años atrás, por ejemplo.
+>
+> Si algún día se decide separarlas, es cambiar el prefijo en dos sitios: aquí y en
+> `construirConfiguracion()` de `src/core/seed/catalogo.ts`. Los dos tienen que coincidir.
 
 ## 3. Crear el usuario
 
