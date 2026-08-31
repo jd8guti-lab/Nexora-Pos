@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-08-27 (efecto del nav en CSS, tipografía Figtree, gris más oscuro)
+Última actualización: 2026-08-30 (scripts de puesta en marcha implementados)
 
 ---
 
@@ -13,6 +13,9 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
 ### Fase 1 · Andamiaje
 
+- **Supabase preparado en Nexora**: variables públicas `NEXT_PUBLIC_SUPABASE_URL` y
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY`, config central en `lib/config.ts` y cliente seguro en
+  `lib/supabase.ts`.
 - **Proyecto Next.js 15.5.23** (App Router, TypeScript `strict` con `noUncheckedIndexedAccess`,
   `noUnusedLocals`, `noUnusedParameters`), ESLint 9 flat config + Prettier con
   `prettier-plugin-tailwindcss`.
@@ -30,6 +33,9 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 - **`middleware.ts`** vacío, con el comentario de dónde va la resolución de tenant.
 - **Vitest + Testing Library**: 11 tests en verde.
 - **`scripts/contrast.mjs`**: auditoría WCAG de la paleta, 17/17.
+- **Scripts de puesta en marcha** (2026-08-30): `crear-usuario-portal.mjs` (PASO 3) y
+  `sync-tenant-app.mjs` (PASO 6). Documentación en `docs/PUESTA-EN-MARCHA.md` con checklist de
+  los 8 pasos, comandos concretos, y guía de troubleshooting.
 
 **Verificación de la fase** — los cuatro en verde más el de contraste:
 

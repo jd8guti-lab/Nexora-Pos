@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Figtree, Poppins } from "next/font/google";
 import { JsonLd } from "@/components/seo/json-ld";
 import { site } from "@/content/site";
-import { siteUrl } from "@/lib/config";
+import { googleSiteVerification, siteUrl } from "@/lib/config";
 import { organizationJsonLd } from "@/lib/seo";
 import "./globals.css";
 
@@ -51,6 +51,9 @@ export const metadata: Metadata = {
   description: site.description,
   applicationName: site.name,
   formatDetection: { telephone: false },
+  ...(googleSiteVerification
+    ? { other: { "google-site-verification": googleSiteVerification } }
+    : {}),
 };
 
 export const viewport: Viewport = {

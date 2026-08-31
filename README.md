@@ -13,10 +13,20 @@ construye después; aquí ya está el enganche listo en `/portal` y en `middlewa
 
 ```bash
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
 Abre en `http://localhost:3000`.
+
+Crea tu `.env.local` con estas variables antes de usar la conexión real y la integración de búsqueda:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL="https://tu-proyecto.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="tu-anon-key"
+NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION="tu-google-site-verification-token"
+NEXT_PUBLIC_GOOGLE_SEARCH_ENGINE_ID="tu-google-custom-search-engine-id"
+```
 
 ## Verificar
 
