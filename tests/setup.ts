@@ -33,7 +33,11 @@ globalThis.IntersectionObserver ??= class {
   }
 } as unknown as typeof IntersectionObserver;
 
-if (!window.matchMedia) {
+/**
+ * Guarded because this same setup runs for the tests that need a server environment — the
+ * middleware's, which use Next's request and response objects and have no `window` at all.
+ */
+if (typeof window !== "undefined" && !window.matchMedia) {
   window.matchMedia = (query: string) =>
     ({
       matches: false,

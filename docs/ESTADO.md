@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-08-27 (efecto del nav en CSS, tipografía Figtree, gris más oscuro)
+Última actualización: 2026-08-30 (**el portal de clientes**: login, resolución de tenant y la app de El Labrador servida bajo `/portal/`)
 
 ---
 
@@ -181,6 +181,33 @@ El contenido ya está movido: los seis pilares y el copy nuevo del problema (dec
 
 ---
 
+## El portal de clientes — construido el 2026-08-30
+
+Rompe lo que `CLAUDE.md` §1 y §9 declaraban fuera de alcance, **por decisión expresa del usuario**:
+había que entregarle el sistema a un cliente real, Papas El Labrador. Ambas secciones ya están
+actualizadas.
+
+Qué quedó funcionando:
+
+- **`/portal`** es el login (Supabase Auth), no un placeholder. Usa los primitivos del sitio.
+- **`middleware.ts`** dejó de ser pass-through: valida la sesión, comprueba que el slug de la URL
+  sea el de esa empresa, y reescribe a `index.html` lo que no sea un archivo para que el router de
+  la SPA sobreviva a un F5.
+- **`public/portal/<slug>/`** guarda el build compilado de la app de cada cliente. Lo trae
+  `scripts/sync-tenant-app.mjs`. Se versiona: es lo que despliega Vercel.
+- **`scripts/crear-usuario-portal.mjs`** crea el usuario de una empresa con la `service_role`,
+  a mano y fuera del repositorio.
+- **`docs/PUESTA-EN-MARCHA-SUPABASE.md`** es el instructivo para el socio que conecta la base.
+
+**La home pasó de 111 kB a 113 kB.** Sigue bajo el techo de ~120 kB (`CLAUDE.md` §6). El portal
+pesa 219 kB, pero solo lo baja quien entra a él.
+
+**Lo que NO se ha podido verificar** sin un proyecto de Supabase real: el login de verdad,
+Realtime, y que PostgREST acepte los `select` con tablas embebidas. Está en el paso 7 del
+instructivo, y hay que mirarlo antes de entregar.
+
+---
+
 ## Lo que queda pendiente de rendimiento
 
 El objetivo de `CLAUDE.md §6` es Lighthouse ≥95 en las cuatro categorías. Tres están en 100;
@@ -271,6 +298,8 @@ Cada decisión técnica va aquí **con su porqué**, para no volver a discutirla
 | 46  | **Sexto pilar: "Escalable". El título pasa a "Seis cosas que no negociamos"** | El arte de referencia muestra seis tarjetas y el título decía "Cinco": se contaba mal a sí mismo. El usuario eligió **subir a seis** en vez de quitar la tarjeta. "Escalable" no es un pilar inventado — es la tercera palabra del descriptor de marca (`SOFTWARE A MEDIDA · PERSONALIZABLE · ESCALABLE`). `CLAUDE.md` §4 se actualizó en el mismo commit, que es lo que exige la regla: si el código y el manual no coinciden, uno de los dos está mal |
 | 47  | **Copy de "El problema" cambiado al del arte**                          | El arte trae un titular distinto al de `content/home.ts` ("El software genérico te obliga a adaptarte. El nuestro se adapta a ti.") y columnas con subtítulo — "Plantilla única / Tú te adaptas al sistema" contra "Con nexora-pos / El sistema se adapta a ti". El usuario confirmó que es el texto que quiere, no relleno del generador. `ComparisonColumn` gana un `subtitle` obligatorio; la sección todavía no lo pinta (se rehace después) |
 | 48  | **El nav rehecho: barra a todo el ancho, tipografía y botones más grandes** | Primero se hizo flotante e insertada, que es la forma del arte; el usuario pidió el ancho completo de vuelta. Con esa anchura los enlaces en `text-body` quedaban perdidos, así que suben a un token propio **`--text-nav`** (17→20px) y los botones pasan de `sm` a `md`. `text-lead` se descartó: a 1920 daba 22px, más grande que los botones de al lado. **El arte pone el CTA en blanco sobre naranja: 2.61:1, prohibido por `CLAUDE.md` §3** — se queda en `ink-900` (6.46:1), y el enlace activo en `brand-700` en vez del `brand-500` del arte |
+| 51  | **La app del cliente se sirve compilada, no fusionada** | Papas El Labrador es React 18 + Tailwind 3 + react-router; este sitio es React 19 + Tailwind 4 + App Router. Un bundle no admite dos Reacts y un PostCSS no compila dos majors de Tailwind: fusionar obligaba a reescribir un proyecto entregado que maneja plata. Se copia su `dist/` a `public/portal/<slug>/` y corre tal cual, con sus propios tests como garantía |
+| 50  | **La sesión va en cookies, no en `localStorage`** | El middleware tiene que decidir en el SERVIDOR si hay sesión antes de entregar un archivo, y `localStorage` no viaja en la petición. De paso, la app del cliente —otro bundle, mismo origen— toma la sesión sin código de traspaso |
 | 49  | **La altura del nav es un token, `--spacing-nav`**                        | El hero mide una pantalla menos el nav (decisión 38) y ese `4.5rem` estaba escrito a mano en el hero. Al cambiar el nav, nav + hero pasó a **1108px en un viewport de 1080** — la decisión 38 rota en silencio. Ahora la altura vive en `--spacing-nav` y la leen el hero y el `scroll-padding-top` de los anclas. Cambiar la barra sin tocar el token ya no puede romper ninguno de los dos |
 | 50  | **El claim del hero va a tres líneas, una frase por línea**              | Es como está en el arte, y las tres frases son tres afirmaciones: el ritmo es el mensaje. Cuesta una línea de alto, que en 375×812 sacaba la sección 10px por debajo del pliegue; el suelo de la imagen en móvil baja de 22svh a 20svh y vuelve a encajar exacto. **La línea naranja baja a la banda media del velo, donde `brand-600` da 2.92:1 contra el peor caso teórico** — por eso se midió sobre los píxeles compuestos reales: 3.12:1 a 1920 y 3.13:1 a 1280, por encima del 3:1 de texto grande. Si esa línea baja más, hay que volver a medir o pasar a `brand-700` |
 | 51  | **El CTA secundario del hero es placa blanca con filete, no el `secondary` con borde** | Es lo que muestra el arte y es lo correcto aquí: el botón se apoya en la imagen, donde un relleno transparente pondría su etiqueta sobre los píxeles del escritorio. Se usa la variante `inverse` (blanco, etiqueta `ink-900`, 16.9:1) más un filete `ink-900/25` — bajo xl, donde el fondo es blanco plano, el filete es lo único que impide que desaparezca |
@@ -357,6 +386,19 @@ Lo que hay que reemplazar por información real antes de publicar. **Nada de est
 ## Trampas pisadas
 
 Errores que ya costaron tiempo, para no repetirlos.
+
+**0. `npm run contrast` mide tokens, no composiciones — y por eso no vio una etiqueta invisible.**
+El login del portal se renderizó con las etiquetas "Correo" y "Contraseña" **sin verse**: solo
+aparecía el asterisco rojo. `Field` traía `text-ink-900` fijo para la etiqueta, y el portal va
+sobre `bg-ink-900`. Texto de la marca sobre fondo de la marca, los dos tokens autorizados, y aun
+así ilegible: `ink-900` sobre `ink-900` da 1:1.
+
+El script de contraste no podía atraparlo porque compara pares que alguien le declara, no lo que
+de verdad quedó compuesto en la pantalla. **Lo atrapó abrir la página.**
+
+`Field` ahora tiene `inverse` para fondos oscuros (etiqueta blanca, asterisco y errores en
+`brand-300`, que da 9.48:1 sobre `ink-900`). La lección: un primitivo con un color fijo solo sirve
+para el fondo que su autor tenía en la cabeza. **Mira la pantalla, no solo el número.**
 
 **1. `tailwind-merge` se comía los colores de texto.**
 `cn("text-ink-900", "text-body")` devolvía solo `text-body`. Nuestras escalas tipográficas se
