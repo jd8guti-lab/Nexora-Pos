@@ -18,7 +18,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, rmSync, statSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -45,10 +45,48 @@ if (!existsSync(join(origen, "package.json"))) {
 // de la app no reconoce las URLs al recargar.
 const base = `/portal/${slug}/`;
 
+/**
+ * Vite INCRUSTA las variables `VITE_*` dentro del bundle al construir: lo que no esté presente en
+ * este momento no existe después, por más que se configure Vercel.
+ *
+ * Sin esto se puede commitear —y desplegar— una app que arranca y falla al primer clic porque no
+ * sabe a qué base conectarse. Se comprueba antes de construir, no después.
+ */
+function tieneConfiguracionDeSupabase() {
+  if (process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY) return true;
+
+  for (const archivo of [".env.local", ".env"]) {
+    const ruta = join(origen, archivo);
+    if (!existsSync(ruta)) continue;
+
+    const contenido = readFileSync(ruta, "utf8");
+    const tiene = (nombre) => new RegExp(`^\\s*${nombre}\\s*=\\s*\\S`, "m").test(contenido);
+    if (tiene("VITE_SUPABASE_URL") && tiene("VITE_SUPABASE_ANON_KEY")) return true;
+  }
+
+  return false;
+}
+
+if (!tieneConfiguracionDeSupabase()) {
+  morir(
+    "No hay configuración de Supabase para el build.\n\n" +
+      `  Vite incrusta las variables en el bundle: si no están AHORA, la app se despliega sin\n` +
+      "  saber a qué base conectarse y falla al primer clic.\n\n" +
+      `  Crea ${join(origen, ".env.local")} con:\n\n` +
+      "    VITE_SUPABASE_URL=https://TU-PROYECTO.supabase.co\n" +
+      "    VITE_SUPABASE_ANON_KEY=la-anon-key\n\n" +
+      "  Ver docs/PUESTA-EN-MARCHA-SUPABASE.md, paso 5.",
+  );
+}
+
 console.log(`\n  Construyendo ${slug} desde ${origen}`);
 console.log(`  Ruta base: ${base}\n`);
 
 try {
+  // `shell: true` en Windows es obligatorio: `npm` es un `.cmd`, y Node se niega a ejecutarlo sin
+  // shell desde que taparon CVE-2024-27980. Node avisa de que con shell los argumentos se
+  // concatenan sin escapar; aquí no hay nada que escapar — los argumentos son la constante
+  // `["run", "build"]`, y la ruta del proyecto viaja por `cwd`, no por la línea de comandos.
   execFileSync("npm", ["run", "build"], {
     cwd: origen,
     stdio: "inherit",

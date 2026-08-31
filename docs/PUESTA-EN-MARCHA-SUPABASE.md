@@ -146,6 +146,11 @@ node scripts/sync-tenant-app.mjs papas-el-labrador "C:/Users/VICTUS/projects/Pap
 Construye la app con la ruta base correcta y con `VITE_PERSISTENCIA=supabase`, y copia el
 resultado a `public/portal/papas-el-labrador/`.
 
+**El paso 5 tiene que estar hecho antes.** Vite incrusta las variables `VITE_*` dentro del bundle
+al construir: lo que no esté presente en ese momento no existe después, por más que se configure
+Vercel. El script lo comprueba y se niega a construir sin configuración, precisamente para que no
+se despliegue una app que arranca y falla al primer clic.
+
 **Esa carpeta se commitea.** Es lo que despliega Vercel; sin ella el portal sirve un 404.
 
 Cada vez que cambie algo en la app del cliente, se vuelve a correr este comando y se commitea.
