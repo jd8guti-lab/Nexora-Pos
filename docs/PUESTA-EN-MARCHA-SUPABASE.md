@@ -111,13 +111,28 @@ insert into configuracion (tenant_id, negocio, facturacion)
 select id,
   '{"nombre":"El Labrador","propietario":"Jose Moreno","nit":"16645676-5",
     "telefono":"3164164263","direccion":"CRA. 29 # 19-62","ciudad":"Cali - Santa Elena"}'::jsonb,
-  '{"prefijoTicket":"JOS-LL-","consecutivoActual":38326,"anchoPapelMm":80}'::jsonb
+  '{"prefijoTicket":"JOS-LL-","consecutivoActual":0,"anchoPapelMm":80}'::jsonb
 from tenants where slug = 'papas-el-labrador';
 ```
 
-> **El `consecutivoActual` importa.** Es el número de la última factura que el negocio ya imprimió
-> con XUMA-POS. Si lo pones más bajo, se repiten números de factura ya entregados. Confírmalo con
-> el dueño antes de correr esto.
+### Sobre el `consecutivoActual`
+
+Es el número de la factura. Cada ticket que el negocio imprime lleva uno que sube de uno en uno:
+`JOS-LL-000001`, luego `JOS-LL-000002`. El `prefijoTicket` es la parte fija y el
+`consecutivoActual` es el último emitido — o sea, **la próxima factura será ese número más uno**.
+
+**Arranca en 0 por decisión del dueño de nexora-pos (30 de agosto de 2026):** el negocio estrena
+sistema y empieza la cuenta limpia, no continúa la serie de XUMA-POS —el software que usaban
+antes—, que iba por 38326.
+
+> **Lo único a tener en cuenta.** El prefijo sigue siendo el mismo que usaba XUMA-POS
+> (`JOS-LL-`), así que los primeros tickets del sistema nuevo van a repetir números que ese
+> sistema ya emitió hace años. Para la operación diaria da igual; si alguna vez hay que cruzar
+> facturas viejas con nuevas, se confunden.
+>
+> Si prefieres evitarlo, es **cambiar una palabra**: pon otro prefijo, por ejemplo `LAB-`, aquí y
+> en `construirConfiguracion()` de `src/core/seed/catalogo.ts`. A partir de ahí las dos series no
+> se tocan nunca.
 
 ## 3. Crear el usuario
 
