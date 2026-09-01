@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-08-31 (**la segunda empresa, Las dos palmas**: su factura arreglada y su app lista para el portal — hecho en su repo; aquí, el dominio definitivo y su registro en el instructivo)
+Última actualización: 2026-08-31 (**Las dos palmas, lista para conectar Supabase**: su adaptador escrito y probado contra Postgres, un esquema de Postgres por aplicación, y el instructivo al día)
 
 ---
 
@@ -284,6 +284,47 @@ bien: sin adaptador, cada equipo del negocio tendría su propia contabilidad en 
 dominio real el 31 de agosto de 2026, así que el `siteUrl` por defecto ya no es un marcador y la
 fila salió de "Datos pendientes". **Es el mismo que va impreso al pie del recibo de los dos
 clientes**: si alguien cambia uno, tiene que cambiar el otro.
+
+#### Un esquema de Postgres por aplicación (31 de agosto de 2026)
+
+Al preparar a Las dos palmas apareció una colisión sin arreglo cosmético: **las dos apps definen
+`productos` y `pedidos` con columnas distintas** —papa contra queso— y dos tablas con el mismo
+nombre no caben en un esquema de Postgres.
+
+Tampoco se resuelve con un proyecto de Supabase por empresa: **la app del cliente reutiliza la
+sesión en cookies que abre el portal**, así que login y datos tienen que vivir en el mismo proyecto.
+Separarlos daría dos contraseñas al mismo cliente.
+
+| Esquema | Qué vive ahí |
+|---|---|
+| `public` | Lo compartido: `tenants` y `auth_tenant_id()` |
+| `labrador` | Las 18 tablas de Papas El Labrador |
+| `palmas` | Las 19 tablas de Las dos palmas |
+
+**Hay un paso manual nuevo en Supabase:** Settings → API → *Exposed schemas*, agregar `labrador` y
+`palmas`. Sin eso PostgREST devuelve 404 en todo y parece que la aplicación está rota. Está en el
+paso 1 del instructivo.
+
+#### El adaptador de Las dos palmas, escrito
+
+Ya no son stubs: cliente, sesión, mapeo y los 13 repositorios, más su esquema multi-tenant. Los dos
+repositorios de cliente **ejecutan su SQL en cada `npm run test`** contra un Postgres real en WASM.
+
+Correr el de Las dos palmas por primera vez encontró **tres cosas que no compilaban o habrían roto
+la app al arrancar**: una coma sobrante en una vista, un `exclude` que exige `btree_gist`, y las
+claves declaradas `uuid` cuando el catálogo con el que la plataforma arranca usa ids legibles
+(`prod-cuajada`). Un esquema que nadie corre no es un esquema.
+
+Y una trampa que se llevó por delante un error latente **en los dos proyectos**: `aplicar_lote`
+escribía todo con `insert ... on conflict do update`, y **eso exige el privilegio UPDATE aunque el
+conflicto no ocurra**. Contra una tabla de solo-agregar —el kardex en Palmas, la auditoría de
+precios en Labrador— habría fallado siempre, con cualquier dato, ya con el negocio operando. Hay una
+acción `agregar` para eso, y un test que lo cubre en cada repo.
+
+**Lo que sigue pendiente, y no es de este repositorio:** en Las dos palmas, que los dos perfiles se
+vuelvan seguridad de verdad (hoy RLS separa empresas, no personas) y el hueco que puede dejar el
+consecutivo si falla la escritura tras reservar el número. Los dos están anotados en su
+`src/core/adapters/supabase/README.md` y en el paso 8.b del instructivo.
 
 #### La tarea siguiente: agregar un perfil nuevo
 
@@ -702,3 +743,4 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | 2026-08-27 | Efecto del nav reescrito en CSS puro y `framer-motion` desinstalado (43): home de 153 a **124 kB**. Fuente afinada a **Figtree** midiendo el arte de referencia (44). `paper-50` a `#EDEDED` y `ink-500` a `#626976` (45) | typecheck · lint · test (73/73) · contrast (30/30) · build en verde. JS real en el cable: **124 kB** |
 | 2026-08-31 | Factura de El Labrador: impresión desde un iframe aparte, ancho a cargo del driver, letra a 13 px/600 y pie `www.nexora-pos.online`. **Cambio hecho en el repo del cliente**; aquí solo documentación | En Papas El Labrador: typecheck · lint · test (659/659) · build en verde, y comprobado en el navegador. Aquí: sin cambios de código — `sync-tenant-app.mjs` sigue bloqueado sin Supabase |
 | 2026-08-31 | Las dos palmas entra como segunda empresa: su factura con el arreglo de impresión y su app lista para `/portal/las-dos-palmas/`. Encontrado y corregido en los DOS repos el logo y el isotipo con ruta absoluta, que daban 404 bajo el subcamino. Aquí: dominio definitivo `nexora-pos.online` y §8.b del instructivo | En Las dos palmas: typecheck · lint · test (708/708) · build en verde, y comprobado en el navegador, incluido el build servido bajo su subcamino. Aquí: los cinco en verde |
+| 2026-08-31 | Un esquema de Postgres por aplicación (`labrador`, `palmas`, y `public` solo para lo compartido) y el adaptador de Supabase de Las dos palmas, escrito y probado. Encontrados y corregidos tres errores de su SQL que nunca se había ejecutado, y un `on conflict do update` contra tablas con UPDATE revocado que habría fallado en los DOS proyectos | En Las dos palmas: typecheck · lint · test (780/780) · build. En Papas El Labrador: 661/661 · build. Aquí: los cinco en verde |

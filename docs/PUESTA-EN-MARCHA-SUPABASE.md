@@ -32,14 +32,17 @@ Archivos que vas a tocar:
 
 ## Qué está hecho y qué no
 
-**Hecho, y probado contra un Postgres real** (`npm run test` en el repo de Papas levanta uno con
-PGlite y corre el esquema entero — no hace falta Docker):
+**Hecho, y probado contra un Postgres real** (el `npm run test` de CADA repositorio de cliente
+levanta uno con PGlite y corre su esquema entero — no hace falta Docker):
 
-- El esquema multi-tenant: 18 tablas con `tenant_id` y RLS, más `tenants` y `configuracion`.
-- El aislamiento entre empresas: que una no lea ni escriba los datos de otra.
-- Las escrituras atómicas (`aplicar_lote`, `registrar_pedido`) y el consecutivo de factura sin
-  huecos ni repeticiones.
-- El adaptador de Supabase de la aplicación: sus 30 métodos.
+- **Dos empresas listas**: Papas El Labrador (esquema `labrador`, 18 tablas) y Las dos palmas
+  (esquema `palmas`, 19 tablas), cada una con `tenant_id` y RLS. `public` guarda solo lo compartido:
+  `tenants` y `auth_tenant_id()`.
+- El aislamiento entre empresas: que una no lea ni escriba los datos de otra, y que **ninguna tabla
+  quede sin RLS** en ninguno de los tres esquemas.
+- Las escrituras atómicas (`aplicar_lote`, `registrar_pedido`) y el consecutivo de factura, que
+  **nunca repite un número**.
+- El adaptador de Supabase de las DOS aplicaciones.
 - El portal: login, resolución de tenant en el middleware, y que sin sesión no baje ni el
   JavaScript de la app.
 
@@ -47,7 +50,19 @@ PGlite y corre el esquema entero — no hace falta Docker):
 usuario, sembrar los datos y desplegar.
 
 **No se pudo probar sin ese proyecto**, así que hay que mirarlo con atención en el paso 7:
-Supabase Auth de verdad, Realtime, y que PostgREST acepte las consultas con tablas embebidas.
+Supabase Auth de verdad, Realtime, que PostgREST acepte las consultas con tablas embebidas, y que
+los esquemas queden **expuestos** en Settings → API.
+
+**Dos cosas que quedaron a medias a propósito, y conviene saberlas antes de entregar:**
+
+1. **Dentro de una empresa no hay roles.** RLS separa empresas, no personas. En Las dos palmas eso
+   significa que el PIN que separa "facturación" de "administración" **sigue sin ser seguridad**:
+   esconde el menú, no los datos. Cerrarlo es trabajo aparte y está detallado en su
+   `src/core/adapters/supabase/README.md`.
+2. **El consecutivo puede dejar un HUECO en Las dos palmas.** Nunca un duplicado —eso lo garantiza
+   la base—, pero reservar el número y escribir el pedido son dos llamadas HTTP. En Papas El
+   Labrador no pasa: ahí el pedido se escribe con `registrar_pedido`, que hace las dos cosas en la
+   misma transacción.
 
 ## Antes de empezar
 
@@ -66,31 +81,68 @@ Settings → API → Reset.
 
 ---
 
-## 1. Correr el esquema
+## 1. Correr los esquemas
 
-En el panel de Supabase, **SQL Editor**, pega y ejecuta el contenido de:
+### Un esquema de Postgres por aplicación
+
+Antes de pegar nada, entiende el reparto, porque decide todo lo demás:
+
+| Esquema | Qué vive ahí |
+|---|---|
+| `public` | Lo COMPARTIDO por la plataforma: la tabla `tenants` y la función `auth_tenant_id()` |
+| `labrador` | Las 18 tablas de Papas El Labrador |
+| `palmas` | Las 19 tablas de Las dos palmas |
+
+**Por qué no están todas en `public`:** las dos aplicaciones definen `productos` y `pedidos` con
+columnas distintas —papa contra queso— y dos tablas con el mismo nombre no caben en un esquema.
+
+**Y por qué no un proyecto de Supabase por empresa:** la app del cliente **reutiliza la sesión en
+cookies que abre el portal**. El login y los datos tienen que estar en el mismo proyecto; separarlos
+significaría un login aparte y otra contraseña para cada cliente.
+
+### Pegar y ejecutar
+
+En el panel de Supabase, **SQL Editor**, el contenido de cada archivo, entero y de una vez:
 
 ```
-Papas el Labrador/docs/esquema-supabase.sql
+Papas el Labrador/docs/esquema-supabase.sql     -> crea `public.tenants` y el esquema `labrador`
+Las dos palmas/docs/esquema-supabase.sql        -> crea el esquema `palmas`
 ```
 
-Crea las 18 tablas del negocio, la tabla `tenants`, las políticas RLS, las funciones de escritura
-y la publicación de Realtime.
+El orden no importa: los dos crean `public.tenants` con `if not exists`, así que el segundo no pisa
+lo del primero.
+
+Cada uno crea sus tablas, sus políticas RLS, sus permisos, las funciones de escritura y la
+publicación de Realtime.
 
 **Si la última sentencia falla** (`alter publication supabase_realtime add table ...`), es porque
-alguna de esas tablas ya estaba publicada. Quita de la lista las que ya estén y vuelve a correr
-solo esa sentencia; el resto ya quedó.
+alguna de esas tablas ya estaba publicada. Quita de la lista las que ya estén y vuelve a correr solo
+esa sentencia; el resto ya quedó.
 
-Para comprobar que quedó bien, en el SQL Editor:
+### Exponer los esquemas — el paso que más se olvida
+
+**Settings → API → *Exposed schemas*: agrega `labrador` y `palmas`.**
+
+Supabase solo expone `public` por defecto. Sin este paso PostgREST devuelve **404 en todas las
+consultas** y parece que la aplicación está rota, cuando lo único que pasa es que no sabe que ese
+esquema existe.
+
+### Comprobar que quedó bien
 
 ```sql
-select count(*) from pg_policy;                    -- debe haber al menos 19
-select count(*) from pg_class where relnamespace = 'public'::regnamespace
-  and relkind = 'r' and not relrowsecurity;        -- TIENE que dar 0
+select count(*) from pg_policy;                    -- debe haber al menos 38 (19 + 20)
+select ns.nspname, c.relname
+  from pg_class c join pg_namespace ns on ns.oid = c.relnamespace
+ where ns.nspname in ('public', 'labrador', 'palmas')
+   and c.relkind = 'r' and not c.relrowsecurity;   -- TIENE que dar 0 filas
 ```
 
-Ese segundo número es el importante: **una sola tabla sin RLS es una fuga de datos de una empresa a
-otra.**
+Esa segunda consulta es la importante: **una sola tabla sin RLS es una fuga de datos de una empresa
+a otra.** Vuelve a correrla después de cada tabla nueva.
+
+> Los dos repositorios ya la corren solos en cada `npm run test`, contra un Postgres real en WASM
+> (PGlite). Si tocas un `esquema-supabase.sql`, ese test te dice si lo rompiste **antes** de llegar
+> aquí.
 
 ## 2. Registrar la empresa
 
@@ -306,16 +358,21 @@ de arriba.
 - Su factura tiene el mismo arreglo que la de El Labrador: impresión desde un documento aparte,
   ancho a cargo del driver, y el pie `www.nexora-pos.online`.
 
-**Lo que le falta, y es trabajo de fondo:** su adaptador de Supabase. Hoy
-`src/core/adapters/supabase/repositorios.ts` son *stubs* que lanzan `NoImplementadoError`, y su
-`src/core/adapters/supabase/README.md` es la guía para escribirlo — con las cuatro cosas delicadas
-ya identificadas (kardex inmutable, consecutivo sin huecos, escritura atómica del pedido, y los dos
-perfiles convertidos en políticas RLS de verdad). **Su `docs/esquema-supabase.sql` es de una sola
-empresa: hay que darle `tenant_id` y RLS con el mismo patrón del esquema de aquí.**
+- **Su adaptador de Supabase ya está escrito** (31 de agosto de 2026): cliente, sesión, mapeo y los
+  13 repositorios, más un esquema multi-tenant en el esquema `palmas` que **se ejecuta en cada
+  `npm run test`** contra un Postgres real. Se enciende con `VITE_PERSISTENCIA=supabase`.
 
-Hasta que eso exista, `scripts/sync-tenant-app.mjs` **se niega a construirla**, y hace bien: sin
-adaptador, la aplicación guardaría en el IndexedDB de cada navegador y cada equipo del negocio
-tendría su propia contabilidad sin que nadie se diera cuenta.
+**Lo que le falta, y hay que decirlo claro:**
+
+- **Los dos perfiles todavía no son seguridad.** RLS separa EMPRESAS, no personas: cualquier sesión
+  de la empresa puede consultar la contabilidad aunque el menú se la esconda. Los tres pasos para
+  cerrarlo están en el bloque de RLS de su SQL y en su `src/core/adapters/supabase/README.md`.
+- **El consecutivo puede dejar un hueco.** `siguiente_numero_ticket()` es atómica y nunca repite un
+  número, pero reservar y escribir el pedido son dos llamadas HTTP: si la segunda falla, queda un
+  número sin usar. Cerrarlo pide un `registrarConTicket()` en su contrato que llame a la RPC
+  `registrar_pedido`, **que ya está escrita**.
+- **"Vaciar base" ya no vacía todo**: el kardex y los documentos tienen DELETE revocado y se quedan.
+  Conviene avisarlo en Ajustes antes de que alguien lo descubra apretando el botón.
 
 Sus datos para los pasos 2 y 3, cuando llegue el momento:
 
