@@ -5,11 +5,20 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-08-30 (infraestructura multi-tenant y scripts de producción listos)
+Última actualización: 2026-09-01 (validación final del repositorio y limpieza de lint)
 
 ---
 
 ## Hecho
+
+### Validación final de cierre
+
+- **Limpieza de lint final**: se corrigieron los errores de `no-unused-vars` en
+  `scripts/sync-tenant-app.mjs` y los imports de tipo en `utils/supabase/server.ts`.
+- **Verificación completa**: el proyecto quedó en verde con `npm run typecheck`, `npm run lint`,
+  `npm run test`, `npm run contrast` y `npm run build`, con evidencias frescas del cierre.
+- **Estado del repositorio**: la rama `portal-clientes` quedó lista para entregar y seguir con el
+  desarrollo del cliente sin bloqueos de validación ni de compilación.
 
 ### Fase 1 · Andamiaje
 

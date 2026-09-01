@@ -22,8 +22,7 @@ import { existsSync, rmSync, cpSync, readFileSync } from "fs";
 import { resolve } from "path";
 import { fileURLToPath } from "url";
 
-const __dirname = new URL(".", import.meta.url).pathname;
-const projectRoot = resolve(__dirname, "..");
+const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 
 const tenantSlug = process.argv[2];
 const papasPath = process.argv[3];
@@ -87,7 +86,7 @@ try {
     cwd: resolve(papasPath, "frontend"),
     stdio: "inherit",
   });
-} catch (err) {
+} catch {
   console.error("❌ Error construyendo la app. Revisa los errores arriba.");
   process.exit(1);
 }
