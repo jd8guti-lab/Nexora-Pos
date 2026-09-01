@@ -3,7 +3,7 @@
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BarChart3, BriefcaseBusiness, LogOut, ShieldCheck } from "lucide-react";
+import { ArrowLeft, BarChart3, BriefcaseBusiness, ShieldCheck } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { LogoLockup } from "@/components/brand/logo-lockup";
 import { Container } from "@/components/layout/container";
@@ -214,73 +214,124 @@ export default function PortalPage() {
   }
 
   return (
-    <main className="surface-dark bg-ink-900 flex min-h-dvh flex-col items-center justify-center py-16 text-white">
-      <Container className="flex max-w-4xl flex-col items-center text-center">
-        <LogoLockup variant="dark" height={40} withDescriptor priority />
+    <main className="min-h-dvh bg-[#edf0f2] text-[#1a1d23]">
+      <div className="flex min-h-dvh">
+        <aside className="flex w-[260px] flex-col border-r border-[#d9dfe5] bg-[#f2f3f4] px-4 py-6">
+          <div className="mb-8 flex items-center gap-3 px-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500 text-xl font-black text-white">
+              N
+            </div>
+            <div className="text-left">
+              <p className="text-lg font-bold text-[#1a1d23]">Las dos palmas</p>
+              <p className="text-xs text-[#626976]">Configura los datos en Ajustes...</p>
+            </div>
+          </div>
 
-        <div className="mt-12 w-full rounded-2xl border border-paper-50/15 bg-paper-50/5 p-8 text-left shadow-xl shadow-black/10">
-          <div className="mb-6 flex items-center justify-between gap-4">
+          <div className="mb-4 flex items-center gap-2 rounded-xl border border-[#d9dfe5] bg-white/80 px-3 py-2 text-xs font-medium text-[#1a1d23]">
+            <RoleIcon aria-hidden />
+            <span>{roleInfo.label}</span>
+          </div>
+
+          <nav className="space-y-2 text-sm font-medium">
+            <button className="flex w-full items-center gap-3 rounded-xl bg-brand-500 px-3 py-3 text-left font-semibold text-[#1a1d23] shadow-sm">
+              <span aria-hidden>⌂</span>
+              Inicio
+            </button>
+            <button className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[#1a1d23] hover:bg-white/80">
+              <span aria-hidden>◫</span>
+              Pedidos
+            </button>
+            <button className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[#1a1d23] hover:bg-white/80">
+              <span aria-hidden>◌</span>
+              Clientes y proveedores
+            </button>
+            <button className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[#1a1d23] hover:bg-white/80">
+              <span aria-hidden>▣</span>
+              Existencias
+            </button>
+          </nav>
+
+          <div className="mt-auto space-y-3 border-t border-[#d9dfe5] pt-4">
+            <button className="w-full rounded-xl border border-[#d9dfe5] bg-white px-3 py-2 text-left text-[#1a1d23]">
+              Facturación
+            </button>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="w-full rounded-xl border border-[#d9dfe5] bg-white px-3 py-2 text-left text-[#1a1d23]"
+            >
+              Entrar como administrador
+            </button>
+          </div>
+        </aside>
+
+        <div className="flex-1 p-6">
+          <header className="mb-6 flex items-center justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-brand-500">{roleInfo.label}</p>
-              <h1 className="text-h2 mt-2">{roleInfo.title}</h1>
+              <h1 className="text-4xl font-black tracking-[-0.04em] text-[#1a1d23]">Las dos palmas</h1>
+              <p className="mt-1 text-sm text-[#626976]">1 sep 2026</p>
             </div>
-            <Button type="button" variant="inverseOutline" size="md" onClick={handleSignOut}>
-              <LogOut aria-hidden />
-              Cerrar sesión
+
+            <Button type="button" variant="primary" size="md" onClick={() => {}}>
+              <span aria-hidden>＋</span>
+              Nuevo pedido
             </Button>
-          </div>
+          </header>
 
-          <div className="rounded-xl border border-brand-500/30 bg-brand-500/5 p-5">
-            <div className="flex items-center gap-3 text-brand-300">
-              <RoleIcon aria-hidden />
-              <span className="text-sm font-medium uppercase tracking-[0.2em]">Acceso autorizado</span>
-            </div>
-            <p className="mt-4 text-xl font-semibold text-white">
-              {user.email ?? "Usuario autenticado"}
-            </p>
-            <p className="mt-2 text-paper-50/80">{roleInfo.description}</p>
-            <p className="mt-3 text-sm text-brand-300">{roleInfo.accent}</p>
-          </div>
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-xl border border-paper-50/15 bg-paper-50/5 p-4">
-              <p className="text-sm uppercase tracking-[0.2em] text-paper-50/60">Cuenta</p>
-              <p className="mt-3 text-lg font-semibold text-white">{user.email ?? "Cliente"}</p>
-            </div>
-            <div className="rounded-xl border border-paper-50/15 bg-paper-50/5 p-4">
-              <p className="text-sm uppercase tracking-[0.2em] text-paper-50/60">Estado</p>
-              <p className="mt-3 text-lg font-semibold text-white">Sesión activa</p>
-            </div>
-          </div>
-
-          <div className="mt-6 rounded-xl border border-paper-50/15 bg-paper-50/5 p-5">
-            <p className="text-sm uppercase tracking-[0.2em] text-paper-50/60">Resumen</p>
-            <p className="mt-3 text-base text-paper-50/85">{roleInfo.summary}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {roleInfo.actions.map((action) => (
-                <span key={action} className="rounded-full border border-brand-500/30 bg-brand-500/10 px-3 py-1 text-sm font-medium text-brand-300">
-                  {action}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            {roleInfo.quickStats.map((stat) => (
-              <div key={stat.label} className="rounded-xl border border-paper-50/15 bg-paper-50/5 p-4 text-center">
-                <p className="text-sm uppercase tracking-[0.2em] text-paper-50/60">{stat.label}</p>
-                <p className="mt-3 text-2xl font-semibold text-white">{stat.value}</p>
+          <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-2xl border border-[#d9dfe5] bg-[#f5f5f5] p-4">
+              <div className="flex items-center justify-between text-[#626976]">
+                <span className="text-sm">Pedidos de hoy</span>
+                <span aria-hidden>📝</span>
               </div>
-            ))}
-          </div>
+              <div className="mt-5 text-5xl font-black text-[#1a1d23]">0</div>
+              <div className="mt-2 text-sm text-[#626976]">0 por entregar · 0,00 kg</div>
+            </div>
 
-          <div className="mt-8 flex gap-3">
-            <Button asChild variant="inverse" size="md">
-              <Link href="/">Volver al sitio</Link>
-            </Button>
-          </div>
+            <div className="rounded-2xl border border-[#d9dfe5] bg-[#f5f5f5] p-4">
+              <div className="flex items-center justify-between text-[#626976]">
+                <span className="text-sm">Vendido hoy</span>
+                <span aria-hidden>💵</span>
+              </div>
+              <div className="mt-5 text-5xl font-black text-[#1a1d23]">$0</div>
+              <div className="mt-2 text-sm text-[#626976]">$0 cobrado hoy</div>
+            </div>
+
+            <div className="rounded-2xl border border-[#d9dfe5] bg-[#f5f5f5] p-4">
+              <div className="flex items-center justify-between text-[#626976]">
+                <span className="text-sm">Queso disponible</span>
+                <span aria-hidden>⚖️</span>
+              </div>
+              <div className="mt-5 text-5xl font-black text-[#1a1d23]">0,00 kg</div>
+              <div className="mt-2 text-sm text-[#626976]">6 producto(s) en el catálogo</div>
+            </div>
+
+            <div className="rounded-2xl border border-[#d9dfe5] bg-[#f5f5f5] p-4">
+              <div className="flex items-center justify-between text-[#626976]">
+                <span className="text-sm">Por acabarse</span>
+                <span aria-hidden>⚠️</span>
+              </div>
+              <div className="mt-5 text-5xl font-black text-[#1a1d23]">0</div>
+              <div className="mt-2 text-sm text-[#626976]">Productos por debajo del mínimo</div>
+            </div>
+          </section>
+
+          <section className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+            <div className="rounded-2xl border border-[#d9dfe5] bg-[#f5f5f5] p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-2xl font-black text-[#1a1d23]">Todo lo de hoy</h2>
+                <button className="text-sm font-medium text-[#1a1d23]">Ver todos →</button>
+              </div>
+              <p className="text-base text-[#626976]">Todavía no hay pedidos hoy. ¡Tomar el primero.</p>
+            </div>
+
+            <div className="rounded-2xl border border-[#d9dfe5] bg-[#f5f5f5] p-5">
+              <h2 className="text-2xl font-black text-[#1a1d23]">Cartera vencida</h2>
+              <p className="mt-4 text-base text-[#626976]">Nada vencido. Todo lo que se debe está dentro del plazo.</p>
+            </div>
+          </section>
         </div>
-      </Container>
+      </div>
     </main>
   );
 }

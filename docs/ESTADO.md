@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-01 (validación final del repositorio y limpieza de lint)
+Última actualización: 2026-09-01 (dashboard autenticado en estilo Las dos palmas y validación final verde)
 
 ---
 
@@ -13,6 +13,9 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
 ### Validación final de cierre
 
+- **Dashboard autenticado en estilo referencia**: tras iniciar sesión, el usuario ve la vista tipo
+  negocio de la primera imagen con el sidebar, tarjetas de resumen y el bloque de pedidos de
+  “Las dos palmas”, en lugar del panel genérico de la segunda referencia.
 - **Portal con vista por rol**: el flujo del portal ya diferencia `admin`, `manager` y `staff`,
   lee el perfil desde Supabase y usa un fallback realista a la metadata del usuario cuando no hay
   registro de perfil aún disponible.

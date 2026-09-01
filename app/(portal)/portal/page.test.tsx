@@ -43,7 +43,7 @@ describe("Portal page", () => {
     expect(screen.getByRole("button", { name: "Ingresar" })).toBeInTheDocument();
   });
 
-  it("renders a role-specific dashboard for an authenticated administrator", async () => {
+  it("renders the business dashboard after an authenticated user signs in", async () => {
     mockGetUser.mockResolvedValue({
       data: {
         user: {
@@ -59,11 +59,13 @@ describe("Portal page", () => {
         subscription: { unsubscribe: vi.fn() },
       },
     }));
+    mockProfileQuery.maybeSingle.mockResolvedValue({ data: { rol: "admin" }, error: null });
 
     render(<PortalPage />);
 
-    expect(await screen.findByRole("heading", { name: /Panel de administrador/i })).toBeInTheDocument();
-    expect(screen.getByText(/Controla negocio, usuarios y configuración/i)).toBeInTheDocument();
-    expect(screen.getByText(/Vista administrativa/i)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /Las dos palmas/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Nuevo pedido/i })).toBeInTheDocument();
+    expect(screen.getByText(/Pedidos de hoy/i)).toBeInTheDocument();
+    expect(screen.getByText(/Todo lo de hoy/i)).toBeInTheDocument();
   });
 });
