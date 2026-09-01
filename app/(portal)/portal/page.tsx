@@ -3,13 +3,39 @@
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, LogOut, ShieldCheck } from "lucide-react";
+import { ArrowLeft, BarChart3, BriefcaseBusiness, LogOut, ShieldCheck } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { LogoLockup } from "@/components/brand/logo-lockup";
 import { Container } from "@/components/layout/container";
 import { Button } from "@/components/ui/button";
 import { site } from "@/content/site";
+import { portalRolePanels, resolvePortalRole } from "@/lib/portal";
 import { createClient } from "@/utils/supabase/client";
+
+const roleIcons = {
+  admin: ShieldCheck,
+  manager: BarChart3,
+  staff: BriefcaseBusiness,
+} as const;
+
+async function loadProfileRole(nextUser: User | null, supabase: ReturnType<typeof createClient>) {
+  if (!nextUser?.email) {
+    return null;
+  }
+
+  const { data: profileData } = await supabase
+    .from("profiles")
+    .select("rol,nombre,email")
+    .eq("email", nextUser.email)
+    .maybeSingle();
+
+  return (
+    (profileData?.rol as string | undefined) ??
+    (nextUser.user_metadata as { role?: string } | undefined)?.role ??
+    (nextUser.app_metadata as { role?: string } | undefined)?.role ??
+    null
+  );
+}
 
 export default function PortalPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -17,6 +43,7 @@ export default function PortalPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [configError, setConfigError] = useState("");
+  const [profileRole, setProfileRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -43,18 +70,23 @@ export default function PortalPage() {
       const { data, error: sessionError } = await supabase.auth.getUser();
       if (sessionError) {
         setUser(null);
+        setProfileRole(null);
         setIsLoading(false);
         return;
       }
 
-      setUser(data.user);
+      const nextUser = data.user;
+      setUser(nextUser);
+      setProfileRole(nextUser ? await loadProfileRole(nextUser, supabase) : null);
       setIsLoading(false);
     };
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const nextUser = session?.user ?? null;
+      setUser(nextUser);
+      setProfileRole(nextUser ? await loadProfileRole(nextUser, supabase) : null);
       setIsLoading(false);
     });
 
@@ -102,6 +134,10 @@ export default function PortalPage() {
     setUser(null);
     setPassword("");
   };
+
+  const portalRole = resolvePortalRole(profileRole ?? user?.user_metadata?.role ?? user?.app_metadata?.role);
+  const roleInfo = portalRolePanels[portalRole];
+  const RoleIcon = roleIcons[portalRole];
 
   if (isLoading) {
     return (
@@ -179,14 +215,14 @@ export default function PortalPage() {
 
   return (
     <main className="surface-dark bg-ink-900 flex min-h-dvh flex-col items-center justify-center py-16 text-white">
-      <Container className="flex max-w-3xl flex-col items-center text-center">
+      <Container className="flex max-w-4xl flex-col items-center text-center">
         <LogoLockup variant="dark" height={40} withDescriptor priority />
 
         <div className="mt-12 w-full rounded-2xl border border-paper-50/15 bg-paper-50/5 p-8 text-left shadow-xl shadow-black/10">
           <div className="mb-6 flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-brand-500">Portal activo</p>
-              <h1 className="text-h2 mt-2">Bienvenido</h1>
+              <p className="text-sm uppercase tracking-[0.2em] text-brand-500">{roleInfo.label}</p>
+              <h1 className="text-h2 mt-2">{roleInfo.title}</h1>
             </div>
             <Button type="button" variant="inverseOutline" size="md" onClick={handleSignOut}>
               <LogOut aria-hidden />
@@ -196,15 +232,14 @@ export default function PortalPage() {
 
           <div className="rounded-xl border border-brand-500/30 bg-brand-500/5 p-5">
             <div className="flex items-center gap-3 text-brand-300">
-              <ShieldCheck aria-hidden />
+              <RoleIcon aria-hidden />
               <span className="text-sm font-medium uppercase tracking-[0.2em]">Acceso autorizado</span>
             </div>
             <p className="mt-4 text-xl font-semibold text-white">
               {user.email ?? "Usuario autenticado"}
             </p>
-            <p className="mt-2 text-paper-50/80">
-              Tu sesión está activa en el portal de clientes.
-            </p>
+            <p className="mt-2 text-paper-50/80">{roleInfo.description}</p>
+            <p className="mt-3 text-sm text-brand-300">{roleInfo.accent}</p>
           </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -216,6 +251,27 @@ export default function PortalPage() {
               <p className="text-sm uppercase tracking-[0.2em] text-paper-50/60">Estado</p>
               <p className="mt-3 text-lg font-semibold text-white">Sesión activa</p>
             </div>
+          </div>
+
+          <div className="mt-6 rounded-xl border border-paper-50/15 bg-paper-50/5 p-5">
+            <p className="text-sm uppercase tracking-[0.2em] text-paper-50/60">Resumen</p>
+            <p className="mt-3 text-base text-paper-50/85">{roleInfo.summary}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {roleInfo.actions.map((action) => (
+                <span key={action} className="rounded-full border border-brand-500/30 bg-brand-500/10 px-3 py-1 text-sm font-medium text-brand-300">
+                  {action}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            {roleInfo.quickStats.map((stat) => (
+              <div key={stat.label} className="rounded-xl border border-paper-50/15 bg-paper-50/5 p-4 text-center">
+                <p className="text-sm uppercase tracking-[0.2em] text-paper-50/60">{stat.label}</p>
+                <p className="mt-3 text-2xl font-semibold text-white">{stat.value}</p>
+              </div>
+            ))}
           </div>
 
           <div className="mt-8 flex gap-3">

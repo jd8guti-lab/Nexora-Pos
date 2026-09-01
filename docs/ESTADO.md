@@ -13,12 +13,18 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
 ### Validación final de cierre
 
+- **Portal con vista por rol**: el flujo del portal ya diferencia `admin`, `manager` y `staff`,
+  lee el perfil desde Supabase y usa un fallback realista a la metadata del usuario cuando no hay
+  registro de perfil aún disponible.
+- **Corrección de la configuración de tests**: se limitó Vitest para excluir la carpeta anidada
+  `frontend/` y sus dependencias, evitando que el runner escanease tests de paquetes externos
+  y fallase por imports inexistentes dentro de `node_modules`.
 - **Limpieza de lint final**: se corrigieron los errores de `no-unused-vars` en
   `scripts/sync-tenant-app.mjs` y los imports de tipo en `utils/supabase/server.ts`.
 - **Verificación completa**: el proyecto quedó en verde con `npm run typecheck`, `npm run lint`,
   `npm run test`, `npm run contrast` y `npm run build`, con evidencias frescas del cierre.
-- **Estado del repositorio**: la rama `portal-clientes` quedó lista para entregar y seguir con el
-  desarrollo del cliente sin bloqueos de validación ni de compilación.
+- **Estado del repositorio**: el proyecto quedó listo para seguir con el desarrollo del cliente sin
+  bloqueos de validación ni de compilación, y con el portal visualmente preparado para perfiles reales.
 
 ### Fase 1 · Andamiaje
 
