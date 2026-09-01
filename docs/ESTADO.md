@@ -5,14 +5,26 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-08-27 (efecto del nav en CSS, tipografía Figtree, gris más oscuro)
+Última actualización: 2026-09-01 (validación final del repositorio y limpieza de lint)
 
 ---
 
 ## Hecho
 
+### Validación final de cierre
+
+- **Limpieza de lint final**: se corrigieron los errores de `no-unused-vars` en
+  `scripts/sync-tenant-app.mjs` y los imports de tipo en `utils/supabase/server.ts`.
+- **Verificación completa**: el proyecto quedó en verde con `npm run typecheck`, `npm run lint`,
+  `npm run test`, `npm run contrast` y `npm run build`, con evidencias frescas del cierre.
+- **Estado del repositorio**: la rama `portal-clientes` quedó lista para entregar y seguir con el
+  desarrollo del cliente sin bloqueos de validación ni de compilación.
+
 ### Fase 1 · Andamiaje
 
+- **Supabase preparado en Nexora**: variables públicas `NEXT_PUBLIC_SUPABASE_URL` y
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY`, config central en `lib/config.ts` y cliente seguro en
+  `lib/supabase.ts`.
 - **Proyecto Next.js 15.5.23** (App Router, TypeScript `strict` con `noUncheckedIndexedAccess`,
   `noUnusedLocals`, `noUnusedParameters`), ESLint 9 flat config + Prettier con
   `prettier-plugin-tailwindcss`.
@@ -30,6 +42,12 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 - **`middleware.ts`** vacío, con el comentario de dónde va la resolución de tenant.
 - **Vitest + Testing Library**: 11 tests en verde.
 - **`scripts/contrast.mjs`**: auditoría WCAG de la paleta, 17/17.
+- **Scripts de puesta en marcha** (2026-08-30): `crear-tenant.mjs` (PASO 2),
+  `crear-usuario-portal.mjs` (PASO 3), `validar-flujo-negocio.mjs` (PASO 4) y
+  `sync-tenant-app.mjs` (PASO 6). Documentación en `docs/PUESTA-EN-MARCHA.md` con checklist
+  de los 8 pasos, comandos concretos, y guía de troubleshooting.
+- **Schema multi-tenant real**: `backend/esquema-supabase.sql` con `tenants`, `profiles` y
+  `business_config` para registrar el negocio y asociar el usuario del portal al tenant correcto.
 
 **Verificación de la fase** — los cuatro en verde más el de contraste:
 

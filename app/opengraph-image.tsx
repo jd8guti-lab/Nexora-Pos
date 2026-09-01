@@ -99,8 +99,7 @@ export default async function OpenGraphImage() {
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- next/og
-              renders to a raster; next/image has no meaning here. */}
+        {/* eslint-disable-next-line @next/next/no-img-element -- next/og renders to a raster; <Image /> has no meaning here. */}
         <img src={isotypeSrc} width={64} height={64} alt="" />
         {/* satori needs display:flex spelled out on any node with more
             than one child — here the text plus the coloured span. */}

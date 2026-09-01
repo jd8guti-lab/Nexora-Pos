@@ -22,6 +22,11 @@ describe("Nav", () => {
         link.href,
       );
     }
+
+    expect(screen.getByRole("link", { name: "Acceso clientes" })).toHaveAttribute(
+      "href",
+      "/portal",
+    );
   });
 
   it("hides the duplicated letters from assistive tech", () => {

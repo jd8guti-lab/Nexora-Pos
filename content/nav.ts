@@ -24,7 +24,7 @@ export const navLinks: readonly NavLink[] = [
 
 /** Secondary action in the nav. */
 export const portalLink: NavLink = {
-  label: "Ingresar al portal",
+  label: "Acceso clientes",
   href: portalUrl,
   external: !portalUrl.startsWith("/"),
 } as const;

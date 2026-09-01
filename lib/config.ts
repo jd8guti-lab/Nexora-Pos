@@ -22,3 +22,16 @@ export const siteUrl = (
 
 /** Routes that must never reach a search index. */
 export const noIndexRoutes = ["/portal", "/kitchen-sink"] as const;
+
+/** Google Search Console verification token. */
+export const googleSiteVerification =
+  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ?? "";
+
+/** Google Custom Search Engine ID for a public search page. */
+export const googleSearchEngineId = process.env.NEXT_PUBLIC_GOOGLE_SEARCH_ENGINE_ID ?? "";
+export const googleSearchEnabled = Boolean(googleSearchEngineId);
+
+/** Supabase public client config. */
+export const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+export const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+export const supabaseIsConfigured = Boolean(supabaseUrl && supabaseAnonKey);
