@@ -3,39 +3,13 @@
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BarChart3, BriefcaseBusiness, ShieldCheck } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { LogoLockup } from "@/components/brand/logo-lockup";
 import { Container } from "@/components/layout/container";
 import { Button } from "@/components/ui/button";
 import { site } from "@/content/site";
-import { portalRolePanels, resolvePortalRole } from "@/lib/portal";
 import { createClient } from "@/utils/supabase/client";
-
-const roleIcons = {
-  admin: ShieldCheck,
-  manager: BarChart3,
-  staff: BriefcaseBusiness,
-} as const;
-
-async function loadProfileRole(nextUser: User | null, supabase: ReturnType<typeof createClient>) {
-  if (!nextUser?.email) {
-    return null;
-  }
-
-  const { data: profileData } = await supabase
-    .from("profiles")
-    .select("rol,nombre,email")
-    .eq("email", nextUser.email)
-    .maybeSingle();
-
-  return (
-    (profileData?.rol as string | undefined) ??
-    (nextUser.user_metadata as { role?: string } | undefined)?.role ??
-    (nextUser.app_metadata as { role?: string } | undefined)?.role ??
-    null
-  );
-}
 
 export default function PortalPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -43,7 +17,6 @@ export default function PortalPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [configError, setConfigError] = useState("");
-  const [profileRole, setProfileRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -70,14 +43,12 @@ export default function PortalPage() {
       const { data, error: sessionError } = await supabase.auth.getUser();
       if (sessionError) {
         setUser(null);
-        setProfileRole(null);
         setIsLoading(false);
         return;
       }
 
       const nextUser = data.user;
       setUser(nextUser);
-      setProfileRole(nextUser ? await loadProfileRole(nextUser, supabase) : null);
       setIsLoading(false);
     };
 
@@ -86,7 +57,6 @@ export default function PortalPage() {
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const nextUser = session?.user ?? null;
       setUser(nextUser);
-      setProfileRole(nextUser ? await loadProfileRole(nextUser, supabase) : null);
       setIsLoading(false);
     });
 
@@ -134,10 +104,6 @@ export default function PortalPage() {
     setUser(null);
     setPassword("");
   };
-
-  const portalRole = resolvePortalRole(profileRole ?? user?.user_metadata?.role ?? user?.app_metadata?.role);
-  const roleInfo = portalRolePanels[portalRole];
-  const RoleIcon = roleIcons[portalRole];
 
   if (isLoading) {
     return (
@@ -227,11 +193,6 @@ export default function PortalPage() {
             </div>
           </div>
 
-          <div className="mb-4 flex items-center gap-2 rounded-xl border border-[#d9dfe5] bg-white/80 px-3 py-2 text-xs font-medium text-[#1a1d23]">
-            <RoleIcon aria-hidden />
-            <span>{roleInfo.label}</span>
-          </div>
-
           <nav className="space-y-2 text-sm font-medium">
             <button className="flex w-full items-center gap-3 rounded-xl bg-brand-500 px-3 py-3 text-left font-semibold text-[#1a1d23] shadow-sm">
               <span aria-hidden>⌂</span>
@@ -260,7 +221,7 @@ export default function PortalPage() {
               onClick={handleSignOut}
               className="w-full rounded-xl border border-[#d9dfe5] bg-white px-3 py-2 text-left text-[#1a1d23]"
             >
-              Entrar como administrador
+              Cerrar sesión
             </button>
           </div>
         </aside>
