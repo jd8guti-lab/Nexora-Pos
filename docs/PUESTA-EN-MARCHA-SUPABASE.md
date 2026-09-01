@@ -291,6 +291,54 @@ patrón del esquema actual. **Si crea tablas sin RLS, esa empresa expone sus dat
 la comprobación del paso 1 (`... and not relrowsecurity` tiene que dar 0) hay que volver a
 correrla después de cada tabla nueva.
 
+### La segunda empresa ya está escogida: Las dos palmas
+
+Comercializadora de quesos. Repo propio: **`jd8guti-lab/Las-dos-palmas`**, rama
+`feat/portal-y-factura`. Es la misma plataforma que El Labrador con otro giro de negocio —compras a
+la planta, inventario con mermas, transformaciones—, así que le aplica el caso "misma aplicación"
+de arriba.
+
+**Lo que ya está hecho** (31 de agosto de 2026), para que no se rehaga:
+
+- Su aplicación **ya sabe vivir bajo un subcamino**: `vite.config.ts` lee `VITE_BASE` y el router
+  toma su `basename` de `import.meta.env.BASE_URL`. Verificado sirviendo el build bajo
+  `/portal/las-dos-palmas/`: cero 404 y recargar en `/pedidos` abre Pedidos.
+- Su factura tiene el mismo arreglo que la de El Labrador: impresión desde un documento aparte,
+  ancho a cargo del driver, y el pie `www.nexora-pos.online`.
+
+**Lo que le falta, y es trabajo de fondo:** su adaptador de Supabase. Hoy
+`src/core/adapters/supabase/repositorios.ts` son *stubs* que lanzan `NoImplementadoError`, y su
+`src/core/adapters/supabase/README.md` es la guía para escribirlo — con las cuatro cosas delicadas
+ya identificadas (kardex inmutable, consecutivo sin huecos, escritura atómica del pedido, y los dos
+perfiles convertidos en políticas RLS de verdad). **Su `docs/esquema-supabase.sql` es de una sola
+empresa: hay que darle `tenant_id` y RLS con el mismo patrón del esquema de aquí.**
+
+Hasta que eso exista, `scripts/sync-tenant-app.mjs` **se niega a construirla**, y hace bien: sin
+adaptador, la aplicación guardaría en el IndexedDB de cada navegador y cada equipo del negocio
+tendría su propia contabilidad sin que nadie se diera cuenta.
+
+Sus datos para los pasos 2 y 3, cuando llegue el momento:
+
+```sql
+insert into tenants (slug, nombre, nit)
+values ('las-dos-palmas', 'Las dos palmas', 'TODO(guti): el NIT real');
+```
+
+```sql
+insert into configuracion (tenant_id, negocio, facturacion)
+select id,
+  '{"nombre":"Las dos palmas","propietario":"","nit":"","telefono":"","direccion":"","ciudad":""}'::jsonb,
+  '{"prefijoTicket":"LDP-","consecutivoActual":0,"anchoPapelMm":80}'::jsonb
+from tenants where slug = 'las-dos-palmas';
+```
+
+**El prefijo es `LDP-` y el consecutivo arranca en 0**, distintos de los de El Labrador. No es un
+detalle de estilo: dos empresas con el mismo prefijo y el mismo número emitirían facturas
+duplicadas. Los datos del negocio van vacíos a propósito — esa aplicación se entrega con ellos en
+blanco para que el dueño los llene en Ajustes, y así salen impresos en su ticket.
+
+---
+
 ### Lo que NO hay que hacer nunca
 
 - **No reutilizar un slug.** Es la carpeta y es lo que compara el middleware.

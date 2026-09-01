@@ -14,10 +14,12 @@ export const portalIsInternal = portalUrl.startsWith("/");
 
 /**
  * Canonical origin, used for metadata, sitemap and Open Graph.
- * TODO(guti): replace the fallback with the real domain once it is bought.
+ *
+ * The real domain, confirmed on 2026-08-31. It is also what the tenants' printed receipts show as
+ * the software's footer, so the two must not drift apart.
  */
 export const siteUrl = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://nexora-pos.co"
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://nexora-pos.online"
 ).replace(/\/$/, "");
 
 /** Routes that must never reach a search index. */

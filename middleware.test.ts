@@ -30,7 +30,7 @@ function sesionDe(slug: string) {
 
 const sinSesion = { data: { user: null }, error: null };
 
-const pedir = (ruta: string) => middleware(new NextRequest(`https://nexora-pos.co${ruta}`));
+const pedir = (ruta: string) => middleware(new NextRequest(`https://nexora-pos.online${ruta}`));
 
 beforeEach(() => {
   getUser.mockReset();

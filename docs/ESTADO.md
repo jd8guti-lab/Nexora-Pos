@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-08-31 (**la factura de El Labrador**: impresión silenciosa, tipografía más grande y el pie de nexora-pos — hecho en el repo del cliente, pendiente de sincronizar aquí)
+Última actualización: 2026-08-31 (**la segunda empresa, Las dos palmas**: su factura arreglada y su app lista para el portal — hecho en su repo; aquí, el dominio definitivo y su registro en el instructivo)
 
 ---
 
@@ -249,6 +249,42 @@ del cliente no se compila aquí:
 instructivo, la primera sincronización trae ya esta versión de la factura — no hay nada extra que
 hacer aquí.
 
+#### La segunda empresa: Las dos palmas (31 de agosto de 2026)
+
+Comercializadora de quesos, repo `jd8guti-lab/Las-dos-palmas`, rama `feat/portal-y-factura`. Es el
+caso §8.b del instructivo: misma plataforma, otro giro de negocio. Slug **`las-dos-palmas`**,
+prefijo de factura **`LDP-`** y consecutivo propio.
+
+Lo que se le hizo en su repositorio para dejarla al mismo nivel que El Labrador:
+
+- **La factura**, con los tres arreglos del 31 de agosto: impresión desde un documento aparte,
+  ancho a cargo del driver de la impresora, letra de 13 px peso 600 y el pie
+  `www.nexora-pos.online`. De paso se le mató un fallo propio que llevaba meses ahí: un `Ctrl+P` en
+  cualquier pantalla mandaba una hoja en blanco a la impresora.
+- **La entrada al portal**: `vite.config.ts` lee `VITE_BASE` y el router toma su `basename` de
+  `import.meta.env.BASE_URL`. Comprobado sirviendo el build bajo `/portal/las-dos-palmas/`.
+
+**Y ahí salió un fallo que estaba en los DOS proyectos**: el logo y el isotipo escritos como
+`src="/logo.png"` dentro del JSX. Vite reescribe las rutas de `index.html` con la ruta base del
+build, **no las del JSX**, así que bajo `/portal/<slug>/` esas imágenes se piden desde la raíz del
+dominio y dan 404. Arreglado en los dos con una función `rutaPublica()`. Es el tipo de fallo que
+solo aparece sirviendo la app bajo su subcamino real, y por eso conviene hacerlo antes de entregar.
+
+**Lo que le falta, y no es de este repositorio:** su adaptador de Supabase. Sus repositorios son
+stubs que lanzan `NoImplementadoError`, con la guía de implementación escrita en su propio
+`src/core/adapters/supabase/README.md`, y su esquema SQL es de una sola empresa —hay que darle
+`tenant_id` y RLS—. Hasta entonces `scripts/sync-tenant-app.mjs` **se niega a construirla**, y hace
+bien: sin adaptador, cada equipo del negocio tendría su propia contabilidad en su navegador.
+
+**Así que `public/portal/` sigue vacío para las dos empresas**, por la misma razón de siempre.
+
+#### El dominio quedó decidido: `nexora-pos.online`
+
+`lib/config.ts` tenía `https://nexora-pos.co` con un `TODO(guti)` de marcador. El dueño confirmó el
+dominio real el 31 de agosto de 2026, así que el `siteUrl` por defecto ya no es un marcador y la
+fila salió de "Datos pendientes". **Es el mismo que va impreso al pie del recibo de los dos
+clientes**: si alguien cambia uno, tiene que cambiar el otro.
+
 #### La tarea siguiente: agregar un perfil nuevo
 
 Está pedida y todavía no empezada. **"Perfil" puede ser dos cosas distintas y el camino no es el
@@ -435,7 +471,6 @@ Lo que hay que reemplazar por información real antes de publicar. **Nada de est
 | `content/site.ts`           | Métricas de la barra de confianza — hoy son afirmaciones sobre el producto, no cifras de la empresa. **Confirma que las cuatro son ciertas**, sobre todo si aplica "funciona sin internet" |
 | `content/site.ts`           | WhatsApp, correo de contacto y ciudad                                                                                                                                                      |
 | `content/site.ts`           | Razón social y NIT, para las páginas legales                                                                                                                                               |
-| `lib/config.ts`             | Dominio definitivo (hoy `https://nexora-pos.co` como marcador)                                                                                                                             |
 | `content/pricing.ts`        | Precios reales de los planes Esencial y Negocio (Fase 4)                                                                                                                                   |
 | `app/api/contacto/route.ts` | Servicio de correo para `sendLead()` (Fase 4)                                                                                                                                              |
 | `content/legal.ts`          | Revisión de los textos legales con la normativa vigente (Fase 4)                                                                                                                           |
@@ -666,3 +701,4 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | 2026-08-27 | Sexto pilar "Escalable" y copy nuevo de "El problema" (46, 47); nav rehecho como barra flotante siguiendo el arte (48) | typecheck · lint · test (73/73) · contrast (30/30) · build en verde. Verificado en el navegador: activo en `brand-700` 44px, estado con scroll translúcido + desenfoque, cero desplazamiento horizontal a 320px y disparador móvil de 44×44 |
 | 2026-08-27 | Efecto del nav reescrito en CSS puro y `framer-motion` desinstalado (43): home de 153 a **124 kB**. Fuente afinada a **Figtree** midiendo el arte de referencia (44). `paper-50` a `#EDEDED` y `ink-500` a `#626976` (45) | typecheck · lint · test (73/73) · contrast (30/30) · build en verde. JS real en el cable: **124 kB** |
 | 2026-08-31 | Factura de El Labrador: impresión desde un iframe aparte, ancho a cargo del driver, letra a 13 px/600 y pie `www.nexora-pos.online`. **Cambio hecho en el repo del cliente**; aquí solo documentación | En Papas El Labrador: typecheck · lint · test (659/659) · build en verde, y comprobado en el navegador. Aquí: sin cambios de código — `sync-tenant-app.mjs` sigue bloqueado sin Supabase |
+| 2026-08-31 | Las dos palmas entra como segunda empresa: su factura con el arreglo de impresión y su app lista para `/portal/las-dos-palmas/`. Encontrado y corregido en los DOS repos el logo y el isotipo con ruta absoluta, que daban 404 bajo el subcamino. Aquí: dominio definitivo `nexora-pos.online` y §8.b del instructivo | En Las dos palmas: typecheck · lint · test (708/708) · build en verde, y comprobado en el navegador, incluido el build servido bajo su subcamino. Aquí: los cinco en verde |
