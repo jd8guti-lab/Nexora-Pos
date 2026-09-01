@@ -11,6 +11,30 @@ import { Button } from "@/components/ui/button";
 import { site } from "@/content/site";
 import { createClient } from "@/utils/supabase/client";
 
+const tenantBranding = {
+  "papas-el-labrador": {
+    name: "Papas el Labrador",
+    shortName: "Papas el Labrador",
+  },
+  default: {
+    name: "Las dos palmas",
+    shortName: "Las dos palmas",
+  },
+} as const;
+
+function resolveTenantBrand(user: User | null) {
+  const tenantSlug =
+    (user?.app_metadata as { tenant_slug?: string } | undefined)?.tenant_slug ??
+    (user?.user_metadata as { tenant_slug?: string } | undefined)?.tenant_slug ??
+    (user?.email ?? "").toLowerCase();
+
+  if (tenantSlug.includes("papas") || tenantSlug.includes("labrador")) {
+    return tenantBranding["papas-el-labrador"];
+  }
+
+  return tenantBranding.default;
+}
+
 export default function PortalPage() {
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState("");
@@ -105,6 +129,8 @@ export default function PortalPage() {
     setPassword("");
   };
 
+  const tenantBrand = resolveTenantBrand(user);
+
   if (isLoading) {
     return (
       <main className="surface-dark bg-ink-900 flex min-h-dvh flex-col items-center justify-center py-16 text-white">
@@ -188,7 +214,7 @@ export default function PortalPage() {
               N
             </div>
             <div className="text-left">
-              <p className="text-lg font-bold text-[#1a1d23]">Las dos palmas</p>
+              <p className="text-lg font-bold text-[#1a1d23]">{tenantBrand.name}</p>
               <p className="text-xs text-[#626976]">Configura los datos en Ajustes...</p>
             </div>
           </div>
@@ -229,7 +255,7 @@ export default function PortalPage() {
         <div className="flex-1 p-6">
           <header className="mb-6 flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-black tracking-[-0.04em] text-[#1a1d23]">Las dos palmas</h1>
+              <h1 className="text-4xl font-black tracking-[-0.04em] text-[#1a1d23]">{tenantBrand.name}</h1>
               <p className="mt-1 text-sm text-[#626976]">1 sep 2026</p>
             </div>
 

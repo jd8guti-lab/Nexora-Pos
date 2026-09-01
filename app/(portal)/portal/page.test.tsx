@@ -68,4 +68,22 @@ describe("Portal page", () => {
     expect(screen.getByText(/Pedidos de hoy/i)).toBeInTheDocument();
     expect(screen.getByText(/Todo lo de hoy/i)).toBeInTheDocument();
   });
+
+  it("shows the papas el labrador branding for that tenant", async () => {
+    mockGetUser.mockResolvedValue({
+      data: {
+        user: {
+          email: "papasellabrador@user.com",
+          user_metadata: { tenant_slug: "papas-el-labrador" },
+          app_metadata: { tenant_slug: "papas-el-labrador" },
+        },
+      },
+      error: null,
+    });
+
+    render(<PortalPage />);
+
+    expect(await screen.findByRole("heading", { name: /Papas el Labrador/i })).toBeInTheDocument();
+    expect(screen.getByText(/Papas el Labrador/i)).toBeInTheDocument();
+  });
 });
