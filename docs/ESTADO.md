@@ -326,6 +326,25 @@ vuelvan seguridad de verdad (hoy RLS separa empresas, no personas) y el hueco qu
 consecutivo si falla la escritura tras reservar el número. Los dos están anotados en su
 `src/core/adapters/supabase/README.md` y en el paso 8.b del instructivo.
 
+#### El correo de contacto, y la ubicación que no va (31 de agosto de 2026)
+
+El dueño dio el correo real —`nexoraposonline@gmail.com`— y decidió **no publicar ubicación**.
+
+- El correo va **solo en el pie**, por decisión suya. Está hecho de forma que la regla la haga
+  cumplir el código y no la memoria: `content/site.ts` exporta `contact` (lo que se muestra en todas
+  partes) y `footerContact` (eso más el correo). `/contacto` importa el primero, el pie el segundo.
+  Si mañana alguien quiere el correo en otra página, tiene que decidirlo a propósito.
+- **Se fue el canal `city`** del tipo, del contenido, del pie y de `/contacto`, junto con su icono.
+  El producto se vende y se soporta a distancia: una dirección donde el negocio no recibe a nadie es
+  un pasivo, no una señal.
+- En `lib/seo.ts` queda anotado que **no habrá `address`** en el JSON-LD, para que nadie lo
+  "complete" después creyendo que faltaba.
+
+Sigue siendo `TODO(guti)` la ciudad de **jurisdicción** de `content/legal.ts`, que es otra cosa: la
+pide la ley, no la página, y va con la revisión del abogado que ese archivo ya exige.
+
+Con esto, `content/site.ts` sale de la tabla de datos pendientes.
+
 #### La tarea siguiente: agregar un perfil nuevo
 
 Está pedida y todavía no empezada. **"Perfil" puede ser dos cosas distintas y el camino no es el
@@ -510,7 +529,6 @@ Lo que hay que reemplazar por información real antes de publicar. **Nada de est
 | Dónde                       | Qué falta                                                                                                                                                                                  |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `content/site.ts`           | Métricas de la barra de confianza — hoy son afirmaciones sobre el producto, no cifras de la empresa. **Confirma que las cuatro son ciertas**, sobre todo si aplica "funciona sin internet" |
-| `content/site.ts`           | WhatsApp, correo de contacto y ciudad                                                                                                                                                      |
 | `content/site.ts`           | Razón social y NIT, para las páginas legales                                                                                                                                               |
 | `content/pricing.ts`        | Precios reales de los planes Esencial y Negocio (Fase 4)                                                                                                                                   |
 | `app/api/contacto/route.ts` | Servicio de correo para `sendLead()` (Fase 4)                                                                                                                                              |

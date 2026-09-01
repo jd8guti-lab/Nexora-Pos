@@ -1,14 +1,13 @@
 import Link from "next/link";
-import { Mail, MapPin, MessageCircle } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
 import { LogoLockup } from "@/components/brand/logo-lockup";
 import { footerColumns } from "@/content/nav";
-import { contact, site } from "@/content/site";
+import { footerContact, site } from "@/content/site";
 import { Container } from "./container";
 
 const channelIcon = {
   whatsapp: MessageCircle,
   email: Mail,
-  city: MapPin,
 } as const;
 
 export function Footer() {
@@ -48,7 +47,7 @@ export function Footer() {
 
         <div className="border-t border-white/10 py-8">
           <ul className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-8">
-            {contact.map((channel) => {
+            {footerContact.map((channel) => {
               const Icon = channelIcon[channel.kind];
               const body = (
                 <>

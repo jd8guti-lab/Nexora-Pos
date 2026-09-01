@@ -1,4 +1,4 @@
-import { Mail, MapPin, MessageCircle } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Section } from "@/components/layout/section";
 import { ContactForm } from "@/components/sections/contact-form";
@@ -16,10 +16,15 @@ export const metadata = buildMetadata({
   path: "/contacto",
 });
 
+/**
+ * El mapa cubre TODOS los tipos de canal, no solo los que esta página muestra
+ * hoy: `contact` trae únicamente WhatsApp porque el correo va solo en el pie
+ * (decisión del dueño, 31 de agosto de 2026). Si mañana el correo entra aquí,
+ * su icono ya está y no hay un `undefined` esperando.
+ */
 const channelIcon = {
   whatsapp: MessageCircle,
   email: Mail,
-  city: MapPin,
 } as const;
 
 export default function ContactPage() {
