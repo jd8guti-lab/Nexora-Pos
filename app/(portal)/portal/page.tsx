@@ -13,8 +13,8 @@ import { createClient } from "@/utils/supabase/client";
 
 export default function PortalPage() {
   const [user, setUser] = useState<User | null>(null);
-  const [email, setEmail] = useState("papasellabrador@user.com");
-  const [password, setPassword] = useState("Papaslabrador5173");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [configError, setConfigError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -41,7 +41,6 @@ export default function PortalPage() {
 
     const loadSession = async () => {
       const { data, error: sessionError } = await supabase.auth.getUser();
-
       if (sessionError) {
         setUser(null);
         setIsLoading(false);
@@ -204,18 +203,18 @@ export default function PortalPage() {
               {user.email ?? "Usuario autenticado"}
             </p>
             <p className="mt-2 text-paper-50/80">
-              El portal del negocio ya quedó conectado a tu sesión de Supabase.
+              Tu sesión está activa en el portal de clientes.
             </p>
           </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <div className="rounded-xl border border-paper-50/15 bg-paper-50/5 p-4">
-              <p className="text-sm uppercase tracking-[0.2em] text-paper-50/60">Tenant</p>
-              <p className="mt-3 text-lg font-semibold text-white">Papas el Labrador</p>
+              <p className="text-sm uppercase tracking-[0.2em] text-paper-50/60">Cuenta</p>
+              <p className="mt-3 text-lg font-semibold text-white">{user.email ?? "Cliente"}</p>
             </div>
             <div className="rounded-xl border border-paper-50/15 bg-paper-50/5 p-4">
               <p className="text-sm uppercase tracking-[0.2em] text-paper-50/60">Estado</p>
-              <p className="mt-3 text-lg font-semibold text-white">Portal operativo</p>
+              <p className="mt-3 text-lg font-semibold text-white">Sesión activa</p>
             </div>
           </div>
 
