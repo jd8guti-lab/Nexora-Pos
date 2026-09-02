@@ -17,7 +17,7 @@
 begin;
 
 create temporary table _tenant_demo on commit drop as
-select id from public.tenants where slug = 'dos-palmas';
+select id from public.tenants where slug = 'las-dos-palmas';
 
 do $$
 begin

@@ -22,9 +22,9 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
   vacío distinto del de error. La fecha del encabezado ya no es "1 sep 2026" literal.
 - **`backend/migracion-tenant-negocio.sql`**: agrega `tenant_id`, lo rellena, lo deja NOT NULL
   con default, enciende RLS en las 17 tablas de negocio y pasa los UNIQUE globales a
-  `(tenant_id, columna)`. **Escrito pero NO corrido contra la base.**
+  `(tenant_id, columna)`. **Aplicada el 2026-09-02** sobre `las-dos-palmas`.
 - **`backend/seed-demo.sql`**: tres pedidos, tres clientes y tres productos de prueba, todos con
-  prefijo DEMO, para ver el panel con números. Tampoco se ha corrido.
+  prefijo DEMO, para ver el panel con números. **No se ha corrido.**
 - 16 tests nuevos en `lib/dashboard.test.ts`, con un doble del builder de Supabase.
 
 **Lo que se midió en la base viva antes de escribir nada** (proyecto `ptypwhpthexblwhwdkat`):
@@ -35,13 +35,21 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
   `precios_pactados`, `historial_precios`.
 - **Ninguna tiene `tenant_id`** (error `42703`) y **ninguna tiene RLS**: hoy la anon key las lee
   enteras. Ese esquema es mono-tenant por diseño.
-- **Todas están vacías.** La única fila de negocio en toda la base es `configuracion`, con datos
-  de prueba (nombre "Test", ciudad "Cali").
+- **Todas están vacías.** Confirmado el 2026-09-02 con la `service_role`, que se salta la RLS:
+  0 filas en las 17 tablas de negocio. La única fila es `configuracion`, con datos de prueba
+  (nombre "Test", ciudad "Cali"). **Ojo con creerle a la anon key**: con ella, una tabla vacía y
+  una tabla protegida se ven igual (200 con `[]`) — `tenants` tiene 3 filas y le devuelve 0.
+- **El slug del tenant es `las-dos-palmas`, no `dos-palmas`.** Los tres tenants registrados son
+  `demo-tenant`, `papas-el-labrador` y `las-dos-palmas`, con 2 perfiles `admin` (uno de
+  las-dos-palmas y otro de papas-el-labrador). Los SQL nacieron con el slug equivocado y se
+  corrigieron.
 - El dashboard sincronizado de `papas-el-labrador` en `public/portal/` **no usa Supabase**: cero
   menciones en su bundle y 16 usos de `indexedDB`. Es una app offline, y no se tocó.
 
-**Lo que falta para que el panel muestre datos de verdad**, en orden: correr la migración, correr
-el seed (o cargar datos reales), y entrar al portal con un usuario del tenant.
+**Lo que falta para que el panel muestre datos de verdad**: la migración ya está aplicada, así que
+solo queda **cargar datos** —el seed o los reales— y entrar al portal con el usuario de
+`las-dos-palmas`. Mientras la base siga vacía, el panel enseñará ceros, y esos ceros son
+correctos: es lo que hay.
 
 ### Validación final de cierre
 

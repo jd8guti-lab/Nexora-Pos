@@ -16,6 +16,11 @@
 --   3. Verifícalo con: node scripts/validar-flujo-negocio.mjs <slug>
 --
 -- Es idempotente: se puede volver a correr sin romper nada.
+--
+-- ESTADO: aplicado el 2026-09-02 sobre el tenant `las-dos-palmas`. Verificado contra la
+-- base: `tenant_id` existe en las 17 tablas, es NOT NULL, tiene default
+-- `public.current_tenant_id()` y la función responde. El relleno fue un no-op porque las
+-- tablas de negocio están vacías.
 -- =============================================================================
 
 begin;
@@ -24,7 +29,7 @@ begin;
 -- El tenant al que pertenece TODO lo que ya está en estas tablas.
 -- Cámbialo antes de ejecutar.
 create temporary table _tenant_destino on commit drop as
-select id, slug from public.tenants where slug = 'dos-palmas';
+select id, slug from public.tenants where slug = 'las-dos-palmas';
 
 do $$
 begin

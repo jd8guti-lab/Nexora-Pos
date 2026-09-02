@@ -77,11 +77,12 @@ El dashboard de `/portal` lee Supabase de verdad. Toda la lectura vive en
 
 Para que muestre números, en este orden:
 
-1. **Corre la migración**: pega [backend/migracion-tenant-negocio.sql](backend/migracion-tenant-negocio.sql)
-   en el SQL Editor de Supabase, cambiando antes el slug del tenant destino. Agrega `tenant_id` a
-   las 17 tablas de negocio y enciende RLS. **Todavía no se ha corrido contra la base.**
+1. ~~**Corre la migración**~~ — [backend/migracion-tenant-negocio.sql](backend/migracion-tenant-negocio.sql)
+   ya está aplicada sobre `las-dos-palmas` (2026-09-02). Agrega `tenant_id` a las 17 tablas de
+   negocio y enciende RLS. Vuelve a correrla solo para un tenant nuevo, cambiando antes el slug.
 2. **Carga datos**: los reales, o [backend/seed-demo.sql](backend/seed-demo.sql) para verificar.
-   Hoy las tablas de negocio están vacías.
+   **Hoy las tablas de negocio están vacías** — 0 filas comprobadas con la `service_role`, no
+   con la anon key. Es el único paso que falta para que el panel deje de mostrar ceros.
 3. **Entra con un usuario del tenant**. El portal lo resuelve por el `tenant_slug` del JWT que
    escribe `scripts/crear-usuario-portal.mjs`, y si no lo trae, por su correo contra `profiles`.
 
