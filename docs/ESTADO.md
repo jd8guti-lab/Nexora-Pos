@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-08-31 (**Las dos palmas, lista para conectar Supabase**: su adaptador escrito y probado contra Postgres, un esquema de Postgres por aplicación, y el instructivo al día)
+Última actualización: 2026-09-01 (**la aplicación de Las dos palmas cambió fuerte**: carga por canastillas, devoluciones, merma de venta y los reportes a pantalla. No se compila aquí, pero su esquema SQL cambió con ella)
 
 ---
 
@@ -277,6 +277,31 @@ stubs que lanzan `NoImplementadoError`, con la guía de implementación escrita 
 bien: sin adaptador, cada equipo del negocio tendría su propia contabilidad en su navegador.
 
 **Así que `public/portal/` sigue vacío para las dos empresas**, por la misma razón de siempre.
+
+#### La aplicación de Las dos palmas cambió fuerte (1 de septiembre de 2026)
+
+Nueve cambios que pidió el dueño después de probarla, ya en `main` de
+`jd8guti-lab/Las-dos-palmas` (commit `c52e4d0`). **Nada de esto se compila aquí** —§1: la app del
+cliente es un proyecto aparte— pero conviene saber qué trae, porque es lo que va a desplegarse en
+`public/portal/las-dos-palmas/` en cuanto exista el `.env.local` del paso 5 del instructivo:
+
+- **La carga entra por canastillas.** El bloque de 2,5 kg volvió, pero solo para digitar la compra:
+  la cuajada descuenta 2 kg de canastilla y 1 de desuere por cada una, el doble crema no merma de la
+  planta al local.
+- **Vuelve la merma por carga**, derivada del kardex al cerrar la carga, no de conteos físicos.
+- **Devoluciones y merma de venta** en los pedidos, con su estado y sus reportes.
+- **Cobro repartido entre varios medios** en una sola operación, y el vendedor deja de ser
+  obligatorio.
+- **Todo lo que solo estaba en los Excel subió a pantalla**, más tres reportes nuevos.
+- Y el fallo que mordía todos los días: **no se podía escribir el decimal en el celular**. Era un
+  `<input type="number">` rechazando el separador que ese teclado ofrece.
+
+Su esquema SQL cambió con ellos —`cierres_carga`, `devoluciones`, `lineas_devolucion` y columnas
+nuevas en `productos`, `compra_lineas`, `pedidos` y `lineas_pedido`—, así que **el `docs/esquema-supabase.sql`
+que hay que correr en Supabase es el de su repositorio, no una copia vieja**. Sigue siendo el esquema
+`palmas` y sigue haciendo falta exponerlo en Settings → API (paso 1 del instructivo).
+
+**La primera sincronización trae ya esta versión**: no hay nada extra que hacer aquí.
 
 #### El dominio quedó decidido: `nexora-pos.online`
 
