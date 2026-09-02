@@ -19,9 +19,21 @@ Dónde está cada pieza, para que la próxima sesión no lo vuelva a averiguar.
 | --- | --- |
 | Portal de Nexora | ✅ `feat/portal-clientes` fusionada. `/portal` es **solo la puerta**: login y redirección |
 | Adaptador de Papas | ✅ `feat/supabase-multi-tenant` fusionada en su repo. 30 métodos, 661 tests |
-| Esquema `labrador` en la base | ⏳ **sin correr** |
+| App de Papas servida en el portal | ✅ reconstruida con `VITE_PERSISTENCIA=supabase` y sincronizada |
+| Esquema `labrador` en la base | ⏳ **sin correr** — es lo único que falta |
 | Esquema `palmas` en la base | ⛔ bloqueado: no aparece el código fuente de la app |
-| Datos de negocio en Supabase | ⏳ ninguno. Las dos apps escriben hoy en IndexedDB |
+| Datos de negocio en Supabase | ⏳ ninguno todavía |
+
+**Se decidió no restaurar `public`** (2026-09-02). Las tablas que se borraron eran el dominio de la
+papa viviendo en `public`, y el diseño fusionado en `main` las sustituye por el esquema `labrador`:
+recrearlas era reconstruir algo que se iba a borrar igual. Hay copia de seguridad de Supabase como
+red de seguridad.
+
+**Trampa que queda viva:** `public.tenants` sobrevivió a `backend/0-limpiar-public.sql`, que sí la
+borra, y quedó con una forma que no es la de ninguno de los dos esquemas —`id, slug, nombre, nit,
+created_at, updated_at`, sin `activo` ni `creado_en`—. Hay que **borrarla a mano antes de correr el
+esquema de Papas**, porque ese archivo abre con `create table public.tenants (` **sin
+`if not exists`** y aborta en su primera sentencia.
 
 **Las dos apps desplegadas son 100% locales.** Lo comprobé capturando su tráfico de red: ni
 `papas-el-labrador.vercel.app` ni `las-dos-palmas.vercel.app` hacen una sola petición a
