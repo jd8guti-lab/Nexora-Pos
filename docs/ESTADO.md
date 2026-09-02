@@ -5,11 +5,43 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-01 (dashboard autenticado en estilo Las dos palmas y validación final verde)
+Última actualización: 2026-09-02 (dashboard del portal conectado a datos reales de Supabase)
 
 ---
 
 ## Hecho
+
+### Dashboard del portal con datos reales (2026-09-02)
+
+- **`lib/dashboard.ts`**: la capa de lectura del portal. `fetchTenantContext` resuelve a qué
+  negocio pertenece el usuario (primero por `tenant_slug` del JWT, luego por correo contra
+  `profiles`) y `fetchDashboard` trae las seis cifras del panel en un solo `Promise.all`, todas
+  filtradas por `tenant_id`.
+- **`app/(portal)/portal/page.tsx`**: las cuatro tarjetas y los dos listados dejaron de ser
+  ceros escritos a mano. Tienen estado de carga, banner de error con `role="alert"` y estado
+  vacío distinto del de error. La fecha del encabezado ya no es "1 sep 2026" literal.
+- **`backend/migracion-tenant-negocio.sql`**: agrega `tenant_id`, lo rellena, lo deja NOT NULL
+  con default, enciende RLS en las 17 tablas de negocio y pasa los UNIQUE globales a
+  `(tenant_id, columna)`. **Escrito pero NO corrido contra la base.**
+- **`backend/seed-demo.sql`**: tres pedidos, tres clientes y tres productos de prueba, todos con
+  prefijo DEMO, para ver el panel con números. Tampoco se ha corrido.
+- 16 tests nuevos en `lib/dashboard.test.ts`, con un doble del builder de Supabase.
+
+**Lo que se midió en la base viva antes de escribir nada** (proyecto `ptypwhpthexblwhwdkat`):
+
+- Las tablas de negocio son las del esquema de Papas el Labrador: `pedidos`, `lineas_pedido`,
+  `productos`, `clientes`, `proveedores`, `compras`, `abonos`, `abonos_compra`, `comisiones`,
+  `gastos`, `balances`, `vendedores`, `categorias`, `tipos`, `tamanos`, `configuracion`,
+  `precios_pactados`, `historial_precios`.
+- **Ninguna tiene `tenant_id`** (error `42703`) y **ninguna tiene RLS**: hoy la anon key las lee
+  enteras. Ese esquema es mono-tenant por diseño.
+- **Todas están vacías.** La única fila de negocio en toda la base es `configuracion`, con datos
+  de prueba (nombre "Test", ciudad "Cali").
+- El dashboard sincronizado de `papas-el-labrador` en `public/portal/` **no usa Supabase**: cero
+  menciones en su bundle y 16 usos de `indexedDB`. Es una app offline, y no se tocó.
+
+**Lo que falta para que el panel muestre datos de verdad**, en orden: correr la migración, correr
+el seed (o cargar datos reales), y entrar al portal con un usuario del tenant.
 
 ### Validación final de cierre
 
@@ -344,6 +376,9 @@ Cada decisión técnica va aquí **con su porqué**, para no volver a discutirla
 | 87  | **El segundo botón del hero lleva a los casos, no a los módulos**        | Los módulos ya no forman parte de lo que cuenta la home, así que "Ver los módulos" apuntaba fuera de la conversación. Ahora es **"Ver casos reales" → `#casos`**, y el hero se queda con dos botones que van a los dos únicos sitios a los que tiene sentido mandar a alguien: WhatsApp y los casos |
 | 88  | **"Casos de uso" cambia de tema a implementaciones reales, y admite que no hay** | Pedido del usuario. Antes eran seis tipos de negocio; ahora la sección promete clientes reales, y esa promesa no se puede cumplir a medias: en vez de categorías disfrazadas de clientes hay un **estado vacío que dice por qué está vacío**. El título pasa a "Casos reales, no ejemplos inventados" y no a "Negocios que ya trabajan con nexora-pos", que con el bloque vacío justo debajo se leería como una afirmación sobre clientes que no tenemos (§7). `TODO(guti)` para reemplazarlo cuando haya uno con permiso |
 | 89  | **`SectionHeading`: un solo sitio para el encabezado de las secciones**  | Pedido del usuario: que "Cómo trabajamos" y "Casos reales" se vean como "El problema" — mismo tamaño y con parte subrayada. En vez de copiar el marcado por tercera vez se extrae a `components/sections/section-heading.tsx`, y con eso **la excepción de contraste del naranja brillante vive en un único archivo** en vez de propagarse por copia. La partición del título sigue en `content/`, y el nav pasa a decir "Casos reales" |
+| 91  | **El aislamiento por tenant se hace con `tenant_id` + RLS, no solo con la puerta del login** | Las tablas de negocio no tenían ni lo uno ni lo otro: cualquiera con la anon key las leía enteras. Filtrar solo en el cliente deja el agujero abierto. La política compara contra `public.current_tenant_id()`, que lee el `tenant_slug` del JWT que ya escribe `crear-usuario-portal.mjs` |
+| 92  | **Las consultas filtran por `tenant_id` aunque la RLS ya lo haga** | Redundancia a propósito: si un día una política se cae, el filtro explícito hace que se vea como cero filas y no como los datos de otro cliente |
+| 93  | **"Queso disponible" y "Por acabarse" pasan a "Catálogo activo" y "Cartera pendiente"** | El módulo de inventario se eliminó del esquema del negocio: no hay `lotes`, `movimientos` ni saldos de producto, ni columna de mínimo. Esas dos tarjetas no se podían responder con datos reales, y un número inventado es peor que uno distinto (CLAUDE.md §7) |
 | 90  | **Los cuatro pasos suben un escalón, y solo uno**                        | Pedido del usuario: más notorios pero "tampoco tanto". La ficha del número pasa de 48 a **56px** con el dígito en `text-h2` (40px), y la descripción de `text-body` a `text-lead` (22px). **El título del paso se queda en `h3`**: a `h2` se parte en tres líneas dentro de una columna de 282px, que es más grande y peor. El filete de la línea de tiempo se mueve de `left-6` a `left-7` para seguir cruzando el centro de la ficha |
 
 ---
@@ -550,6 +585,15 @@ Con `next build` o el servidor de desarrollo corriendo a la vez, Vitest empieza 
 fallo de verdad. Repite en limpio, o en serie:
 `npx vitest run --pool=forks --poolOptions.forks.singleFork=true --testTimeout=15000`.
 
+**28. El esquema que hay en el repo no es el que hay en la base.**
+`backend/esquema-supabase.sql` solo define `tenants`, `profiles` y `business_config`. La base real
+tiene además las 18 tablas del negocio, que llegaron por otro camino y cuyo esquema vive en el repo
+del cliente, no en este. Escribir consultas contra el SQL del repo habría dado nombres de tabla y
+de columna que no existen. **Antes de consultar, enumera contra la base viva**: la anon key sirve
+para probar nombres uno a uno contra `/rest/v1/<tabla>`, y el `hint` del error `PGRST205` sugiere
+el nombre correcto. Lo mismo vale para `tenant_id`: pedir la columna y leer el `42703` es más
+rápido y más fiable que suponerla.
+
 **26. `npm run build` con el servidor de desarrollo levantado deja el `dev` inservible.**
 Los dos escriben en `.next`. El build de producción reemplaza los chunks que el servidor de
 desarrollo tiene abiertos y, a partir de ahí, cada petición muere con
@@ -593,3 +637,4 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | 2026-08-27 | Nav a todo el ancho con `--text-nav` y botones `md` (48), altura del nav como token (49); hero con el claim a tres líneas y CTA secundario en placa blanca (50, 51) | typecheck · lint · test (73/73) · contrast (30/30) · build en verde. Nav + hero = exactamente el viewport a 1920×1080, 1280×800 y 375×812. Contraste del acento medido sobre los píxeles compuestos: **3.12:1** a 1920 y **3.13:1** a 1280 |
 | 2026-08-27 | Sexto pilar "Escalable" y copy nuevo de "El problema" (46, 47); nav rehecho como barra flotante siguiendo el arte (48) | typecheck · lint · test (73/73) · contrast (30/30) · build en verde. Verificado en el navegador: activo en `brand-700` 44px, estado con scroll translúcido + desenfoque, cero desplazamiento horizontal a 320px y disparador móvil de 44×44 |
 | 2026-08-27 | Efecto del nav reescrito en CSS puro y `framer-motion` desinstalado (43): home de 153 a **124 kB**. Fuente afinada a **Figtree** midiendo el arte de referencia (44). `paper-50` a `#EDEDED` y `ink-500` a `#626976` (45) | typecheck · lint · test (73/73) · contrast (30/30) · build en verde. JS real en el cable: **124 kB** |
+| 2026-09-02 | Dashboard del portal conectado a Supabase: `lib/dashboard.ts`, estados de carga/error, migración de `tenant_id` + RLS y seed de prueba | typecheck · lint · test (96/96) · build (22 rutas, home 113 kB) · contrast en verde |

@@ -66,9 +66,27 @@ Si lo rompes, te dice exactamente qué par y con qué ratio.
 | `/casos`                                | Casos de uso por tipo de negocio                                                               | ✅     |
 | `/precios`                              | Planes y alcance de la personalización                                                         | ✅     |
 | `/contacto`                             | Formulario, WhatsApp y correo                                                                  | ✅     |
-| `/portal`                               | Placeholder del portal de clientes                                                             | ✅     |
+| `/portal`                               | Portal de clientes: login con Supabase y dashboard del negocio con datos reales                | ✅     |
 | `/kitchen-sink`                         | Todos los primitivos, en todas sus variantes. Solo desarrollo: `noindex`, sin enlazar          | ✅     |
 | `/legal/privacidad` · `/legal/terminos` | Legales (Ley 1581 de 2012)                                                                     | ✅     |
+
+## Datos del portal
+
+El dashboard de `/portal` lee Supabase de verdad. Toda la lectura vive en
+[lib/dashboard.ts](lib/dashboard.ts) y está filtrada por `tenant_id`.
+
+Para que muestre números, en este orden:
+
+1. **Corre la migración**: pega [backend/migracion-tenant-negocio.sql](backend/migracion-tenant-negocio.sql)
+   en el SQL Editor de Supabase, cambiando antes el slug del tenant destino. Agrega `tenant_id` a
+   las 17 tablas de negocio y enciende RLS. **Todavía no se ha corrido contra la base.**
+2. **Carga datos**: los reales, o [backend/seed-demo.sql](backend/seed-demo.sql) para verificar.
+   Hoy las tablas de negocio están vacías.
+3. **Entra con un usuario del tenant**. El portal lo resuelve por el `tenant_slug` del JWT que
+   escribe `scripts/crear-usuario-portal.mjs`, y si no lo trae, por su correo contra `profiles`.
+
+El paso a paso completo de la puesta en marcha está en
+[docs/PUESTA-EN-MARCHA.md](docs/PUESTA-EN-MARCHA.md).
 
 ## Stack
 

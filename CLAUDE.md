@@ -350,4 +350,20 @@ nuevo sigue construyéndose como componente React/SVG salvo que se pida y docume
   "Ingresar al portal" pueda apuntar a otro dominio el día que exista.
 - `middleware.ts` creado y vacío, con el comentario de dónde irá la resolución de tenant.
 - Grupos de rutas `(marketing)` y `(portal)` ya separados.
-- **No** se instala Supabase, NextAuth ni ORM alguno todavía.
+- **No** se instala NextAuth ni ORM alguno. Supabase sí entró (2026-08-30): `@supabase/ssr` y
+  `@supabase/supabase-js`, con los clientes en `utils/supabase/` y la config en `lib/config.ts`.
+
+**El portal ya lee datos reales** (2026-09-02). La regla que lo gobierna:
+
+- Toda lectura del negocio pasa por `lib/dashboard.ts`. Ningún componente consulta Supabase
+  directamente.
+- **Cada consulta filtra por `tenant_id` aunque la RLS ya lo haga.** Es redundante a propósito:
+  si una política se cae, el filtro explícito hace que se vea como cero filas y no como los datos
+  de otro cliente.
+- **El esquema real no está en este repo.** `backend/esquema-supabase.sql` solo tiene `tenants`,
+  `profiles` y `business_config`; las tablas del negocio (`pedidos`, `lineas_pedido`, `productos`,
+  `clientes`, `proveedores`, `compras`, `abonos`, `gastos`, `balances`…) llegaron por otro camino.
+  Antes de escribir una consulta nueva, **enumera contra la base viva**, no contra el SQL del repo.
+- No hay inventario en ese esquema: no existen saldos de producto ni mínimos de stock. Si una
+  tarjeta necesita un número que la base no tiene, se cambia la tarjeta — no se inventa el número
+  (§7).
