@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-01 (**la aplicación de Las dos palmas cambió fuerte**: carga por canastillas, devoluciones, merma de venta y los reportes a pantalla. No se compila aquí, pero su esquema SQL cambió con ella)
+Última actualización: 2026-09-02 (**el bloque vuelve a verse en toda la app de Las dos palmas**; antes, **la aplicación de Las dos palmas cambió fuerte**: carga por canastillas, devoluciones, merma de venta y los reportes a pantalla. No se compila aquí, pero su esquema SQL cambió con ella)
 
 ---
 
@@ -302,6 +302,28 @@ que hay que correr en Supabase es el de su repositorio, no una copia vieja**. Si
 `palmas` y sigue haciendo falta exponerlo en Settings → API (paso 1 del instructivo).
 
 **La primera sincronización trae ya esta versión**: no hay nada extra que hacer aquí.
+
+#### El bloque vuelve a verse en toda la app de Las dos palmas (2 de septiembre de 2026)
+
+Otro cambio del dueño, en la rama `feat/bloques-doble-crema` de `jd8guti-lab/Las-dos-palmas`.
+**Tampoco se compila aquí**, por la misma razón de §1, y **no toca nada de este repositorio**: ni el
+portal, ni el `middleware.ts`, ni el esquema SQL. Se anota porque es lo que va a servirse bajo
+`/portal/las-dos-palmas/` cuando la sincronización pueda correr.
+
+El cambio anterior había devuelto el **bloque de 2,5 kg** solo a la pantalla de Compras. El dueño lo
+probó y pidió verlo en el resto: *"sigo sin ver los bloques de doble crema en las existencias y en
+los pedidos"*. Ahora la doble crema y el doble crema tajado a granel **se leen y se digitan en
+bloques** en Existencias, Pedidos, Transformaciones y los reportes; los paquetes siguen en paquetes
+y la cuajada en kilos.
+
+**Lo guardado no cambió.** El kilo sigue siendo la unidad del kardex, del precio, de la comisión y
+de la factura: el bloque es una unidad de *conteo*, no de cobro. Por eso esto **no cambia el
+`docs/esquema-supabase.sql`** de su repositorio — el que hay que correr en Supabase sigue siendo el
+de la entrada anterior, sin una columna nueva.
+
+Lo que sí trae, y aquí importa saberlo: en Transformaciones se digita **cuántos bloques entran a
+tajar** y cuántos salen, y la ganancia se dice también en bloques —*"entraron 20 bloques y salieron
+21 — 1 bloque de más"*—, que era la parte que el dueño no tenía en ninguna pantalla.
 
 #### El dominio quedó decidido: `nexora-pos.online`
 
