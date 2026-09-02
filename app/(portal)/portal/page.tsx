@@ -23,7 +23,7 @@ const tenantBranding = {
 } as const;
 
 const tenantPortalUrls = {
-  "papas-el-labrador": "/portal/papas-el-labrador",
+  "papas-el-labrador": "/portal/papas-el-labrador/",
 } as const;
 
 function resolveTenantSlug(user: User | null) {
