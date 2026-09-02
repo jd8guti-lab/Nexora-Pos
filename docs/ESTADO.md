@@ -11,7 +11,44 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
 ## Hecho
 
+### Estado de la conexión a Supabase (2026-09-02)
+
+Dónde está cada pieza, para que la próxima sesión no lo vuelva a averiguar.
+
+| Pieza | Estado |
+| --- | --- |
+| Portal de Nexora | ✅ `feat/portal-clientes` fusionada. `/portal` es **solo la puerta**: login y redirección |
+| Adaptador de Papas | ✅ `feat/supabase-multi-tenant` fusionada en su repo. 30 métodos, 661 tests |
+| Esquema `labrador` en la base | ⏳ **sin correr** |
+| Esquema `palmas` en la base | ⛔ bloqueado: no aparece el código fuente de la app |
+| Datos de negocio en Supabase | ⏳ ninguno. Las dos apps escriben hoy en IndexedDB |
+
+**Las dos apps desplegadas son 100% locales.** Lo comprobé capturando su tráfico de red: ni
+`papas-el-labrador.vercel.app` ni `las-dos-palmas.vercel.app` hacen una sola petición a
+`*.supabase.co`. Los "52 productos" y los "6 productos" que muestran viven en el IndexedDB del
+navegador de quien las abre. Por eso Supabase está vacío: **no es un fallo, es que ese cable no
+está conectado en ningún extremo.**
+
+**Cómo se conecta Papas**: los pasos están en `docs/PUESTA-EN-MARCHA-SUPABASE.md`, más un
+paso 0 que esa guía no tenía y que hace falta — ver abajo.
+
+- `backend/0-limpiar-public.sql` — **córrelo antes del paso 1.** El esquema nuevo abre con
+  `create table public.tenants (` **sin `if not exists`**, y esa tabla ya existe en la base con
+  otra forma. Sin limpiar, el paso 1 aborta en su primera sentencia.
+- `backend/revertir-migracion-descartada.sql` — alternativa conservadora, para quitar solo lo
+  que dejó el PR #2 sin borrar las tablas. **Es una u otra, no las dos.**
+- `backend/esquema-supabase.sql` quedó marcado como **obsoleto**: describe el primer intento de
+  multi-tenancy y correrlo hoy recrearía justo lo que el paso 0 borra.
+
+**Las dos palmas se queda como está**, en IndexedDB, hasta que aparezca su código. No está en
+`jd8guti-lab`, ni en la cuenta personal, ni en el disco. Lo único que existe es el bundle
+desplegado; de él saqué su modelo de datos, por si algún día se decide reconstruirlo.
+
 ### Validación final de cierre
+
+> **Superada por lo de arriba.** Esta sección describe el dashboard que `/portal` dibujaba antes
+> de fusionar `feat/portal-clientes`. Ese dashboard ya no existe aquí: el que ve el dueño es el de
+> su propia aplicación, servida bajo `/portal/<slug>/`. Se conserva como registro.
 
 - **Dashboard autenticado en estilo referencia**: tras iniciar sesión, el usuario ve la vista tipo
   negocio de la primera imagen con el sidebar, tarjetas de resumen y el bloque de pedidos de

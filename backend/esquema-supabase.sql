@@ -1,3 +1,22 @@
+-- ⚠️  OBSOLETO — NO LO EJECUTES. Conservado solo como registro.
+--
+-- Este archivo describe el primer intento de multi-tenancy: `tenants`, `profiles` y
+-- `business_config` en el esquema `public`. La arquitectura que quedó en `main` el
+-- 2026-09-02 es otra: **un esquema de Postgres por aplicación**.
+--
+--   `public`     solo lo compartido: la tabla `tenants` y la función `auth_tenant_id()`
+--   `labrador`   las 18 tablas de Papas El Labrador
+--   `palmas`     las 19 tablas de Las dos palmas
+--
+-- El SQL que SÍ se corre vive en el repo de cada aplicación, en su
+-- `docs/esquema-supabase.sql`. El paso a paso está en `docs/PUESTA-EN-MARCHA-SUPABASE.md`.
+--
+-- Correr este archivo hoy recrearía justo las tablas que `backend/0-limpiar-public.sql`
+-- borra, y el esquema nuevo fallaría: hace `create table public.tenants` SIN
+-- `if not exists`.
+--
+-- ---------------------------------------------------------------------------------
+--
 -- Schema multitenant para Nexora / portal del cliente
 -- Ejecutar en el proyecto Supabase del negocio.
 

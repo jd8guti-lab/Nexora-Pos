@@ -4,8 +4,8 @@ Sitio corporativo de **nexora-pos**: software de punto de venta a medida, person
 modular. Es la cara pública de la marca — explica qué hace el producto, para quién es y cómo
 contratarlo, y enlaza al portal de clientes.
 
-**Es solo el sitio de marketing.** El portal multi-cliente (login, dashboards, multi-tenancy) se
-construye después; aquí ya está el enganche listo en `/portal` y en `middleware.ts`.
+**Es el sitio de marketing más la puerta del portal.** `/portal` resuelve login y tenant; el
+dashboard de cada empresa es su propia aplicación, servida bajo `/portal/<slug>/`.
 
 ---
 
@@ -66,6 +66,14 @@ Esa carpeta se commitea: es lo que despliega Vercel.
 Para dejar Supabase funcionando —esquema, empresa, usuario y datos— sigue
 **[docs/PUESTA-EN-MARCHA-SUPABASE.md](docs/PUESTA-EN-MARCHA-SUPABASE.md)**.
 
+> **Antes del paso 1 de esa guía, corre [backend/0-limpiar-public.sql](backend/0-limpiar-public.sql).**
+> El esquema nuevo abre con `create table public.tenants (` **sin `if not exists`**, y esa tabla ya
+> existe en la base con otra forma —resto del primer intento de multi-tenancy—. Sin limpiar, el
+> paso 1 aborta en su primera sentencia.
+>
+> Si prefieres no borrar nada, [backend/revertir-migracion-descartada.sql](backend/revertir-migracion-descartada.sql)
+> quita solo lo que sobra y deja las tablas. Es una u otra, no las dos.
+
 Sin las variables de Supabase el portal **falla cerrado**: la página de login sigue en pie, pero
 nadie entra a ninguna aplicación.
 
@@ -120,7 +128,13 @@ Ver [docs/ESTADO.md](docs/ESTADO.md). En grande:
 5. **Assets pendientes:** el logo sobre fondo oscuro y los SVG vectoriales. Mientras no
    existan, sobre `ink-900` y sobre la franja naranja el nombre se compone en Poppins (token `font-wordmark`) con
    los tokens de marca — nunca se recolorea el PNG.
-6. El portal de clientes — proyecto aparte.
+6. **Conectar Supabase de verdad.** Hoy las apps de los clientes escriben en IndexedDB del
+   navegador, no en la base: comprobado capturando su tráfico, cero peticiones a `*.supabase.co`.
+   El código para conectarlas ya está escrito y probado; faltan los pasos operativos de
+   [docs/PUESTA-EN-MARCHA-SUPABASE.md](docs/PUESTA-EN-MARCHA-SUPABASE.md), empezando por
+   `backend/0-limpiar-public.sql`.
+7. **Las dos palmas: falta su código fuente.** No está en GitHub ni en disco; solo el bundle
+   desplegado. Se queda en IndexedDB hasta que aparezca.
 
 > **Ojo:** ningún componente lleva copy hardcodeado. Si quieres cambiar un texto, se cambia en
 > `content/`, no en el JSX.
