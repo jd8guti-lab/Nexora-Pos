@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-02 (**`feat/portal-clientes` fusionada a `main`**: un esquema de Postgres por aplicación, el portal reducido a la puerta de entrada y la resolución de tenant en el middleware. Antes, en esa misma rama: **la aplicación de Las dos palmas cambió fuerte** —carga por canastillas, devoluciones, merma de venta y los reportes a pantalla—; no se compila aquí, pero su esquema SQL cambió con ella)
+Última actualización: 2026-09-02 (**esquema `labrador` corrido y expuesto**; falta rehacer `configuracion` y cargar el catálogo. Antes: **`feat/portal-clientes` fusionada a `main`**: un esquema de Postgres por aplicación, el portal reducido a la puerta de entrada y la resolución de tenant en el middleware. Antes, en esa misma rama: **la aplicación de Las dos palmas cambió fuerte** —carga por canastillas, devoluciones, merma de venta y los reportes a pantalla—; no se compila aquí, pero su esquema SQL cambió con ella)
 
 ---
 
@@ -20,20 +20,53 @@ Dónde está cada pieza, para que la próxima sesión no lo vuelva a averiguar.
 | Portal de Nexora | ✅ `feat/portal-clientes` fusionada. `/portal` es **solo la puerta**: login y redirección |
 | Adaptador de Papas | ✅ `feat/supabase-multi-tenant` fusionada en su repo. 30 métodos, 661 tests |
 | App de Papas servida en el portal | ✅ reconstruida con `VITE_PERSISTENCIA=supabase` y sincronizada |
-| Esquema `labrador` en la base | ⏳ **sin correr** — es lo único que falta |
+| Esquema `labrador` en la base | ✅ corrido y **expuesto** en Settings → API |
+| Las 18 tablas y su RLS | ✅ `anon` recibe `42501` en todas |
+| Las 5 funciones de escritura | ✅ verificadas en `pg_proc` |
+| `labrador.configuracion` | 🔶 **con la forma equivocada** — ver la migración de abajo |
 | Esquema `palmas` en la base | ⛔ bloqueado: no aparece el código fuente de la app |
 | Datos de negocio en Supabase | ⏳ ninguno todavía |
+
+**Lo único que falta para operar**, en orden:
+
+1. `Papas-el-Labrador/docs/migraciones/2026-09-02-rehacer-configuracion.sql` — la tabla desplegada
+   no corresponde al esquema (le faltan cinco columnas `not null`), así que insertar la fila del
+   negocio falla con `42703 column "atendidos_sugeridos" does not exist`.
+2. `notify pgrst, 'reload schema';`
+3. Cargar el catálogo: exportar respaldo desde la app en local y restaurarlo **dentro del portal**,
+   que es lo que escribe en Supabase con la RLS activa.
+
+**Dos bugs reales encontrados al conectar, ya corregidos** (repo de Papas, `d5e9449e` y `77d5874d`).
+Los dos vivían en la costura entre el adaptador y el SQL, y **ninguno lo cazaban los 661 tests**:
+
+- `vaciarTodo()` pedía `DELETE` sobre `historial_precios`, que el esquema revoca. Como
+  `importarTodo` empieza llamando ahí, la siembra moría antes de escribir nada. Los tests de
+  esquema corren contra PGlite con un rol privilegiado, para el que los `revoke` sobre
+  `authenticated` no aplican.
+- `aplicar_lote` armaba la lista de columnas con la **unión de claves de todas las filas del lote**.
+  Bastaba que una fila trajera `es_consumidor_final` para que `jsonb_populate_recordset` metiera
+  NULL en las demás, y un NULL explícito no activa el `default`. Ahora agrupa por juego de claves.
 
 **Se decidió no restaurar `public`** (2026-09-02). Las tablas que se borraron eran el dominio de la
 papa viviendo en `public`, y el diseño fusionado en `main` las sustituye por el esquema `labrador`:
 recrearlas era reconstruir algo que se iba a borrar igual. Hay copia de seguridad de Supabase como
 red de seguridad.
 
-**Trampa que queda viva:** `public.tenants` sobrevivió a `backend/0-limpiar-public.sql`, que sí la
-borra, y quedó con una forma que no es la de ninguno de los dos esquemas —`id, slug, nombre, nit,
-created_at, updated_at`, sin `activo` ni `creado_en`—. Hay que **borrarla a mano antes de correr el
-esquema de Papas**, porque ese archivo abre con `create table public.tenants (` **sin
-`if not exists`** y aborta en su primera sentencia.
+**Cuatro trampas que costaron tiempo en esta sesión:**
+
+1. **El SQL sale del repositorio, no de un chat.** Se ejecutó contra la base un esquema generado
+   fuera del repo. Creó tablas con nombres en camelCase —que PostgreSQL pasa a minúscula:
+   `prefijoTicket` acaba siendo `prefijoticket`—, sin `auth_tenant_id()`, y con
+   `CREATE POLICY IF NOT EXISTS`, que **no existe en PostgreSQL**. De ahí viene la
+   `configuracion` deforme que todavía hay que rehacer.
+2. **PostgREST expone las funciones `IMMUTABLE` por GET, no por POST.** Llamarlas con POST
+   devuelve `404 PGRST202` aunque existan. Se dieron por perdidas `tablas_del_lote` y
+   `tablas_solo_agregar`, que estaban ahí. **La fuente autorizada es `pg_proc`, no PostgREST**:
+   su caché depende del verbo y de un `notify pgrst, 'reload schema'`.
+3. **Un `drop table` se lleva la RLS, la política y los `grant` de esa tabla.** Al recrear
+   cualquiera hay que reponer los tres, o queda invisible para la app aunque exista.
+4. **`create table public.tenants` va sin `if not exists`** en el esquema de Papas: si esa tabla
+   ya está, el archivo aborta en su primera sentencia.
 
 **Las dos apps desplegadas son 100% locales.** Lo comprobé capturando su tráfico de red: ni
 `papas-el-labrador.vercel.app` ni `las-dos-palmas.vercel.app` hacen una sola petición a
@@ -890,3 +923,4 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | 2026-08-31 | Factura de El Labrador: impresión desde un iframe aparte, ancho a cargo del driver, letra a 13 px/600 y pie `www.nexora-pos.online`. **Cambio hecho en el repo del cliente**; aquí solo documentación | En Papas El Labrador: typecheck · lint · test (659/659) · build en verde, y comprobado en el navegador. Aquí: sin cambios de código — `sync-tenant-app.mjs` sigue bloqueado sin Supabase |
 | 2026-08-31 | Las dos palmas entra como segunda empresa: su factura con el arreglo de impresión y su app lista para `/portal/las-dos-palmas/`. Encontrado y corregido en los DOS repos el logo y el isotipo con ruta absoluta, que daban 404 bajo el subcamino. Aquí: dominio definitivo `nexora-pos.online` y §8.b del instructivo | En Las dos palmas: typecheck · lint · test (708/708) · build en verde, y comprobado en el navegador, incluido el build servido bajo su subcamino. Aquí: los cinco en verde |
 | 2026-08-31 | Un esquema de Postgres por aplicación (`labrador`, `palmas`, y `public` solo para lo compartido) y el adaptador de Supabase de Las dos palmas, escrito y probado. Encontrados y corregidos tres errores de su SQL que nunca se había ejecutado, y un `on conflict do update` contra tablas con UPDATE revocado que habría fallado en los DOS proyectos | En Las dos palmas: typecheck · lint · test (780/780) · build. En Papas El Labrador: 661/661 · build. Aquí: los cinco en verde |
+| 2026-09-02 | Conexión real a Supabase: esquema `labrador` corrido y expuesto, dos bugs de adaptador corregidos (`vaciarTodo`, `aplicar_lote`) y la ruta base del router sin barra final | typecheck · lint · test (107/107 Nexora, 668/668 Papas) · contrast · build en verde |
