@@ -50,8 +50,12 @@ export function buildMetadata({
  * place to put a flattering guess, because search engines treat it as a
  * claim about the world (CLAUDE.md §7).
  *
- * TODO(guti): cuando existan la razón social, el NIT, la ciudad y las redes
- * sociales, entran aquí como `legalName`, `address` y `sameAs`.
+ * TODO(guti): cuando existan la razón social, el NIT y las redes sociales,
+ * entran aquí como `legalName` y `sameAs`.
+ *
+ * No habrá `address`: el negocio decidió el 31 de agosto de 2026 no publicar
+ * ubicación. El correo tampoco entra aquí — va solo en el pie, por la misma
+ * decisión (ver `content/site.ts`).
  */
 export function organizationJsonLd() {
   return {

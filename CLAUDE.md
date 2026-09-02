@@ -42,10 +42,24 @@ Nunca digas "listo" sin haberlos corrido y visto la salida.
 El **sitio web público** de nexora-pos: software POS a medida, personalizable y modular, vendido
 a varias empresas cliente. Es la cara comercial de la marca.
 
-**Está dentro del alcance:** páginas de marketing, contenido, formulario de contacto, SEO.
-**Está fuera del alcance (por ahora):** autenticación, base de datos, multi-tenancy, dashboards,
-cualquier lógica del POS. El portal de clientes se construye después; aquí solo se deja el
-enganche listo.
+**Está dentro del alcance:** páginas de marketing, contenido, formulario de contacto, SEO —
+y, desde el 30 de agosto de 2026, **el portal de clientes**: login con Supabase Auth, resolución
+de tenant en el `middleware.ts`, y servir la aplicación de cada empresa bajo `/portal/<slug>/`.
+
+**Está fuera del alcance:** dashboards dentro del portal y cualquier lógica de negocio del POS.
+Al entrar, el cliente va directo a su aplicación; nexora-pos es la puerta, no el sistema.
+
+> **Esto cambió por decisión expresa del usuario el 30 de agosto de 2026.** Antes decía que la
+> autenticación, la base de datos y el multi-tenancy estaban fuera de alcance y que el portal se
+> construía después. Se construyó ahora porque había que entregarle el sistema a un cliente real
+> (Papas El Labrador). Ver `docs/ESTADO.md`.
+
+**La aplicación de cada cliente NO se compila aquí.** Es un proyecto aparte con su propio stack
+—el de El Labrador es React 18 + Tailwind 3 + react-router— y lo que se sirve es su **build ya
+compilado**, copiado a `public/portal/<slug>/` por `scripts/sync-tenant-app.mjs`. Un bundle no
+puede tener dos Reacts y un pipeline de PostCSS no compila Tailwind 3 y 4 a la vez: fusionar los
+proyectos obligaría a reescribir uno de los dos. Esa carpeta se versiona a propósito, y es lo que
+despliega Vercel.
 
 ---
 
@@ -344,10 +358,30 @@ nuevo sigue construyéndose como componente React/SVG salvo que se pida y docume
 
 ---
 
-## 9. Preparado para el portal, sin construirlo
+## 9. El portal de clientes
 
-- `NEXT_PUBLIC_PORTAL_URL` en `lib/config.ts`, por defecto `/portal`, para que el botón
-  "Ingresar al portal" pueda apuntar a otro dominio el día que exista.
-- `middleware.ts` creado y vacío, con el comentario de dónde irá la resolución de tenant.
-- Grupos de rutas `(marketing)` y `(portal)` ya separados.
-- **No** se instala Supabase, NextAuth ni ORM alguno todavía.
+Construido el 30 de agosto de 2026. Antes esta sección se llamaba "Preparado para el portal, sin
+construirlo" y decía que no se instalaba Supabase; el usuario pidió construirlo para entregarle el
+sistema a un cliente real.
+
+- **Supabase Auth** para el login (`@supabase/supabase-js` + `@supabase/ssr`). **No** entra
+  NextAuth ni ORM alguno.
+- La sesión va en **cookies**, no en `localStorage`: el `middleware.ts` tiene que poder decidir en
+  el servidor si hay sesión antes de entregar un solo archivo, y `localStorage` no viaja en la
+  petición. Es también lo que permite que la app del cliente —otro bundle, mismo origen— tome la
+  sesión sin código de traspaso.
+- **`middleware.ts` ya no es un pass-through.** Ahí vive la resolución de tenant: valida la sesión,
+  comprueba que el slug de la URL sea el del cliente, y reescribe a `index.html` lo que no sea un
+  archivo, para que el router de la SPA funcione al recargar.
+- **La empresa del usuario va en `app_metadata`, nunca en `user_metadata`.** `user_metadata` lo
+  edita el propio usuario desde el navegador: si el `tenant_id` viviera ahí, un cliente podría
+  reasignarse a otra empresa y leer sus datos.
+- **La `anon key` es pública** y viaja en el bundle. Lo que separa los datos de una empresa de los
+  de otra son las políticas RLS del esquema, no el secreto de la llave. La `service_role` no entra
+  a este repositorio ni a ninguna variable `NEXT_PUBLIC_`.
+- **Sin configuración, el portal falla cerrado**: si faltan las variables de Supabase nadie entra a
+  ninguna app. La página de login sigue en pie, para que una variable mal puesta no tumbe también
+  la puerta.
+- `NEXT_PUBLIC_PORTAL_URL` en `lib/config.ts` sigue ahí, por si el portal se muda de dominio.
+- Los grupos de rutas `(marketing)` y `(portal)` siguen separados: el portal nunca hereda el nav ni
+  el footer del sitio.

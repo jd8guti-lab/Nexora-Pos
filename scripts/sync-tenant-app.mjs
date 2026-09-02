@@ -1,132 +1,116 @@
 #!/usr/bin/env node
-
 /**
- * Construir y sincronizar la app del cliente para un tenant.
+ * Builds a tenant's application and copies it into `public/portal/<slug>/`.
  *
- * Uso:
- *   node scripts/sync-tenant-app.mjs <tenant-slug> <path-to-papas-repo>
+ * Why the compiled build and not the source: the tenant apps are separate projects with their own
+ * stacks. Papas El Labrador is React 18 + Tailwind 3 + react-router; this site is React 19 +
+ * Tailwind 4 + the App Router. One bundle cannot hold two Reacts and one PostCSS pipeline cannot
+ * compile two major versions of Tailwind. Shipping the built output sidesteps all of it: the app
+ * runs exactly as its own tests verified it, byte for byte.
  *
- * Ejemplo:
+ * The result is committed to this repository. That is the price of serving it from here without
+ * merging the two projects, and it is what lets Vercel deploy the whole thing without building a
+ * second project it knows nothing about.
+ *
  *   node scripts/sync-tenant-app.mjs papas-el-labrador "C:/Users/VICTUS/projects/Papas el Labrador"
  *
- * Verificaciones:
- * - Que .env.local esté presente en Nexora (para las claves de Supabase)
- * - Que package.json exista en la ruta de Papas
- * - Que npm run build funcione
- *
- * Luego copia todo el build a public/portal/<tenant-slug>/ y sugiere commitear.
+ * The path can also come from `RUTA_APP_TENANT`.
  */
 
-import { execSync } from "child_process";
-import { existsSync, rmSync, cpSync, readFileSync } from "fs";
-import { resolve } from "path";
-import { fileURLToPath } from "url";
+import { execFileSync } from "node:child_process";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
+const RAIZ = resolve(fileURLToPath(new URL("..", import.meta.url)));
 
-const tenantSlug = process.argv[2];
-const papasPath = process.argv[3];
+function morir(mensaje) {
+  console.error(`\n  ${mensaje}\n`);
+  process.exit(1);
+}
 
-if (!tenantSlug || !papasPath) {
-  console.error(
-    "❌ Uso: sync-tenant-app.mjs <tenant-slug> <path-to-papas-repo>"
+const [slug, rutaArgumento] = process.argv.slice(2);
+const rutaOrigen = rutaArgumento ?? process.env.RUTA_APP_TENANT;
+
+if (!slug) morir("Falta el slug del tenant. Ejemplo: node scripts/sync-tenant-app.mjs papas-el-labrador <ruta>");
+if (!/^[a-z0-9-]+$/.test(slug)) morir(`El slug "${slug}" no sirve como carpeta: usa minúsculas, números y guiones.`);
+if (!rutaOrigen) morir("Falta la ruta del proyecto del tenant (argumento 2 o RUTA_APP_TENANT).");
+
+const origen = resolve(rutaOrigen);
+if (!existsSync(join(origen, "package.json"))) {
+  morir(`En "${origen}" no hay un package.json. ¿Es esa la carpeta del proyecto?`);
+}
+
+// La ruta base tiene que coincidir con dónde lo sirve el portal, o los assets dan 404 y el router
+// de la app no reconoce las URLs al recargar.
+const base = `/portal/${slug}/`;
+
+/**
+ * Vite INCRUSTA las variables `VITE_*` dentro del bundle al construir: lo que no esté presente en
+ * este momento no existe después, por más que se configure Vercel.
+ *
+ * Sin esto se puede commitear —y desplegar— una app que arranca y falla al primer clic porque no
+ * sabe a qué base conectarse. Se comprueba antes de construir, no después.
+ */
+function tieneConfiguracionDeSupabase() {
+  if (process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY) return true;
+
+  for (const archivo of [".env.local", ".env"]) {
+    const ruta = join(origen, archivo);
+    if (!existsSync(ruta)) continue;
+
+    const contenido = readFileSync(ruta, "utf8");
+    const tiene = (nombre) => new RegExp(`^\\s*${nombre}\\s*=\\s*\\S`, "m").test(contenido);
+    if (tiene("VITE_SUPABASE_URL") && tiene("VITE_SUPABASE_ANON_KEY")) return true;
+  }
+
+  return false;
+}
+
+if (!tieneConfiguracionDeSupabase()) {
+  morir(
+    "No hay configuración de Supabase para el build.\n\n" +
+      `  Vite incrusta las variables en el bundle: si no están AHORA, la app se despliega sin\n` +
+      "  saber a qué base conectarse y falla al primer clic.\n\n" +
+      `  Crea ${join(origen, ".env.local")} con:\n\n` +
+      "    VITE_SUPABASE_URL=https://TU-PROYECTO.supabase.co\n" +
+      "    VITE_SUPABASE_ANON_KEY=la-anon-key\n\n" +
+      "  Ver docs/PUESTA-EN-MARCHA-SUPABASE.md, paso 5.",
   );
-  console.error("");
-  console.error("Ejemplo:");
-  console.error(
-    '  node scripts/sync-tenant-app.mjs papas-el-labrador "C:/Users/VICTUS/projects/Papas el Labrador"'
-  );
-  process.exit(1);
 }
 
-console.log(`📦 Sincronizando app para tenant: ${tenantSlug}`);
-console.log(`📁 Ruta de Papas: ${papasPath}`);
+console.log(`\n  Construyendo ${slug} desde ${origen}`);
+console.log(`  Ruta base: ${base}\n`);
 
-// 1. Verificar que .env.local existe en Nexora
-const envLocalPath = resolve(projectRoot, ".env.local");
-if (!existsSync(envLocalPath)) {
-  console.error("❌ No encontré .env.local en el proyecto Nexora.");
-  console.error("   Cópialo de .env.example y llénalo con tus claves.");
-  process.exit(1);
-}
-
-console.log("✓ .env.local encontrado en Nexora");
-
-// 2. Leer .env.local para verificar que tiene las claves
-const envContent = readFileSync(envLocalPath, "utf8");
-const hasUrl =
-  envContent.includes("NEXT_PUBLIC_SUPABASE_URL=") &&
-  !envContent.includes('NEXT_PUBLIC_SUPABASE_URL="https://tu-proyecto');
-const hasKey =
-  envContent.includes("NEXT_PUBLIC_SUPABASE_ANON_KEY=") &&
-  !envContent.includes('NEXT_PUBLIC_SUPABASE_ANON_KEY="tu-anon-key');
-
-if (!hasUrl || !hasKey) {
-  console.error("❌ .env.local no tiene claves de Supabase válidas.");
-  console.error("   Lleña NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY");
-  process.exit(1);
-}
-
-console.log("✓ Claves de Supabase presentes en .env.local");
-
-// 3. Verificar que Papas existe
-const papasPackageJsonRoot = resolve(papasPath, "package.json");
-const papasPackageJsonFrontend = resolve(papasPath, "frontend", "package.json");
-const appRoot = existsSync(papasPackageJsonRoot)
-  ? papasPath
-  : existsSync(papasPackageJsonFrontend)
-    ? resolve(papasPath, "frontend")
-    : null;
-
-if (!appRoot) {
-  console.error(`❌ No encontré package.json ni en ${papasPath} ni en ${resolve(papasPath, "frontend")}`);
-  console.error("   Verifica que la ruta a Papas sea correcta.");
-  process.exit(1);
-}
-
-console.log("✓ Proyecto Papas encontrado");
-
-// 4. Construir
-console.log("\n🔨 Construyendo aplicación...");
 try {
-  execSync("npm run build", {
-    cwd: appRoot,
+  // `shell: true` en Windows es obligatorio: `npm` es un `.cmd`, y Node se niega a ejecutarlo sin
+  // shell desde que taparon CVE-2024-27980. Node avisa de que con shell los argumentos se
+  // concatenan sin escapar; aquí no hay nada que escapar — los argumentos son la constante
+  // `["run", "build"]`, y la ruta del proyecto viaja por `cwd`, no por la línea de comandos.
+  execFileSync("npm", ["run", "build"], {
+    cwd: origen,
     stdio: "inherit",
+    shell: process.platform === "win32",
+    env: { ...process.env, VITE_BASE: base, VITE_PERSISTENCIA: "supabase" },
   });
 } catch {
-  console.error("❌ Error construyendo la app. Revisa los errores arriba.");
-  process.exit(1);
+  morir("El build del tenant falló. No se copió nada: el portal se queda con la versión anterior.");
 }
 
-console.log("✓ Construcción completada");
+const dist = join(origen, "dist");
+const indice = join(dist, "index.html");
 
-// 5. Copiar a public/portal/<tenant-slug>/
-const sourceDir = existsSync(resolve(appRoot, "dist"))
-  ? resolve(appRoot, "dist")
-  : resolve(appRoot, "frontend", "dist");
-const targetDir = resolve(projectRoot, "public", "portal", tenantSlug);
-
-if (!existsSync(sourceDir)) {
-  console.error(`❌ No encontré la carpeta dist en ${sourceDir}`);
-  process.exit(1);
+if (!existsSync(indice) || !statSync(indice).isFile()) {
+  morir(`El build terminó pero no dejó un index.html en ${dist}. No se copia nada.`);
 }
 
-console.log(`\n📂 Copiando a public/portal/${tenantSlug}/...`);
+const destino = join(RAIZ, "public", "portal", slug);
 
-if (existsSync(targetDir)) {
-  rmSync(targetDir, { recursive: true, force: true });
-}
+// Se vacía antes de copiar: si no, los assets de builds viejos se quedan ahí para siempre, y con
+// el tiempo la carpeta pesa más de lo que sirve.
+rmSync(destino, { recursive: true, force: true });
+mkdirSync(destino, { recursive: true });
+cpSync(dist, destino, { recursive: true });
 
-cpSync(sourceDir, targetDir, { recursive: true });
-
-console.log(`✓ App copiada a public/portal/${tenantSlug}/`);
-
-// 6. Sugerir commit
-console.log("\n✅ Listo. Pasos siguientes:");
-console.log("");
-console.log(`  git add public/portal/${tenantSlug}/`);
-console.log(
-  `  git commit -m "feat: sincronizar app del cliente para ${tenantSlug}"`
-);
-console.log(`  git push`);
-console.log("");
+console.log(`\n  Listo: public/portal/${slug}/`);
+console.log("  Recuerda commitear la carpeta — es lo que despliega Vercel.\n");

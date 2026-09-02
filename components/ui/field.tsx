@@ -22,6 +22,7 @@ export function Field({
   hint,
   error,
   required,
+  inverse,
   className,
   children,
 }: {
@@ -29,6 +30,14 @@ export function Field({
   hint?: string;
   error?: string;
   required?: boolean;
+  /**
+   * For fields on an `ink-900` background, like the portal login.
+   *
+   * Without it the label keeps `text-ink-900` and becomes invisible on a dark surface — which is
+   * exactly what happened the first time the login was rendered: the asterisk showed and the word
+   * did not. `npm run contrast` did not catch it because it measures tokens, not compositions.
+   */
+  inverse?: boolean;
   className?: string;
   children: (props: {
     id: string;
@@ -44,19 +53,26 @@ export function Field({
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <label htmlFor={id} className="text-small text-ink-900 font-semibold">
+      <label
+        htmlFor={id}
+        className={cn("text-small font-semibold", inverse ? "text-white" : "text-ink-900")}
+      >
         {label}
         {required ? (
-          <span className="text-brand-700" aria-hidden>
+          // brand-300 on ink-900 is 9.48:1; brand-700 on it would be too dark to read.
+          <span className={inverse ? "text-brand-300" : "text-brand-700"} aria-hidden>
             {" *"}
           </span>
         ) : (
-          <span className="text-ink-500 font-normal"> (opcional)</span>
+          <span className={cn("font-normal", inverse ? "text-paper-50/70" : "text-ink-500")}>
+            {" "}
+            (opcional)
+          </span>
         )}
       </label>
 
       {hint ? (
-        <p id={hintId} className="text-small text-ink-500">
+        <p id={hintId} className={cn("text-small", inverse ? "text-paper-50/70" : "text-ink-500")}>
           {hint}
         </p>
       ) : null}
@@ -74,7 +90,10 @@ export function Field({
       })}
 
       {error ? (
-        <p id={errorId} className="text-small text-brand-700 font-medium">
+        <p
+          id={errorId}
+          className={cn("text-small font-medium", inverse ? "text-brand-300" : "text-brand-700")}
+        >
           {error}
         </p>
       ) : null}

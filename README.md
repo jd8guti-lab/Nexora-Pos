@@ -49,6 +49,26 @@ Si lo rompes, te dice exactamente qué par y con qué ratio.
 > moderno no baja). Framer Motion se probó para el efecto del nav y se quitó: costaba 29 kB en
 > todas las páginas. Ver [docs/ESTADO.md](docs/ESTADO.md) → decisiones 42-43 y trampa 25.
 
+## El portal de clientes
+
+`/portal` es la puerta de entrada de las empresas que ya son clientes. Al entrar, cada una va a su
+propia aplicación, que **no se compila aquí**: es un proyecto aparte con su propio stack y lo que
+se sirve es su build ya compilado, en `public/portal/<slug>/`.
+
+Para traer o actualizar la app de un cliente:
+
+```bash
+node scripts/sync-tenant-app.mjs papas-el-labrador "../Papas el Labrador"
+```
+
+Esa carpeta se commitea: es lo que despliega Vercel.
+
+Para dejar Supabase funcionando —esquema, empresa, usuario y datos— sigue
+**[docs/PUESTA-EN-MARCHA-SUPABASE.md](docs/PUESTA-EN-MARCHA-SUPABASE.md)**.
+
+Sin las variables de Supabase el portal **falla cerrado**: la página de login sigue en pie, pero
+nadie entra a ninguna aplicación.
+
 ## Por dónde empezar a leer
 
 | Documento                        | Qué contiene                                                                                                               |
@@ -66,7 +86,8 @@ Si lo rompes, te dice exactamente qué par y con qué ratio.
 | `/casos`                                | Casos de uso por tipo de negocio                                                               | ✅     |
 | `/precios`                              | Planes y alcance de la personalización                                                         | ✅     |
 | `/contacto`                             | Formulario, WhatsApp y correo                                                                  | ✅     |
-| `/portal`                               | Placeholder del portal de clientes                                                             | ✅     |
+| `/portal`                               | Login del portal de clientes (Supabase Auth)                                                   | ✅     |
+| `/portal/<empresa>/…`                   | La aplicación de esa empresa, servida desde `public/portal/<empresa>/`. Detrás del login       | ✅     |
 | `/kitchen-sink`                         | Todos los primitivos, en todas sus variantes. Solo desarrollo: `noindex`, sin enlazar          | ✅     |
 | `/legal/privacidad` · `/legal/terminos` | Legales (Ley 1581 de 2012)                                                                     | ✅     |
 

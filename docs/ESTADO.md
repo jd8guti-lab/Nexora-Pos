@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-01 (dashboard autenticado en estilo Las dos palmas y validación final verde)
+Última actualización: 2026-09-02 (**`feat/portal-clientes` fusionada a `main`**: un esquema de Postgres por aplicación, el portal reducido a la puerta de entrada y la resolución de tenant en el middleware. Antes, en esa misma rama: **la aplicación de Las dos palmas cambió fuerte** —carga por canastillas, devoluciones, merma de venta y los reportes a pantalla—; no se compila aquí, pero su esquema SQL cambió con ella)
 
 ---
 
@@ -213,6 +213,237 @@ El contenido ya está movido: los seis pilares y el copy nuevo del problema (dec
 
 ---
 
+## El portal de clientes — construido el 2026-08-30
+
+Rompe lo que `CLAUDE.md` §1 y §9 declaraban fuera de alcance, **por decisión expresa del usuario**:
+había que entregarle el sistema a un cliente real, Papas El Labrador. Ambas secciones ya están
+actualizadas.
+
+Qué quedó funcionando:
+
+- **`/portal`** es el login (Supabase Auth), no un placeholder. Usa los primitivos del sitio.
+- **`middleware.ts`** dejó de ser pass-through: valida la sesión, comprueba que el slug de la URL
+  sea el de esa empresa, y reescribe a `index.html` lo que no sea un archivo para que el router de
+  la SPA sobreviva a un F5.
+- **`public/portal/<slug>/`** guarda el build compilado de la app de cada cliente. Lo trae
+  `scripts/sync-tenant-app.mjs`. Se versiona: es lo que despliega Vercel.
+- **`scripts/crear-usuario-portal.mjs`** crea el usuario de una empresa con la `service_role`,
+  a mano y fuera del repositorio.
+- **`docs/PUESTA-EN-MARCHA-SUPABASE.md`** es el instructivo para el socio que conecta la base.
+
+**La home pasó de 111 kB a 113 kB.** Sigue bajo el techo de ~120 kB (`CLAUDE.md` §6). El portal
+pesa 219 kB, pero solo lo baja quien entra a él.
+
+**Lo que NO se ha podido verificar** sin un proyecto de Supabase real: el login de verdad,
+Realtime, y que PostgREST acepte los `select` con tablas embebidas. Está en el paso 7 del
+instructivo, y hay que mirarlo antes de entregar.
+
+### Cómo sigue — para quien retome
+
+**El código está terminado; lo que falta es conectar un Supabase real.** El documento a seguir es
+**[`docs/PUESTA-EN-MARCHA-SUPABASE.md`](PUESTA-EN-MARCHA-SUPABASE.md)**: ocho pasos, nueve
+comprobaciones manuales, y cómo agregar un usuario o una empresa nueva (§8).
+
+Está en las ramas `feat/portal-clientes` (aquí) y `feat/supabase-multi-tenant` (repo de Papas),
+ya subidas. **Ninguna se fusionó a `main` a propósito**: hasta que los pasos estén hechos y
+verificados, `main` conserva la versión que funciona.
+
+Dos cosas que sorprenden si no se saben:
+
+1. **`public/portal/` no existe todavía.** La app del cliente se genera con
+   `scripts/sync-tenant-app.mjs`, y el script **se niega a construir sin configuración de
+   Supabase**: Vite la incrusta en el bundle, así que sin ella se desplegaría una app que arranca
+   y falla al primer clic.
+2. **Sin las variables, el portal falla cerrado.** La página de login sigue en pie, pero nadie
+   entra a ninguna aplicación. Es deliberado.
+
+#### La factura de El Labrador cambió el 2026-08-31 — pendiente de sincronizar
+
+El dueño imprimió por primera vez en la impresora térmica y trajo el papel. Se arregló **en el repo
+de Papas El Labrador** (rama `feat/supabase-multi-tenant`, commit `ef723ee`), porque la aplicación
+del cliente no se compila aquí:
+
+- **Impresión silenciosa.** El ticket ya no se imprime desde la página: se monta en un iframe con su
+  propio documento y se imprime ahí. Eso quita el diálogo *nuestro* del camino, pero **el diálogo
+  del navegador no se puede quitar por código** — `window.print()` siempre lo abre. Se consigue
+  abriendo Chrome con `--kiosk-printing`, y eso es configuración del equipo del negocio. El
+  instructivo es `docs/IMPRESION.md` de aquel repo.
+- **El ancho lo pone ahora el driver de la impresora** (`@page { size: auto }`) en vez de los 78,5 mm
+  escritos a mano, que era parte del papel en blanco que sobraba.
+- **La letra subió a 13 px con peso 600 y negro puro**; una térmica quema puntos y lo fino sale gris.
+- **Pie de nexora-pos en el recibo**: `Software de operación` / `nexora-pos` /
+  `www.nexora-pos.online`, igual que XUMA-POS imprime el suyo. Va fijo en el componente, no
+  configurable por negocio: es la marca del software.
+
+**Todavía no se refleja en este repositorio.** `public/portal/papas-el-labrador/` no existe, y
+`scripts/sync-tenant-app.mjs` se niega a construir sin las variables de Supabase (probado: falla con
+"No hay configuración de Supabase para el build"). En cuanto exista el `.env.local` del paso 5 del
+instructivo, la primera sincronización trae ya esta versión de la factura — no hay nada extra que
+hacer aquí.
+
+#### La segunda empresa: Las dos palmas (31 de agosto de 2026)
+
+Comercializadora de quesos, repo `jd8guti-lab/Las-dos-palmas`, rama `feat/portal-y-factura`. Es el
+caso §8.b del instructivo: misma plataforma, otro giro de negocio. Slug **`las-dos-palmas`**,
+prefijo de factura **`LDP-`** y consecutivo propio.
+
+Lo que se le hizo en su repositorio para dejarla al mismo nivel que El Labrador:
+
+- **La factura**, con los tres arreglos del 31 de agosto: impresión desde un documento aparte,
+  ancho a cargo del driver de la impresora, letra de 13 px peso 600 y el pie
+  `www.nexora-pos.online`. De paso se le mató un fallo propio que llevaba meses ahí: un `Ctrl+P` en
+  cualquier pantalla mandaba una hoja en blanco a la impresora.
+- **La entrada al portal**: `vite.config.ts` lee `VITE_BASE` y el router toma su `basename` de
+  `import.meta.env.BASE_URL`. Comprobado sirviendo el build bajo `/portal/las-dos-palmas/`.
+
+**Y ahí salió un fallo que estaba en los DOS proyectos**: el logo y el isotipo escritos como
+`src="/logo.png"` dentro del JSX. Vite reescribe las rutas de `index.html` con la ruta base del
+build, **no las del JSX**, así que bajo `/portal/<slug>/` esas imágenes se piden desde la raíz del
+dominio y dan 404. Arreglado en los dos con una función `rutaPublica()`. Es el tipo de fallo que
+solo aparece sirviendo la app bajo su subcamino real, y por eso conviene hacerlo antes de entregar.
+
+**Lo que le falta, y no es de este repositorio:** su adaptador de Supabase. Sus repositorios son
+stubs que lanzan `NoImplementadoError`, con la guía de implementación escrita en su propio
+`src/core/adapters/supabase/README.md`, y su esquema SQL es de una sola empresa —hay que darle
+`tenant_id` y RLS—. Hasta entonces `scripts/sync-tenant-app.mjs` **se niega a construirla**, y hace
+bien: sin adaptador, cada equipo del negocio tendría su propia contabilidad en su navegador.
+
+**Así que `public/portal/` sigue vacío para las dos empresas**, por la misma razón de siempre.
+
+#### La aplicación de Las dos palmas cambió fuerte (1 de septiembre de 2026)
+
+Nueve cambios que pidió el dueño después de probarla, ya en `main` de
+`jd8guti-lab/Las-dos-palmas` (commit `c52e4d0`). **Nada de esto se compila aquí** —§1: la app del
+cliente es un proyecto aparte— pero conviene saber qué trae, porque es lo que va a desplegarse en
+`public/portal/las-dos-palmas/` en cuanto exista el `.env.local` del paso 5 del instructivo:
+
+- **La carga entra por canastillas.** El bloque de 2,5 kg volvió, pero solo para digitar la compra:
+  la cuajada descuenta 2 kg de canastilla y 1 de desuere por cada una, el doble crema no merma de la
+  planta al local.
+- **Vuelve la merma por carga**, derivada del kardex al cerrar la carga, no de conteos físicos.
+- **Devoluciones y merma de venta** en los pedidos, con su estado y sus reportes.
+- **Cobro repartido entre varios medios** en una sola operación, y el vendedor deja de ser
+  obligatorio.
+- **Todo lo que solo estaba en los Excel subió a pantalla**, más tres reportes nuevos.
+- Y el fallo que mordía todos los días: **no se podía escribir el decimal en el celular**. Era un
+  `<input type="number">` rechazando el separador que ese teclado ofrece.
+
+Su esquema SQL cambió con ellos —`cierres_carga`, `devoluciones`, `lineas_devolucion` y columnas
+nuevas en `productos`, `compra_lineas`, `pedidos` y `lineas_pedido`—, así que **el `docs/esquema-supabase.sql`
+que hay que correr en Supabase es el de su repositorio, no una copia vieja**. Sigue siendo el esquema
+`palmas` y sigue haciendo falta exponerlo en Settings → API (paso 1 del instructivo).
+
+**La primera sincronización trae ya esta versión**: no hay nada extra que hacer aquí.
+
+#### El bloque vuelve a verse en toda la app de Las dos palmas (2 de septiembre de 2026)
+
+Otro cambio del dueño, en la rama `feat/bloques-doble-crema` de `jd8guti-lab/Las-dos-palmas`.
+**Tampoco se compila aquí**, por la misma razón de §1, y **no toca nada de este repositorio**: ni el
+portal, ni el `middleware.ts`, ni el esquema SQL. Se anota porque es lo que va a servirse bajo
+`/portal/las-dos-palmas/` cuando la sincronización pueda correr.
+
+El cambio anterior había devuelto el **bloque de 2,5 kg** solo a la pantalla de Compras. El dueño lo
+probó y pidió verlo en el resto: *"sigo sin ver los bloques de doble crema en las existencias y en
+los pedidos"*. Ahora la doble crema y el doble crema tajado a granel **se leen y se digitan en
+bloques** en Existencias, Pedidos, Transformaciones y los reportes; los paquetes siguen en paquetes
+y la cuajada en kilos.
+
+**Lo guardado no cambió.** El kilo sigue siendo la unidad del kardex, del precio, de la comisión y
+de la factura: el bloque es una unidad de *conteo*, no de cobro. Por eso esto **no cambia el
+`docs/esquema-supabase.sql`** de su repositorio — el que hay que correr en Supabase sigue siendo el
+de la entrada anterior, sin una columna nueva.
+
+Lo que sí trae, y aquí importa saberlo: en Transformaciones se digita **cuántos bloques entran a
+tajar** y cuántos salen, y la ganancia se dice también en bloques —*"entraron 20 bloques y salieron
+21 — 1 bloque de más"*—, que era la parte que el dueño no tenía en ninguna pantalla.
+
+#### El dominio quedó decidido: `nexora-pos.online`
+
+`lib/config.ts` tenía `https://nexora-pos.co` con un `TODO(guti)` de marcador. El dueño confirmó el
+dominio real el 31 de agosto de 2026, así que el `siteUrl` por defecto ya no es un marcador y la
+fila salió de "Datos pendientes". **Es el mismo que va impreso al pie del recibo de los dos
+clientes**: si alguien cambia uno, tiene que cambiar el otro.
+
+#### Un esquema de Postgres por aplicación (31 de agosto de 2026)
+
+Al preparar a Las dos palmas apareció una colisión sin arreglo cosmético: **las dos apps definen
+`productos` y `pedidos` con columnas distintas** —papa contra queso— y dos tablas con el mismo
+nombre no caben en un esquema de Postgres.
+
+Tampoco se resuelve con un proyecto de Supabase por empresa: **la app del cliente reutiliza la
+sesión en cookies que abre el portal**, así que login y datos tienen que vivir en el mismo proyecto.
+Separarlos daría dos contraseñas al mismo cliente.
+
+| Esquema | Qué vive ahí |
+|---|---|
+| `public` | Lo compartido: `tenants` y `auth_tenant_id()` |
+| `labrador` | Las 18 tablas de Papas El Labrador |
+| `palmas` | Las 19 tablas de Las dos palmas |
+
+**Hay un paso manual nuevo en Supabase:** Settings → API → *Exposed schemas*, agregar `labrador` y
+`palmas`. Sin eso PostgREST devuelve 404 en todo y parece que la aplicación está rota. Está en el
+paso 1 del instructivo.
+
+#### El adaptador de Las dos palmas, escrito
+
+Ya no son stubs: cliente, sesión, mapeo y los 13 repositorios, más su esquema multi-tenant. Los dos
+repositorios de cliente **ejecutan su SQL en cada `npm run test`** contra un Postgres real en WASM.
+
+Correr el de Las dos palmas por primera vez encontró **tres cosas que no compilaban o habrían roto
+la app al arrancar**: una coma sobrante en una vista, un `exclude` que exige `btree_gist`, y las
+claves declaradas `uuid` cuando el catálogo con el que la plataforma arranca usa ids legibles
+(`prod-cuajada`). Un esquema que nadie corre no es un esquema.
+
+Y una trampa que se llevó por delante un error latente **en los dos proyectos**: `aplicar_lote`
+escribía todo con `insert ... on conflict do update`, y **eso exige el privilegio UPDATE aunque el
+conflicto no ocurra**. Contra una tabla de solo-agregar —el kardex en Palmas, la auditoría de
+precios en Labrador— habría fallado siempre, con cualquier dato, ya con el negocio operando. Hay una
+acción `agregar` para eso, y un test que lo cubre en cada repo.
+
+**Lo que sigue pendiente, y no es de este repositorio:** en Las dos palmas, que los dos perfiles se
+vuelvan seguridad de verdad (hoy RLS separa empresas, no personas) y el hueco que puede dejar el
+consecutivo si falla la escritura tras reservar el número. Los dos están anotados en su
+`src/core/adapters/supabase/README.md` y en el paso 8.b del instructivo.
+
+#### El correo de contacto, y la ubicación que no va (31 de agosto de 2026)
+
+El dueño dio el correo real —`nexoraposonline@gmail.com`— y decidió **no publicar ubicación**.
+
+- El correo va **solo en el pie**, por decisión suya. Está hecho de forma que la regla la haga
+  cumplir el código y no la memoria: `content/site.ts` exporta `contact` (lo que se muestra en todas
+  partes) y `footerContact` (eso más el correo). `/contacto` importa el primero, el pie el segundo.
+  Si mañana alguien quiere el correo en otra página, tiene que decidirlo a propósito.
+- **Se fue el canal `city`** del tipo, del contenido, del pie y de `/contacto`, junto con su icono.
+  El producto se vende y se soporta a distancia: una dirección donde el negocio no recibe a nadie es
+  un pasivo, no una señal.
+- En `lib/seo.ts` queda anotado que **no habrá `address`** en el JSON-LD, para que nadie lo
+  "complete" después creyendo que faltaba.
+
+Sigue siendo `TODO(guti)` la ciudad de **jurisdicción** de `content/legal.ts`, que es otra cosa: la
+pide la ley, no la página, y va con la revisión del abogado que ese archivo ya exige.
+
+Con esto, `content/site.ts` sale de la tabla de datos pendientes.
+
+#### La tarea siguiente: agregar un perfil nuevo
+
+Está pedida y todavía no empezada. **"Perfil" puede ser dos cosas distintas y el camino no es el
+mismo** — el §8 del instructivo las separa:
+
+- **Otro usuario de la misma empresa** (§8.a): correr `scripts/crear-usuario-portal.mjs` con otro
+  correo y el mismo slug. No se toca código. Ojo: **no hay roles**, los dos usuarios ven y pueden
+  exactamente lo mismo.
+- **Otra empresa cliente** (§8.b): fila en `tenants`, su usuario, su aplicación en
+  `public/portal/<slug>/`, desplegar. El esquema y el middleware ya sirven a cualquier número de
+  empresas.
+
+Lo primero que hay que preguntar al empezar es **cuál de las dos es**.
+
+Decisiones ya tomadas sobre la facturación, para no reabrirlas: el consecutivo **arranca en 0**
+(el negocio estrena sistema) y el prefijo **se queda en `JOS-LL-`**, el mismo de XUMA-POS. Las dos
+las tomó el dueño el 30 de agosto de 2026.
+
+---
+
 ## Lo que queda pendiente de rendimiento
 
 El objetivo de `CLAUDE.md §6` es Lighthouse ≥95 en las cuatro categorías. Tres están en 100;
@@ -303,6 +534,8 @@ Cada decisión técnica va aquí **con su porqué**, para no volver a discutirla
 | 46  | **Sexto pilar: "Escalable". El título pasa a "Seis cosas que no negociamos"** | El arte de referencia muestra seis tarjetas y el título decía "Cinco": se contaba mal a sí mismo. El usuario eligió **subir a seis** en vez de quitar la tarjeta. "Escalable" no es un pilar inventado — es la tercera palabra del descriptor de marca (`SOFTWARE A MEDIDA · PERSONALIZABLE · ESCALABLE`). `CLAUDE.md` §4 se actualizó en el mismo commit, que es lo que exige la regla: si el código y el manual no coinciden, uno de los dos está mal |
 | 47  | **Copy de "El problema" cambiado al del arte**                          | El arte trae un titular distinto al de `content/home.ts` ("El software genérico te obliga a adaptarte. El nuestro se adapta a ti.") y columnas con subtítulo — "Plantilla única / Tú te adaptas al sistema" contra "Con nexora-pos / El sistema se adapta a ti". El usuario confirmó que es el texto que quiere, no relleno del generador. `ComparisonColumn` gana un `subtitle` obligatorio; la sección todavía no lo pinta (se rehace después) |
 | 48  | **El nav rehecho: barra a todo el ancho, tipografía y botones más grandes** | Primero se hizo flotante e insertada, que es la forma del arte; el usuario pidió el ancho completo de vuelta. Con esa anchura los enlaces en `text-body` quedaban perdidos, así que suben a un token propio **`--text-nav`** (17→20px) y los botones pasan de `sm` a `md`. `text-lead` se descartó: a 1920 daba 22px, más grande que los botones de al lado. **El arte pone el CTA en blanco sobre naranja: 2.61:1, prohibido por `CLAUDE.md` §3** — se queda en `ink-900` (6.46:1), y el enlace activo en `brand-700` en vez del `brand-500` del arte |
+| 51  | **La app del cliente se sirve compilada, no fusionada** | Papas El Labrador es React 18 + Tailwind 3 + react-router; este sitio es React 19 + Tailwind 4 + App Router. Un bundle no admite dos Reacts y un PostCSS no compila dos majors de Tailwind: fusionar obligaba a reescribir un proyecto entregado que maneja plata. Se copia su `dist/` a `public/portal/<slug>/` y corre tal cual, con sus propios tests como garantía |
+| 50  | **La sesión va en cookies, no en `localStorage`** | El middleware tiene que decidir en el SERVIDOR si hay sesión antes de entregar un archivo, y `localStorage` no viaja en la petición. De paso, la app del cliente —otro bundle, mismo origen— toma la sesión sin código de traspaso |
 | 49  | **La altura del nav es un token, `--spacing-nav`**                        | El hero mide una pantalla menos el nav (decisión 38) y ese `4.5rem` estaba escrito a mano en el hero. Al cambiar el nav, nav + hero pasó a **1108px en un viewport de 1080** — la decisión 38 rota en silencio. Ahora la altura vive en `--spacing-nav` y la leen el hero y el `scroll-padding-top` de los anclas. Cambiar la barra sin tocar el token ya no puede romper ninguno de los dos |
 | 50  | **El claim del hero va a tres líneas, una frase por línea**              | Es como está en el arte, y las tres frases son tres afirmaciones: el ritmo es el mensaje. Cuesta una línea de alto, que en 375×812 sacaba la sección 10px por debajo del pliegue; el suelo de la imagen en móvil baja de 22svh a 20svh y vuelve a encajar exacto. **La línea naranja baja a la banda media del velo, donde `brand-600` da 2.92:1 contra el peor caso teórico** — por eso se midió sobre los píxeles compuestos reales: 3.12:1 a 1920 y 3.13:1 a 1280, por encima del 3:1 de texto grande. Si esa línea baja más, hay que volver a medir o pasar a `brand-700` |
 | 51  | **El CTA secundario del hero es placa blanca con filete, no el `secondary` con borde** | Es lo que muestra el arte y es lo correcto aquí: el botón se apoya en la imagen, donde un relleno transparente pondría su etiqueta sobre los píxeles del escritorio. Se usa la variante `inverse` (blanco, etiqueta `ink-900`, 16.9:1) más un filete `ink-900/25` — bajo xl, donde el fondo es blanco plano, el filete es lo único que impide que desaparezca |
@@ -345,6 +578,7 @@ Cada decisión técnica va aquí **con su porqué**, para no volver a discutirla
 | 88  | **"Casos de uso" cambia de tema a implementaciones reales, y admite que no hay** | Pedido del usuario. Antes eran seis tipos de negocio; ahora la sección promete clientes reales, y esa promesa no se puede cumplir a medias: en vez de categorías disfrazadas de clientes hay un **estado vacío que dice por qué está vacío**. El título pasa a "Casos reales, no ejemplos inventados" y no a "Negocios que ya trabajan con nexora-pos", que con el bloque vacío justo debajo se leería como una afirmación sobre clientes que no tenemos (§7). `TODO(guti)` para reemplazarlo cuando haya uno con permiso |
 | 89  | **`SectionHeading`: un solo sitio para el encabezado de las secciones**  | Pedido del usuario: que "Cómo trabajamos" y "Casos reales" se vean como "El problema" — mismo tamaño y con parte subrayada. En vez de copiar el marcado por tercera vez se extrae a `components/sections/section-heading.tsx`, y con eso **la excepción de contraste del naranja brillante vive en un único archivo** en vez de propagarse por copia. La partición del título sigue en `content/`, y el nav pasa a decir "Casos reales" |
 | 90  | **Los cuatro pasos suben un escalón, y solo uno**                        | Pedido del usuario: más notorios pero "tampoco tanto". La ficha del número pasa de 48 a **56px** con el dígito en `text-h2` (40px), y la descripción de `text-body` a `text-lead` (22px). **El título del paso se queda en `h3`**: a `h2` se parte en tres líneas dentro de una columna de 282px, que es más grande y peor. El filete de la línea de tiempo se mueve de `left-6` a `left-7` para seguir cruzando el centro de la ficha |
+| 91  | La factura del cliente se imprime desde un iframe aparte, y el ancho lo pone el driver           | Imprimir la página obligaba a esconder la aplicación con `@media print`, y eso ya había sacado el recibo en hoja carta una vez y en blanco otra. Un documento con solo el ticket adentro no tiene entorno que se cuele en el papel. Y el ancho escrito a mano (78,5 mm) hacía maquetar sobre un papel que puede no ser el que la impresora tiene puesto. **Vive en el repo de Papas El Labrador**, no aquí |
 
 ---
 
@@ -374,9 +608,7 @@ Lo que hay que reemplazar por información real antes de publicar. **Nada de est
 | Dónde                       | Qué falta                                                                                                                                                                                  |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `content/site.ts`           | Métricas de la barra de confianza — hoy son afirmaciones sobre el producto, no cifras de la empresa. **Confirma que las cuatro son ciertas**, sobre todo si aplica "funciona sin internet" |
-| `content/site.ts`           | WhatsApp, correo de contacto y ciudad                                                                                                                                                      |
 | `content/site.ts`           | Razón social y NIT, para las páginas legales                                                                                                                                               |
-| `lib/config.ts`             | Dominio definitivo (hoy `https://nexora-pos.co` como marcador)                                                                                                                             |
 | `content/pricing.ts`        | Precios reales de los planes Esencial y Negocio (Fase 4)                                                                                                                                   |
 | `app/api/contacto/route.ts` | Servicio de correo para `sendLead()` (Fase 4)                                                                                                                                              |
 | `content/legal.ts`          | Revisión de los textos legales con la normativa vigente (Fase 4)                                                                                                                           |
@@ -389,6 +621,19 @@ Lo que hay que reemplazar por información real antes de publicar. **Nada de est
 ## Trampas pisadas
 
 Errores que ya costaron tiempo, para no repetirlos.
+
+**0. `npm run contrast` mide tokens, no composiciones — y por eso no vio una etiqueta invisible.**
+El login del portal se renderizó con las etiquetas "Correo" y "Contraseña" **sin verse**: solo
+aparecía el asterisco rojo. `Field` traía `text-ink-900` fijo para la etiqueta, y el portal va
+sobre `bg-ink-900`. Texto de la marca sobre fondo de la marca, los dos tokens autorizados, y aun
+así ilegible: `ink-900` sobre `ink-900` da 1:1.
+
+El script de contraste no podía atraparlo porque compara pares que alguien le declara, no lo que
+de verdad quedó compuesto en la pantalla. **Lo atrapó abrir la página.**
+
+`Field` ahora tiene `inverse` para fondos oscuros (etiqueta blanca, asterisco y errores en
+`brand-300`, que da 9.48:1 sobre `ink-900`). La lección: un primitivo con un color fijo solo sirve
+para el fondo que su autor tenía en la cabeza. **Mira la pantalla, no solo el número.**
 
 **1. `tailwind-merge` se comía los colores de texto.**
 `cn("text-ink-900", "text-body")` devolvía solo `text-body`. Nuestras escalas tipográficas se
@@ -593,3 +838,6 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | 2026-08-27 | Nav a todo el ancho con `--text-nav` y botones `md` (48), altura del nav como token (49); hero con el claim a tres líneas y CTA secundario en placa blanca (50, 51) | typecheck · lint · test (73/73) · contrast (30/30) · build en verde. Nav + hero = exactamente el viewport a 1920×1080, 1280×800 y 375×812. Contraste del acento medido sobre los píxeles compuestos: **3.12:1** a 1920 y **3.13:1** a 1280 |
 | 2026-08-27 | Sexto pilar "Escalable" y copy nuevo de "El problema" (46, 47); nav rehecho como barra flotante siguiendo el arte (48) | typecheck · lint · test (73/73) · contrast (30/30) · build en verde. Verificado en el navegador: activo en `brand-700` 44px, estado con scroll translúcido + desenfoque, cero desplazamiento horizontal a 320px y disparador móvil de 44×44 |
 | 2026-08-27 | Efecto del nav reescrito en CSS puro y `framer-motion` desinstalado (43): home de 153 a **124 kB**. Fuente afinada a **Figtree** midiendo el arte de referencia (44). `paper-50` a `#EDEDED` y `ink-500` a `#626976` (45) | typecheck · lint · test (73/73) · contrast (30/30) · build en verde. JS real en el cable: **124 kB** |
+| 2026-08-31 | Factura de El Labrador: impresión desde un iframe aparte, ancho a cargo del driver, letra a 13 px/600 y pie `www.nexora-pos.online`. **Cambio hecho en el repo del cliente**; aquí solo documentación | En Papas El Labrador: typecheck · lint · test (659/659) · build en verde, y comprobado en el navegador. Aquí: sin cambios de código — `sync-tenant-app.mjs` sigue bloqueado sin Supabase |
+| 2026-08-31 | Las dos palmas entra como segunda empresa: su factura con el arreglo de impresión y su app lista para `/portal/las-dos-palmas/`. Encontrado y corregido en los DOS repos el logo y el isotipo con ruta absoluta, que daban 404 bajo el subcamino. Aquí: dominio definitivo `nexora-pos.online` y §8.b del instructivo | En Las dos palmas: typecheck · lint · test (708/708) · build en verde, y comprobado en el navegador, incluido el build servido bajo su subcamino. Aquí: los cinco en verde |
+| 2026-08-31 | Un esquema de Postgres por aplicación (`labrador`, `palmas`, y `public` solo para lo compartido) y el adaptador de Supabase de Las dos palmas, escrito y probado. Encontrados y corregidos tres errores de su SQL que nunca se había ejecutado, y un `on conflict do update` contra tablas con UPDATE revocado que habría fallado en los DOS proyectos | En Las dos palmas: typecheck · lint · test (780/780) · build. En Papas El Labrador: 661/661 · build. Aquí: los cinco en verde |

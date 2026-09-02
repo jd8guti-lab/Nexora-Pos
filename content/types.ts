@@ -20,7 +20,7 @@ export type FooterColumn = {
 };
 
 export type ContactChannel = {
-  readonly kind: "whatsapp" | "email" | "city";
+  readonly kind: "whatsapp" | "email";
   readonly label: string;
   /** Display value. */
   readonly value: string;

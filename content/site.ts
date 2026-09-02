@@ -45,10 +45,6 @@ export const site = {
 } as const;
 
 /**
- * Contact channels for the footer and /contacto.
- * TODO(guti): número de WhatsApp, correo y ciudad reales.
- */
-/**
  * The one number the site books appointments through.
  *
  * Every "Agendar una cita" on the site points here — nav, hero, the CTA at the
@@ -65,6 +61,13 @@ export const whatsapp = {
   )}`,
 } as const;
 
+/**
+ * The contact channels shown everywhere: the footer and /contacto.
+ *
+ * There is no city here. The business decided on 2026-08-31 not to publish a
+ * location: the product is sold and supported remotely, and an address the
+ * company does not actually receive visitors at is a liability, not a signal.
+ */
 export const contact: readonly ContactChannel[] = [
   {
     kind: "whatsapp",
@@ -72,18 +75,26 @@ export const contact: readonly ContactChannel[] = [
     value: whatsapp.number,
     href: whatsapp.href,
   },
-  {
-    kind: "email",
-    label: "Correo",
-    value: "TODO(guti): correo",
-    href: null,
-  },
-  {
-    kind: "city",
-    label: "Dónde estamos",
-    value: "TODO(guti): ciudad",
-    href: null,
-  },
+] as const;
+
+/**
+ * The email, which by the owner's decision (2026-08-31) appears ONLY in the
+ * footer — not on /contacto, which already has the form, and not in the JSON-LD.
+ *
+ * Kept separate from `contact` rather than added to it precisely so that
+ * "only in the footer" is enforced by what imports it, not by remembering.
+ */
+export const emailContact: ContactChannel = {
+  kind: "email",
+  label: "Correo",
+  value: "nexoraposonline@gmail.com",
+  href: "mailto:nexoraposonline@gmail.com",
+} as const;
+
+/** What the footer shows: the shared channels plus the email. */
+export const footerContact: readonly ContactChannel[] = [
+  ...contact,
+  emailContact,
 ] as const;
 
 /**
