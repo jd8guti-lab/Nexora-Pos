@@ -22,17 +22,36 @@ const tenantBranding = {
   },
 } as const;
 
-function resolveTenantBrand(user: User | null) {
-  const tenantSlug =
+const tenantPortalUrls = {
+  "papas-el-labrador": "https://papas-el-labrador.vercel.app",
+} as const;
+
+function resolveTenantSlug(user: User | null) {
+  return (
     (user?.app_metadata as { tenant_slug?: string } | undefined)?.tenant_slug ??
     (user?.user_metadata as { tenant_slug?: string } | undefined)?.tenant_slug ??
-    (user?.email ?? "").toLowerCase();
+    (user?.email ?? "").toLowerCase()
+  );
+}
+
+function resolveTenantBrand(user: User | null) {
+  const tenantSlug = resolveTenantSlug(user);
 
   if (tenantSlug.includes("papas") || tenantSlug.includes("labrador")) {
     return tenantBranding["papas-el-labrador"];
   }
 
   return tenantBranding.default;
+}
+
+function resolveTenantPortalUrl(user: User | null) {
+  const tenantSlug = resolveTenantSlug(user);
+
+  if (tenantSlug.includes("papas") || tenantSlug.includes("labrador")) {
+    return tenantPortalUrls["papas-el-labrador"];
+  }
+
+  return null;
 }
 
 export default function PortalPage() {
@@ -72,6 +91,11 @@ export default function PortalPage() {
       }
 
       const nextUser = data.user;
+      const targetPortal = resolveTenantPortalUrl(nextUser);
+      if (targetPortal) {
+        window.location.assign(targetPortal);
+        return;
+      }
       setUser(nextUser);
       setIsLoading(false);
     };
@@ -80,6 +104,11 @@ export default function PortalPage() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const nextUser = session?.user ?? null;
+      const targetPortal = resolveTenantPortalUrl(nextUser);
+      if (targetPortal) {
+        window.location.assign(targetPortal);
+        return;
+      }
       setUser(nextUser);
       setIsLoading(false);
     });
@@ -112,6 +141,12 @@ export default function PortalPage() {
     if (signInError) {
       setError(signInError.message);
       setIsSubmitting(false);
+      return;
+    }
+
+    const targetPortal = resolveTenantPortalUrl(data.user ?? user);
+    if (targetPortal) {
+      window.location.assign(targetPortal);
       return;
     }
 

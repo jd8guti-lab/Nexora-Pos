@@ -70,9 +70,16 @@ if (!hasUrl || !hasKey) {
 console.log("✓ Claves de Supabase presentes en .env.local");
 
 // 3. Verificar que Papas existe
-const papasPackageJson = resolve(papasPath, "frontend", "package.json");
-if (!existsSync(papasPackageJson)) {
-  console.error(`❌ No encontré ${papasPackageJson}`);
+const papasPackageJsonRoot = resolve(papasPath, "package.json");
+const papasPackageJsonFrontend = resolve(papasPath, "frontend", "package.json");
+const appRoot = existsSync(papasPackageJsonRoot)
+  ? papasPath
+  : existsSync(papasPackageJsonFrontend)
+    ? resolve(papasPath, "frontend")
+    : null;
+
+if (!appRoot) {
+  console.error(`❌ No encontré package.json ni en ${papasPath} ni en ${resolve(papasPath, "frontend")}`);
   console.error("   Verifica que la ruta a Papas sea correcta.");
   process.exit(1);
 }
@@ -83,7 +90,7 @@ console.log("✓ Proyecto Papas encontrado");
 console.log("\n🔨 Construyendo aplicación...");
 try {
   execSync("npm run build", {
-    cwd: resolve(papasPath, "frontend"),
+    cwd: appRoot,
     stdio: "inherit",
   });
 } catch {
@@ -94,7 +101,9 @@ try {
 console.log("✓ Construcción completada");
 
 // 5. Copiar a public/portal/<tenant-slug>/
-const sourceDir = resolve(papasPath, "frontend", "dist");
+const sourceDir = existsSync(resolve(appRoot, "dist"))
+  ? resolve(appRoot, "dist")
+  : resolve(appRoot, "frontend", "dist");
 const targetDir = resolve(projectRoot, "public", "portal", tenantSlug);
 
 if (!existsSync(sourceDir)) {

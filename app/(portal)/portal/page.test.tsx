@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import PortalPage from "./page";
 
 const mockGetUser = vi.fn();
@@ -26,12 +26,21 @@ vi.mock("@/utils/supabase/client", () => ({
 }));
 
 describe("Portal page", () => {
+  const originalLocation = window.location;
+
   beforeEach(() => {
     mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
     mockOnAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } });
     mockSignInWithPassword.mockResolvedValue({ data: { user: null }, error: null });
     mockSignOut.mockResolvedValue({ error: null });
     mockProfileQuery.maybeSingle.mockResolvedValue({ data: { rol: "admin" }, error: null });
+  });
+
+  afterEach(() => {
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: originalLocation,
+    });
   });
 
   it("renders the login form for the client portal", async () => {
@@ -69,7 +78,13 @@ describe("Portal page", () => {
     expect(screen.getByText(/Todo lo de hoy/i)).toBeInTheDocument();
   });
 
-  it("shows the papas el labrador branding for that tenant", async () => {
+  it("redirects papas el labrador users to the tenant portal when the session loads", async () => {
+    const assignSpy = vi.fn();
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { ...window.location, assign: assignSpy },
+    });
+
     mockGetUser.mockResolvedValue({
       data: {
         user: {
@@ -83,7 +98,43 @@ describe("Portal page", () => {
 
     render(<PortalPage />);
 
-    expect(await screen.findByRole("heading", { name: /Papas el Labrador/i })).toBeInTheDocument();
-    expect(screen.getByText(/Papas el Labrador/i)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(assignSpy).toHaveBeenCalledWith("https://papas-el-labrador.vercel.app")
+    );
+  });
+
+  it("redirects papas el labrador users to their portal after sign in", async () => {
+    const assignSpy = vi.fn();
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { ...window.location, assign: assignSpy },
+    });
+
+    mockSignInWithPassword.mockResolvedValue({
+      data: {
+        user: {
+          email: "papasellabrador@user.com",
+          app_metadata: { tenant_slug: "papas-el-labrador" },
+          user_metadata: { tenant_slug: "papas-el-labrador" },
+        },
+      },
+      error: null,
+    });
+
+    render(<PortalPage />);
+
+    await screen.findByRole("heading", { name: "Portal de clientes" });
+
+    fireEvent.change(screen.getByLabelText("Correo"), {
+      target: { value: "papasellabrador@user.com" },
+    });
+    fireEvent.change(screen.getByLabelText("Contraseña"), {
+      target: { value: "12345678" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Ingresar" }));
+
+    await waitFor(() =>
+      expect(assignSpy).toHaveBeenCalledWith("https://papas-el-labrador.vercel.app")
+    );
   });
 });
