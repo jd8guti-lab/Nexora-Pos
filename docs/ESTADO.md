@@ -24,17 +24,32 @@ Dónde está cada pieza, para que la próxima sesión no lo vuelva a averiguar.
 | Las 18 tablas y su RLS | ✅ `anon` recibe `42501` en todas |
 | Las 5 funciones de escritura | ✅ verificadas en `pg_proc` |
 | `labrador.configuracion` | 🔶 **con la forma equivocada** — ver la migración de abajo |
+| `configuracion.tenant_id` sin `default` | 🔶 corregido en el repo de Papas, **falta correr el SQL** |
+| Login del portal | ✅ el cliente entra y la app carga con su negocio |
 | Esquema `palmas` en la base | ⛔ bloqueado: no aparece el código fuente de la app |
-| Datos de negocio en Supabase | ⏳ ninguno todavía |
+| Datos de negocio en Supabase | ⏳ ninguno todavía — el catálogo se siembra desde Ajustes |
 
 **Lo único que falta para operar**, en orden:
 
-1. `Papas-el-Labrador/docs/migraciones/2026-09-02-rehacer-configuracion.sql` — la tabla desplegada
-   no corresponde al esquema (le faltan cinco columnas `not null`), así que insertar la fila del
-   negocio falla con `42703 column "atendidos_sugeridos" does not exist`.
-2. `notify pgrst, 'reload schema';`
-3. Cargar el catálogo: exportar respaldo desde la app en local y restaurarlo **dentro del portal**,
-   que es lo que escribe en Supabase con la RLS activa.
+1. `Papas-el-Labrador/docs/migraciones/2026-09-02-configuracion-sin-perder-datos.sql` — la tabla
+   desplegada no corresponde al esquema (le faltan cinco columnas `not null`), así que escribir la
+   configuración falla con `42703 column "atendidos_sugeridos" does not exist`. **Sustituye a
+   `2026-09-02-rehacer-configuracion.sql`**, que hacía `drop table`: la fila del negocio ya está
+   insertada y un consecutivo de factura no se repone.
+2. `Papas-el-Labrador/docs/migraciones/2026-09-02-configuracion-tenant-id-default.sql` — de las 18
+   tablas, `configuracion` era la única cuyo `tenant_id` no llevaba `default auth_tenant_id()`. El
+   adaptador hace upsert sin mandarlo, así que insertaba un nulo, no colisionaba con la fila
+   existente —NULL nunca colisiona— y reventaba contra la llave primaria. **Guardar la
+   configuración fallaba siempre**, y con ella el botón que siembra el catálogo.
+3. `notify pgrst, 'reload schema';`
+4. Comprobar con `Papas-el-Labrador/docs/migraciones/verificar-configuracion-y-rls.sql`.
+5. Sembrar el catálogo **dentro del portal**: Ajustes → Zona peligrosa → **"Cargar datos de la
+   empresa"**. No hay que importar nada: los 84 clientes, los 52 productos y los 24 proveedores
+   ya viven en el bundle. Quedan sin un solo pedido, compra ni gasto.
+
+**Por qué el portal se veía vacío aunque la sesión funcionara** (2026-09-02): la app siembra el
+catálogo la primera vez **solo si no hay configuración**, y esa fila se había insertado a mano por
+SQL. La app leyó "esta base ya se usó" y no sembró nada. No era un fallo de la conexión.
 
 **Dos bugs reales encontrados al conectar, ya corregidos** (repo de Papas, `d5e9449e` y `77d5874d`).
 Los dos vivían en la costura entre el adaptador y el SQL, y **ninguno lo cazaban los 661 tests**:
