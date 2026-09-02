@@ -62,6 +62,7 @@ export default function PortalPage() {
   const [configError, setConfigError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [redirectTarget, setRedirectTarget] = useState<string | null>(null);
 
   const supabase = useMemo(() => {
     try {
@@ -92,11 +93,8 @@ export default function PortalPage() {
 
       const nextUser = data.user;
       const targetPortal = resolveTenantPortalUrl(nextUser);
-      if (targetPortal) {
-        window.location.assign(targetPortal);
-        return;
-      }
       setUser(nextUser);
+      setRedirectTarget(targetPortal ?? null);
       setIsLoading(false);
     };
 
@@ -105,11 +103,8 @@ export default function PortalPage() {
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const nextUser = session?.user ?? null;
       const targetPortal = resolveTenantPortalUrl(nextUser);
-      if (targetPortal) {
-        window.location.assign(targetPortal);
-        return;
-      }
       setUser(nextUser);
+      setRedirectTarget(targetPortal ?? null);
       setIsLoading(false);
     });
 
@@ -144,13 +139,10 @@ export default function PortalPage() {
       return;
     }
 
-    const targetPortal = resolveTenantPortalUrl(data.user ?? user);
-    if (targetPortal) {
-      window.location.assign(targetPortal);
-      return;
-    }
-
-    setUser(data.user);
+    const nextUser = data.user ?? user;
+    const targetPortal = resolveTenantPortalUrl(nextUser);
+    setUser(nextUser);
+    setRedirectTarget(targetPortal ?? null);
     setIsSubmitting(false);
   };
 
@@ -162,6 +154,19 @@ export default function PortalPage() {
     await supabase.auth.signOut();
     setUser(null);
     setPassword("");
+    setRedirectTarget(null);
+  };
+
+  const continueToPortal = () => {
+    if (redirectTarget) {
+      window.location.assign(redirectTarget);
+      return;
+    }
+
+    const targetPortal = resolveTenantPortalUrl(user);
+    if (targetPortal) {
+      window.location.assign(targetPortal);
+    }
   };
 
   const tenantBrand = resolveTenantBrand(user);
@@ -172,6 +177,36 @@ export default function PortalPage() {
         <Container className="flex max-w-lg flex-col items-center text-center">
           <LogoLockup variant="dark" height={40} withDescriptor priority />
           <p className="text-body text-paper-50/80 mt-8">Cargando portal…</p>
+        </Container>
+      </main>
+    );
+  }
+
+  if (redirectTarget && user) {
+    return (
+      <main className="surface-dark bg-ink-900 flex min-h-dvh flex-col items-center justify-center py-16 text-white">
+        <Container className="flex max-w-xl flex-col items-center text-center">
+          <LogoLockup variant="dark" height={40} withDescriptor priority />
+
+          <div className="mt-12 w-full max-w-lg rounded-2xl border border-paper-50/20 bg-paper-50/5 p-6 text-left shadow-lg shadow-black/20">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-500">
+              Sesión activa
+            </p>
+            <h1 className="mt-3 text-3xl font-bold text-white">Ya iniciaste sesión</h1>
+            <p className="mt-3 text-base text-paper-50/80">
+              Estás autenticado como <span className="font-semibold text-white">{user.email}</span> y
+              puedes continuar en tu portal de {tenantBrand.name}.
+            </p>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Button type="button" variant="inverse" size="md" className="flex-1" onClick={continueToPortal}>
+                Continuar al portal
+              </Button>
+              <Button type="button" variant="inverseOutline" size="md" className="flex-1" onClick={handleSignOut}>
+                Cerrar sesión
+              </Button>
+            </div>
+          </div>
         </Container>
       </main>
     );

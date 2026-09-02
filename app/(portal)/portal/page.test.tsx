@@ -78,7 +78,7 @@ describe("Portal page", () => {
     expect(screen.getByText(/Todo lo de hoy/i)).toBeInTheDocument();
   });
 
-  it("redirects papas el labrador users to the tenant portal when the session loads", async () => {
+  it("shows an active session state for papas el labrador users and lets them continue", async () => {
     const assignSpy = vi.fn();
     Object.defineProperty(window, "location", {
       configurable: true,
@@ -98,12 +98,18 @@ describe("Portal page", () => {
 
     render(<PortalPage />);
 
+    expect(await screen.findByRole("heading", { name: "Ya iniciaste sesión" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Continuar al portal" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Cerrar sesión" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Continuar al portal" }));
+
     await waitFor(() =>
       expect(assignSpy).toHaveBeenCalledWith("https://papas-el-labrador.vercel.app")
     );
   });
 
-  it("redirects papas el labrador users to their portal after sign in", async () => {
+  it("keeps the papas el labrador session active after sign in until the user chooses to continue", async () => {
     const assignSpy = vi.fn();
     Object.defineProperty(window, "location", {
       configurable: true,
@@ -132,6 +138,12 @@ describe("Portal page", () => {
       target: { value: "12345678" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Ingresar" }));
+
+    expect(await screen.findByRole("heading", { name: "Ya iniciaste sesión" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Continuar al portal" })).toBeInTheDocument();
+    expect(assignSpy).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Continuar al portal" }));
 
     await waitFor(() =>
       expect(assignSpy).toHaveBeenCalledWith("https://papas-el-labrador.vercel.app")
