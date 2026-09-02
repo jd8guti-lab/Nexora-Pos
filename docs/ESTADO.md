@@ -43,9 +43,16 @@ Dónde está cada pieza, para que la próxima sesión no lo vuelva a averiguar.
    configuración fallaba siempre**, y con ella el botón que siembra el catálogo.
 3. `notify pgrst, 'reload schema';`
 4. Comprobar con `Papas-el-Labrador/docs/migraciones/verificar-configuracion-y-rls.sql`.
-5. Sembrar el catálogo **dentro del portal**: Ajustes → Zona peligrosa → **"Cargar datos de la
-   empresa"**. No hay que importar nada: los 84 clientes, los 52 productos y los 24 proveedores
-   ya viven en el bundle. Quedan sin un solo pedido, compra ni gasto.
+5. `Papas-el-Labrador/docs/migraciones/2026-09-02-cliente-sin-telefono.sql` — un cliente real del
+   Excel (FUKUBAR SAS) no tiene teléfono, y el `check` del esquema lo rechazaba.
+6. `Papas-el-Labrador/docs/migraciones/2026-09-02-abonos-solo-agregar.sql` — sin esto, restaurar un
+   respaldo con pedidos muere con `permission denied for table abonos`.
+7. **Restaurar el respaldo del dueño** en el portal: Ajustes → Restaurar respaldo. Trae 41 facturas
+   reales (`JOS-LL-038327` → `038367`), 89 clientes y el catálogo, con el consecutivo en 38367.
+
+   La alternativa —Ajustes → "Cargar datos de la empresa"— solo vale en una base que **nunca** haya
+   facturado: siembra el catálogo con el consecutivo en 0. Con pedidos dentro, esos botones quedan
+   deshabilitados a propósito.
 
 **Por qué el portal se veía vacío aunque la sesión funcionara** (2026-09-02): la app siembra el
 catálogo la primera vez **solo si no hay configuración**, y esa fila se había insertado a mano por
