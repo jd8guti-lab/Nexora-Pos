@@ -105,7 +105,7 @@ describe("Portal page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continuar al portal" }));
 
     await waitFor(() =>
-      expect(assignSpy).toHaveBeenCalledWith("https://papas-el-labrador.vercel.app")
+      expect(assignSpy).toHaveBeenCalledWith("/portal/papas-el-labrador")
     );
   });
 
@@ -146,7 +146,7 @@ describe("Portal page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continuar al portal" }));
 
     await waitFor(() =>
-      expect(assignSpy).toHaveBeenCalledWith("https://papas-el-labrador.vercel.app")
+      expect(assignSpy).toHaveBeenCalledWith("/portal/papas-el-labrador")
     );
   });
 });

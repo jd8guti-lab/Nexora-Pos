@@ -16,6 +16,9 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 - **Dashboard autenticado en estilo referencia**: tras iniciar sesión, el usuario ve la vista tipo
   negocio de la primera imagen con el sidebar, tarjetas de resumen y el bloque de pedidos de
   “Las dos palmas”, en lugar del panel genérico de la segunda referencia.
+- **Redirección interna del tenant**: para `papas-el-labrador` la navegación vuelve a la ruta
+  interna de Nexora `"/portal/papas-el-labrador"` porque la app del cliente ya está sincronizada
+  en `public/portal/` y no debe salir al dominio externo de Vercel sin la base de datos del negocio.
 - **Portal con vista por rol**: el flujo del portal ya diferencia `admin`, `manager` y `staff`,
   lee el perfil desde Supabase y usa un fallback realista a la metadata del usuario cuando no hay
   registro de perfil aún disponible.
