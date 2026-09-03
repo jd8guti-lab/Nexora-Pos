@@ -15,9 +15,25 @@
 
 -- 1 ─────────────────────────────────────────────────────────── La empresa ───
 -- El slug es la carpeta bajo /portal/ y es lo que compara el middleware. No se reutiliza nunca.
+--
+-- ⚠️ EL ORDEN IMPORTA, y darlo vuelta cuesta una sesion: esta fila va ANTES del paso 3. Si el
+--    usuario ya existe con un `tenant_id` en su `app_metadata` y esa fila no esta, la sesion entra
+--    —el login no consulta `tenants`— pero la base rechaza CADA escritura con
+--    `violates foreign key constraint "clientes_tenant_id_fkey"`, y parece un problema de la app.
+--    Paso el 2026-09-03.
+--
+--    Si ya estas en ese caso, NO insertes con un id nuevo: inserta con el uuid que el usuario ya
+--    tiene, y asi no hay que tocar su `app_metadata` ni obligarlo a volver a entrar.
+--
+--      insert into public.tenants (id, slug, nombre)
+--      values ('EL-UUID-DE-SU-APP-METADATA'::uuid, 'las-dos-palmas', 'Las dos palmas');
+--
+-- El `nit` se deja nulo a proposito: el NIT que sale IMPRESO en la factura no es este, sale de
+-- `configuracion.negocio` y lo escribe el dueño en Ajustes. La aplicacion no lee `tenants.nit` en
+-- ninguna parte.
 
-insert into public.tenants (slug, nombre, nit)
-values ('las-dos-palmas', 'Las dos palmas', 'TODO(guti): el NIT real');
+insert into public.tenants (slug, nombre)
+values ('las-dos-palmas', 'Las dos palmas');
 
 
 -- 2 ──────────────────────────────────────────────────── NO insertes config ───
