@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-02 (**esquema `labrador` corrido y expuesto**; falta rehacer `configuracion` y cargar el catálogo. Antes: **`feat/portal-clientes` fusionada a `main`**: un esquema de Postgres por aplicación, el portal reducido a la puerta de entrada y la resolución de tenant en el middleware. Antes, en esa misma rama: **la aplicación de Las dos palmas cambió fuerte** —carga por canastillas, devoluciones, merma de venta y los reportes a pantalla—; no se compila aquí, pero su esquema SQL cambió con ella)
+Última actualización: 2026-09-03 (**borrado el andamiaje del quickstart de Supabase** — la ruta `/supabase-demo` y `utils/supabase/`. Antes: **esquema `labrador` corrido y expuesto**; falta rehacer `configuracion` y cargar el catálogo. Antes: **`feat/portal-clientes` fusionada a `main`**: un esquema de Postgres por aplicación, el portal reducido a la puerta de entrada y la resolución de tenant en el middleware. Antes, en esa misma rama: **la aplicación de Las dos palmas cambió fuerte** —carga por canastillas, devoluciones, merma de venta y los reportes a pantalla—; no se compila aquí, pero su esquema SQL cambió con ella)
 
 ---
 
@@ -143,6 +143,26 @@ escritura. Queda anotado como pendiente en el repo de Papas.
 **Las dos palmas se queda como está**, en IndexedDB, hasta que aparezca su código. No está en
 `jd8guti-lab`, ni en la cuenta personal, ni en el disco. Lo único que existe es el bundle
 desplegado; de él saqué su modelo de datos, por si algún día se decide reconstruirlo.
+
+### Andamiaje muerto de Supabase, borrado (3 de septiembre de 2026)
+
+Se borró `app/(marketing)/supabase-demo/`, que era el ejemplo del quickstart de Supabase: una
+ruta pública que consultaba una tabla `todos` inexistente en este dominio, sin metadata, sin los
+primitivos del sitio, y fuera del mapa de páginas de `CLAUDE.md` §5 y del `README`. Nada la
+enlazaba.
+
+**Y con ella se fue `utils/supabase/`** (`client.ts`, `server.ts`, `middleware.ts`), que era su
+único consumidor. Comprobado con `git grep` antes de borrar: el código real no lo usaba en
+ninguna parte —el login usa `lib/supabase.ts` y `middleware.ts` construye su propio
+`createServerClient`—, así que ese `utils/` llevaba tiempo siendo una segunda forma de hacer lo
+mismo. Además **fallaba abierto**: leía las variables de entorno con `!` y confiaba en que
+existieran, justo lo contrario de la regla de `CLAUDE.md` §9.
+
+**Ramas viejas.** `portal-clientes` (local) se borró: estaba fusionada en `main`.
+`feat/dashboard-portal-supabase` **se conserva**: lleva 1.306 líneas que no están en `main`
+—el dashboard del portal conectado a datos reales, más `backend/migracion-tenant-negocio.sql` y
+`seed-demo.sql`—. Ese dashboard contradice el diseño que hoy está en `main` (`/portal` es solo la
+puerta), así que borrarla es una decisión de producto, no de limpieza.
 
 ### Validación final de cierre
 
@@ -939,6 +959,15 @@ desarrollo tiene abiertos y, a partir de ahí, cada petición muere con
 cerrar el hero: el sitio dejó de verse en `localhost:3000` sin haber tocado nada.
 **Antes de correr el build, para el `dev`**; si ya pasó, `rm -rf .next` y vuelve a arrancarlo.
 
+**28. Borrar una ruta hace fallar `typecheck` hasta que vuelvas a construir.**
+`tsc --noEmit` incluye los tipos que Next genera en `.next/types`, y ahí queda el validador de la
+ruta borrada apuntando a un `page.js` que ya no existe:
+`error TS2307: Cannot find module '.../supabase-demo/page.js'`. Parece que el borrado rompió algo
+del código, y no: el error vive en un archivo generado. Pasó al quitar `/supabase-demo`.
+**Corre el `build` primero y el `typecheck` después** cuando el cambio agrega o quita rutas —
+o `rm -rf .next`. En el orden del protocolo (§0) el typecheck va primero, así que este es el único
+caso donde hay que invertirlo.
+
 ---
 
 ## Bitácora
@@ -978,4 +1007,5 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | 2026-08-31 | Factura de El Labrador: impresión desde un iframe aparte, ancho a cargo del driver, letra a 13 px/600 y pie `www.nexora-pos.online`. **Cambio hecho en el repo del cliente**; aquí solo documentación | En Papas El Labrador: typecheck · lint · test (659/659) · build en verde, y comprobado en el navegador. Aquí: sin cambios de código — `sync-tenant-app.mjs` sigue bloqueado sin Supabase |
 | 2026-08-31 | Las dos palmas entra como segunda empresa: su factura con el arreglo de impresión y su app lista para `/portal/las-dos-palmas/`. Encontrado y corregido en los DOS repos el logo y el isotipo con ruta absoluta, que daban 404 bajo el subcamino. Aquí: dominio definitivo `nexora-pos.online` y §8.b del instructivo | En Las dos palmas: typecheck · lint · test (708/708) · build en verde, y comprobado en el navegador, incluido el build servido bajo su subcamino. Aquí: los cinco en verde |
 | 2026-08-31 | Un esquema de Postgres por aplicación (`labrador`, `palmas`, y `public` solo para lo compartido) y el adaptador de Supabase de Las dos palmas, escrito y probado. Encontrados y corregidos tres errores de su SQL que nunca se había ejecutado, y un `on conflict do update` contra tablas con UPDATE revocado que habría fallado en los DOS proyectos | En Las dos palmas: typecheck · lint · test (780/780) · build. En Papas El Labrador: 661/661 · build. Aquí: los cinco en verde |
+| 2026-09-03 | Borrado el andamiaje del quickstart: la ruta `/supabase-demo` y el `utils/supabase/` que era su único consumidor. Rama local `portal-clientes` borrada por fusionada; `feat/dashboard-portal-supabase` se conserva por llevar trabajo fuera de `main` | typecheck · lint · test (107/107) · contrast (32/32 + 3 excepciones) · build en verde, home sigue en 113 kB y el build baja de 20 a 19 rutas |
 | 2026-09-02 | Conexión real a Supabase: esquema `labrador` corrido y expuesto, dos bugs de adaptador corregidos (`vaciarTodo`, `aplicar_lote`) y la ruta base del router sin barra final | typecheck · lint · test (107/107 Nexora, 668/668 Papas) · contrast · build en verde |
