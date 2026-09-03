@@ -123,6 +123,12 @@ esa sentencia; el resto ya quedó.
 
 **Settings → API → *Exposed schemas*: agrega `labrador` y `palmas`.**
 
+Y en cuanto el esquema esté creado, **córrele el auditor**: `backend/auditar-esquema-tenant.sql`.
+Busca la forma de los bugs que ya costaron una puesta en marcha —`tenant_id` sin su default, llaves
+foráneas que impiden vaciar y por tanto restaurar, RLS sin `force`, `anon` con permisos— y te deja
+la lista de tablas que el adaptador nunca puede tocar con `reemplazar`. Cero hallazgos de gravedad 1
+antes de seguir.
+
 Supabase solo expone `public` por defecto. Sin este paso PostgREST devuelve **404 en todas las
 consultas** y parece que la aplicación está rota, cuando lo único que pasa es que no sabe que ese
 esquema existe.

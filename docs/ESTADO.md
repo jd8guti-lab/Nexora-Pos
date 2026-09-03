@@ -26,7 +26,7 @@ Dónde está cada pieza, para que la próxima sesión no lo vuelva a averiguar.
 | `labrador.configuracion` | 🔶 **con la forma equivocada** — ver la migración de abajo |
 | `configuracion.tenant_id` sin `default` | 🔶 corregido en el repo de Papas, **falta correr el SQL** |
 | Login del portal | ✅ el cliente entra y la app carga con su negocio |
-| Esquema `palmas` en la base | ⛔ bloqueado: no aparece el código fuente de la app |
+| Esquema `palmas` en la base | ⛔ bloqueado: no aparece el código fuente de la app. Auditable igual con `backend/auditar-esquema-tenant.sql` |
 | Datos de negocio en Supabase | ⏳ ninguno todavía — el catálogo se siembra desde Ajustes |
 
 **Lo único que falta para operar**, en orden:
@@ -106,6 +106,39 @@ paso 0 que esa guía no tenía y que hace falta — ver abajo.
   que dejó el PR #2 sin borrar las tablas. **Es una u otra, no las dos.**
 - `backend/esquema-supabase.sql` quedó marcado como **obsoleto**: describe el primer intento de
   multi-tenancy y correrlo hoy recrearía justo lo que el paso 0 borra.
+
+### Las Dos Palmas: lo que se pudo hacer sin su código (3 de septiembre de 2026)
+
+Se pidió repetir en Las Dos Palmas el puente de tests de Papas. **No se puede todavía**: su código
+no está en el disco, no está en la cuenta de GitHub conectada (`Ghostboy-999`), y no responde como
+remoto en `jd8guti-lab` bajo ninguno de los cinco nombres probados. Un puente de tests tiene que
+instanciar **su** adaptador.
+
+Pero los cuatro bugs de la puesta en marcha de Papas no eran del adaptador de Papas: salen del
+**diseño compartido** —`aplicar_lote` + los `revoke`, y la forma de `configuracion`— que Las Dos
+Palmas copió. Su esquema `palmas` tiene 19 tablas y un kardex de solo-agregar: la misma trampa que
+`historial_precios`.
+
+Así que en vez de esperar al código, se busca la **forma** de los bugs en el esquema, que sí está
+desplegado: **`backend/auditar-esquema-tenant.sql`**. Siete comprobaciones, cada una salida de un
+bug real, y todas apoyadas en `has_table_privilege('authenticated', ...)` — que es lo que de verdad
+aplica, y lo que nadie miró: el SQL Editor corre como `postgres` y se salta los `revoke`.
+
+Probado contra el esquema `labrador` real en PGlite, reintroduciendo cada defecto y comprobando que
+lo señala: el `tenant_id` sin default, la cascada que faltaba en `historial_precios`, y el `force`
+de la RLS. Un auditor que nunca se ha visto encontrar nada no sirve de nada.
+
+**Y encontró algo vivo en `labrador`, no en `palmas`.** Cuatro llaves foráneas hacen que
+`vaciarTodo()` falle en cuanto la base tenga documentos: `lineas_pedido → productos`,
+`pedidos → clientes`, `pedidos → vendedores` y `compras → proveedores`. Con las 41 facturas del
+dueño ya dentro, **restaurar otro respaldo va a fallar** con un error de llave foránea a mitad de
+camino.
+
+No es el mismo caso que `historial_precios`, y no se arregla igual: ahí la hija era auditoría y la
+cascada era correcta; aquí son documentos, y la llave foránea está haciendo su trabajo —protege las
+facturas de que alguien borre al cliente—. Lo que falta es que la aplicación **impida restaurar
+sobre una base que ya facturó**, y lo diga con un mensaje de negocio en vez de reventar a media
+escritura. Queda anotado como pendiente en el repo de Papas.
 
 **Las dos palmas se queda como está**, en IndexedDB, hasta que aparezca su código. No está en
 `jd8guti-lab`, ni en la cuenta personal, ni en el disco. Lo único que existe es el bundle
