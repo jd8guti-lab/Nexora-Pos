@@ -158,11 +158,18 @@ ninguna parte —el login usa `lib/supabase.ts` y `middleware.ts` construye su p
 mismo. Además **fallaba abierto**: leía las variables de entorno con `!` y confiaba en que
 existieran, justo lo contrario de la regla de `CLAUDE.md` §9.
 
-**Ramas viejas.** `portal-clientes` (local) se borró: estaba fusionada en `main`.
-`feat/dashboard-portal-supabase` **se conserva**: lleva 1.306 líneas que no están en `main`
-—el dashboard del portal conectado a datos reales, más `backend/migracion-tenant-negocio.sql` y
-`seed-demo.sql`—. Ese dashboard contradice el diseño que hoy está en `main` (`/portal` es solo la
-puerta), así que borrarla es una decisión de producto, no de limpieza.
+**Ramas viejas, borradas.** Se fueron cuatro: `portal-clientes`, `feat/portal-clientes` y
+`feat/home-simplificada` estaban **fusionadas en `main`**, así que no había nada que perder.
+
+`feat/dashboard-portal-supabase` no lo estaba —1.306 líneas fuera de `main`— y se **archivó en la
+etiqueta `archivo/dashboard-portal-supabase`**, subida al remoto, en vez de conservarla como rama.
+Traía el dashboard del portal contra datos reales, que contradice el diseño que hoy está en `main`
+(`/portal` es solo la puerta; el dashboard que ve el dueño es el de su propia aplicación), más
+`backend/migracion-tenant-negocio.sql` y `seed-demo.sql`. **Esos dos SQL no se rescataron a
+propósito**: pertenecen al primer intento de multi-tenancy —tablas de negocio en `public` con
+columna `tenant_id`— que `backend/0-limpiar-public.sql` borra, y todo lo que vive en `backend/`
+parece autorizado a correr. Recuperable con
+`git checkout -b <rama> archivo/dashboard-portal-supabase`.
 
 ### Validación final de cierre
 
@@ -1007,5 +1014,5 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | 2026-08-31 | Factura de El Labrador: impresión desde un iframe aparte, ancho a cargo del driver, letra a 13 px/600 y pie `www.nexora-pos.online`. **Cambio hecho en el repo del cliente**; aquí solo documentación | En Papas El Labrador: typecheck · lint · test (659/659) · build en verde, y comprobado en el navegador. Aquí: sin cambios de código — `sync-tenant-app.mjs` sigue bloqueado sin Supabase |
 | 2026-08-31 | Las dos palmas entra como segunda empresa: su factura con el arreglo de impresión y su app lista para `/portal/las-dos-palmas/`. Encontrado y corregido en los DOS repos el logo y el isotipo con ruta absoluta, que daban 404 bajo el subcamino. Aquí: dominio definitivo `nexora-pos.online` y §8.b del instructivo | En Las dos palmas: typecheck · lint · test (708/708) · build en verde, y comprobado en el navegador, incluido el build servido bajo su subcamino. Aquí: los cinco en verde |
 | 2026-08-31 | Un esquema de Postgres por aplicación (`labrador`, `palmas`, y `public` solo para lo compartido) y el adaptador de Supabase de Las dos palmas, escrito y probado. Encontrados y corregidos tres errores de su SQL que nunca se había ejecutado, y un `on conflict do update` contra tablas con UPDATE revocado que habría fallado en los DOS proyectos | En Las dos palmas: typecheck · lint · test (780/780) · build. En Papas El Labrador: 661/661 · build. Aquí: los cinco en verde |
-| 2026-09-03 | Borrado el andamiaje del quickstart: la ruta `/supabase-demo` y el `utils/supabase/` que era su único consumidor. Rama local `portal-clientes` borrada por fusionada; `feat/dashboard-portal-supabase` se conserva por llevar trabajo fuera de `main` | typecheck · lint · test (107/107) · contrast (32/32 + 3 excepciones) · build en verde, home sigue en 113 kB y el build baja de 20 a 19 rutas |
+| 2026-09-03 | Borrado el andamiaje del quickstart: la ruta `/supabase-demo` y el `utils/supabase/` que era su único consumidor. Borradas cuatro ramas viejas, tres por fusionadas y `feat/dashboard-portal-supabase` archivada en la etiqueta `archivo/dashboard-portal-supabase`. Anotada la trampa 28 | typecheck · lint · test (107/107) · contrast (32/32 + 3 excepciones) · build en verde, home sigue en 113 kB y el build baja de 20 a 19 rutas |
 | 2026-09-02 | Conexión real a Supabase: esquema `labrador` corrido y expuesto, dos bugs de adaptador corregidos (`vaciarTodo`, `aplicar_lote`) y la ruta base del router sin barra final | typecheck · lint · test (107/107 Nexora, 668/668 Papas) · contrast · build en verde |
