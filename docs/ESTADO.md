@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-03 (**borrado el andamiaje del quickstart de Supabase** — la ruta `/supabase-demo` y `utils/supabase/`. Antes: **esquema `labrador` corrido y expuesto**; falta rehacer `configuracion` y cargar el catálogo. Antes: **`feat/portal-clientes` fusionada a `main`**: un esquema de Postgres por aplicación, el portal reducido a la puerta de entrada y la resolución de tenant en el middleware. Antes, en esa misma rama: **la aplicación de Las dos palmas cambió fuerte** —carga por canastillas, devoluciones, merma de venta y los reportes a pantalla—; no se compila aquí, pero su esquema SQL cambió con ella)
+Última actualización: 2026-09-03 (**la factura del portal salía sin estilos y ya está arreglada y resincronizada**. Antes: **borrado el andamiaje del quickstart de Supabase** — la ruta `/supabase-demo` y `utils/supabase/`. Antes: **esquema `labrador` corrido y expuesto**; falta rehacer `configuracion` y cargar el catálogo. Antes: **`feat/portal-clientes` fusionada a `main`**: un esquema de Postgres por aplicación, el portal reducido a la puerta de entrada y la resolución de tenant en el middleware. Antes, en esa misma rama: **la aplicación de Las dos palmas cambió fuerte** —carga por canastillas, devoluciones, merma de venta y los reportes a pantalla—; no se compila aquí, pero su esquema SQL cambió con ella)
 
 ---
 
@@ -143,6 +143,28 @@ escritura. Queda anotado como pendiente en el repo de Papas.
 **Las dos palmas se queda como está**, en IndexedDB, hasta que aparezca su código. No está en
 `jd8guti-lab`, ni en la cuenta personal, ni en el disco. Lo único que existe es el bundle
 desplegado; de él saqué su modelo de datos, por si algún día se decide reconstruirlo.
+
+### La factura salía sin estilos (3 de septiembre de 2026)
+
+El dueño trajo el recibo `JOS-LL-038403` impreso en **Times New Roman**, todo a la izquierda, sin
+los filetes punteados y con el total del mismo tamaño que el cuerpo: el ticket sin una sola regla
+de la aplicación.
+
+**Se arregló en el repo de Papas El Labrador** (`fc943751`), porque la app del cliente no se compila
+aquí. El iframe del ticket reconstruía los estilos **clonando el `<link>`** de la aplicación, y eso
+obliga al navegador a volver a pedir la hoja por red dentro de un documento recién creado; si no
+llegaba en 1,5 s, imprimía igual con la tipografía por defecto. La hoja ya estaba cargada: ahora se
+copia el **texto** de `sheet.cssRules` y solo se enlaza lo que no se puede leer (Google Fonts), que
+el ticket no necesita.
+
+Reproducido en el navegador antes de tocar código, y verificado después con la espera de red en
+cero: monoespaciada 13 px/600, encabezado centrado a 20 px, filete punteado y total centrado a
+22 px. Está contado en `docs/ESTADO.md` §6.15 de aquel repo.
+
+**Aquí lo que cambió es el bundle**: `public/portal/papas-el-labrador/` resincronizado con
+`scripts/sync-tenant-app.mjs`. Es lo que despliega Vercel, así que **sin este commit el arreglo no
+le llega al dueño**. El despliegue suelto (`papas-el-labrador.vercel.app`) necesita además que se
+suba el commit del repo de Papas.
 
 ### Andamiaje muerto de Supabase, borrado (3 de septiembre de 2026)
 
@@ -1014,5 +1036,6 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | 2026-08-31 | Factura de El Labrador: impresión desde un iframe aparte, ancho a cargo del driver, letra a 13 px/600 y pie `www.nexora-pos.online`. **Cambio hecho en el repo del cliente**; aquí solo documentación | En Papas El Labrador: typecheck · lint · test (659/659) · build en verde, y comprobado en el navegador. Aquí: sin cambios de código — `sync-tenant-app.mjs` sigue bloqueado sin Supabase |
 | 2026-08-31 | Las dos palmas entra como segunda empresa: su factura con el arreglo de impresión y su app lista para `/portal/las-dos-palmas/`. Encontrado y corregido en los DOS repos el logo y el isotipo con ruta absoluta, que daban 404 bajo el subcamino. Aquí: dominio definitivo `nexora-pos.online` y §8.b del instructivo | En Las dos palmas: typecheck · lint · test (708/708) · build en verde, y comprobado en el navegador, incluido el build servido bajo su subcamino. Aquí: los cinco en verde |
 | 2026-08-31 | Un esquema de Postgres por aplicación (`labrador`, `palmas`, y `public` solo para lo compartido) y el adaptador de Supabase de Las dos palmas, escrito y probado. Encontrados y corregidos tres errores de su SQL que nunca se había ejecutado, y un `on conflict do update` contra tablas con UPDATE revocado que habría fallado en los DOS proyectos | En Las dos palmas: typecheck · lint · test (780/780) · build. En Papas El Labrador: 661/661 · build. Aquí: los cinco en verde |
+| 2026-09-03 | La factura del portal salía sin estilos: su documento pedía el CSS por red y perdía la carrera. Arreglado en el repo de Papas y **resincronizado aquí** | En Papas: typecheck · lint · test (706/706, +3) · build en verde, y reproducido y verificado en el navegador. Aquí: los cinco en verde, home en 113 kB |
 | 2026-09-03 | Borrado el andamiaje del quickstart: la ruta `/supabase-demo` y el `utils/supabase/` que era su único consumidor. Borradas cuatro ramas viejas, tres por fusionadas y `feat/dashboard-portal-supabase` archivada en la etiqueta `archivo/dashboard-portal-supabase`. Anotada la trampa 28 | typecheck · lint · test (107/107) · contrast (32/32 + 3 excepciones) · build en verde, home sigue en 113 kB y el build baja de 20 a 19 rutas |
 | 2026-09-02 | Conexión real a Supabase: esquema `labrador` corrido y expuesto, dos bugs de adaptador corregidos (`vaciarTodo`, `aplicar_lote`) y la ruta base del router sin barra final | typecheck · lint · test (107/107 Nexora, 668/668 Papas) · contrast · build en verde |
