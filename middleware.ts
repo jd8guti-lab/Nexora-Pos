@@ -1,11 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import {
-  faltaLaBarraFinal,
-  rutaDeTenant,
-  slugDeRuta,
-  tenantDeMetadatos,
-} from "@/lib/portal/tenant";
+import { rutaDeTenant, slugDeRuta, tenantDeMetadatos } from "@/lib/portal/tenant";
 
 /**
  * The portal gate.
@@ -83,11 +78,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(rutaDeTenant(tenant.slug), request.url));
   }
 
-  // `/portal/<slug>` without the trailing slash serves the app to a router that cannot match it,
-  // and the client gets a blank page. Send them one redirect further, to the URL the app expects.
-  if (faltaLaBarraFinal(pathname)) {
-    return NextResponse.redirect(new URL(rutaDeTenant(tenant.slug), request.url));
-  }
+  /*
+   * Do NOT redirect `/portal/<slug>` to `/portal/<slug>/` here. It looks like the obvious fix for
+   * the blank page that shape used to produce, and it is an infinite redirect loop: Next strips
+   * the trailing slash with a 308 of its own, this would put it back, and the browser ping-pongs
+   * until it gives up. Shipped on 3 September 2026; it left the portal login unusable, because a
+   * successful sign-in lands exactly on that URL.
+   *
+   * The blank page was the tenant app's to fix, and it is fixed there: its router's `basename` now
+   * drops the trailing slash, so both shapes match. See `rutaBase()` in each app.
+   */
 
   // The app owns its routing from here on: anything that is not a file is its index.
   if (!pideUnArchivo(pathname)) {

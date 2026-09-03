@@ -150,7 +150,10 @@ escritura. Queda anotado como pendiente en el repo de Papas.
 `jd8guti-lab`, ni en la cuenta personal, ni en el disco. Lo único que existe es el bundle
 desplegado; de él saqué su modelo de datos, por si algún día se decide reconstruirlo.
 
-### `/portal/<slug>` sin barra final servía una página en blanco (3 de septiembre de 2026)
+### `/portal/<slug>` sin barra final servía una página en blanco — y el primer arreglo fue peor
+
+**Léelo entero antes de tocar el middleware.** Este es el orden real de los hechos del 3 de
+septiembre de 2026.
 
 Lo encontró el dueño entrando a Las dos palmas, pero **no era de Las dos palmas**: le pasaba a
 cualquier empresa, Papas incluida.
@@ -165,8 +168,26 @@ won't render anything"*.
 porque `rutaDeTenant()` pone la barra. Solo aparece si alguien teclea la URL o la guarda en
 favoritos sin ella.
 
-Arreglado en el middleware, que ahora redirige a la ruta con barra antes de servir nada, y encerrado
-en `faltaLaBarraFinal()` con sus tests — que es donde se puede probar sin levantar Next.
+**El primer arreglo fue redirigir desde el middleware a la ruta con barra. Estuvo desplegado unos
+minutos y dejó el portal inservible.** Next quita la barra final con un 308 suyo, la redirección la
+volvía a poner, y el navegador hacía ping-pong hasta rendirse. El síntoma fue el más engañoso
+posible —"no inicia sesión", como si fueran las credenciales— porque entrar aterriza justo en esa
+URL. Se ve en dos líneas, sin sesión ni navegador:
+
+```
+curl -s -o /dev/null -D - http://localhost:3000/portal/las-dos-palmas/
+HTTP/1.1 308 Permanent Redirect
+location: /portal/las-dos-palmas
+```
+
+**El arreglo bueno estaba del otro lado, y ya existía.** El `basename` del router de la app sale de
+`import.meta.env.BASE_URL`, que Vite entrega siempre con barra; quitándosela casan las dos formas,
+porque React Router sí tolera la barra de más en la URL. Papas ya lo hacía (`rutaBase()`); Las dos
+palmas no, y por eso solo se cayó una. Hoy lo hacen las dos, con tests que montan el router con las
+dos URLs.
+
+El middleware volvió a como estaba, con un comentario que dice por qué no se redirige ahí. Que
+alguien lo vuelva a intentar es cuestión de tiempo: parece lo obvio.
 
 ### Las dos palmas: apareció su código (3 de septiembre de 2026)
 

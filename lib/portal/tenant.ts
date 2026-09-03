@@ -47,19 +47,3 @@ export function slugDeRuta(pathname: string): string | null {
 export function rutaDeTenant(slug: string): string {
   return `/portal/${slug}/`;
 }
-
-/**
- * `/portal/<slug>` with no trailing slash — the one URL shape that serves a blank page.
- *
- * The tenant app's router is built with `basename="/portal/<slug>/"`, and React Router refuses to
- * match a URL that does not start with the basename: `/portal/las-dos-palmas` is not
- * `/portal/las-dos-palmas/`, so it matches nothing and renders **nothing**. The page loads, the
- * bundle runs, the console says `<Router basename> is not able to match the URL`, and the client
- * sees white.
- *
- * Signing in never produces this shape —`rutaDeTenant` appends the slash— so it stayed hidden
- * until someone typed the URL by hand. It affects every tenant, not the one that found it.
- */
-export function faltaLaBarraFinal(pathname: string): boolean {
-  return /^\/portal\/[^/]+$/.test(pathname);
-}
