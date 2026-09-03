@@ -133,8 +133,11 @@ Ver [docs/ESTADO.md](docs/ESTADO.md). En grande:
    El código para conectarlas ya está escrito y probado; faltan los pasos operativos de
    [docs/PUESTA-EN-MARCHA-SUPABASE.md](docs/PUESTA-EN-MARCHA-SUPABASE.md), empezando por
    `backend/0-limpiar-public.sql`.
-7. **Las dos palmas: falta su código fuente.** No está en GitHub ni en disco; solo el bundle
-   desplegado. Se queda en IndexedDB hasta que aparezca.
+7. **Las dos palmas: su app ya está en el portal, falta registrarla en la base.** Su código
+   apareció el 3 de septiembre de 2026 (`jd8guti-lab/Las-dos-palmas`) y su build ya vive en
+   `public/portal/las-dos-palmas/`, construido contra Supabase. Lo que queda son dos sentencias
+   que se corren a mano: [backend/registrar-las-dos-palmas.sql](backend/registrar-las-dos-palmas.sql),
+   con el NIT y el correo del dueño por rellenar.
 
 > **Ojo:** ningún componente lleva copy hardcodeado. Si quieres cambiar un texto, se cambia en
 > `content/`, no en el JSX.

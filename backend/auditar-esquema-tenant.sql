@@ -31,11 +31,19 @@ with esquema as (select 'palmas'::text as nombre),   -- <<< 1. CAMBIA AQUI EL ES
 
 -- <<< 2. Y AQUI, las tablas que la aplicación borra en su `vaciarTodo()`. Salen del adaptador, no
 -- del esquema: son las que se limpian antes de restaurar un respaldo. Si esta lista no coincide con
--- la del código, la comprobación 2 no sirve. La de Papas El Labrador está de ejemplo.
+-- la del código, la comprobación 2 no sirve.
+--
+-- Las dos listas conocidas están abajo: deja activa la de la empresa que estés auditando y comenta
+-- la otra. Cada una sale del `vaciarTodo()` de su adaptador, no de la memoria de nadie.
 borrables (t) as (values
-  ('comisiones'), ('balances'), ('gastos'), ('precios_pactados'),
-  ('productos'), ('vendedores'), ('clientes'), ('proveedores'),
-  ('categorias'), ('tamanos'), ('tipos')
+  -- Las dos palmas (`palmas`) — su `repositorios.ts`, `vaciarTodo()`
+  ('comisiones'), ('gastos'), ('precios_pactados'),
+  ('productos'), ('vendedores'), ('clientes'), ('proveedores'), ('categorias')
+
+  -- Papas El Labrador (`labrador`) — descomenta esta y comenta la de arriba
+  -- ('comisiones'), ('balances'), ('gastos'), ('precios_pactados'),
+  -- ('productos'), ('vendedores'), ('clientes'), ('proveedores'),
+  -- ('categorias'), ('tamanos'), ('tipos')
 ),
 
 tablas as (

@@ -162,6 +162,17 @@ values ('papas-el-labrador', 'Papas El Labrador', '16645676-5');
 El `slug` es lo que aparece en la URL (`/portal/papas-el-labrador`) y el nombre de la carpeta
 dentro de `public/portal/`. Usa minúsculas, números y guiones.
 
+> ⚠️ **Insertar la fila de `configuracion` a mano tiene un precio, y hay que saberlo antes.**
+> La aplicación siembra su catálogo la primera vez **solo si no encuentra configuración**: esa fila
+> es su marca de "esta base ya se usó" (`sembrarSiEstaVacia()`). Si la insertas tú, el dueño entra
+> y ve el portal **vacío**, y no hay nada roto en la conexión. Es lo que pasó con El Labrador el
+> 2026-09-02 y costó media sesión.
+>
+> Con El Labrador se insertó porque su consecutivo tenía que arrancar en un número concreto. **Si
+> la empresa nueva arranca de cero, no insertes nada aquí**: deja que la aplicación siembre sola,
+> y que el dueño llene sus datos en Ajustes. Así se hizo con Las dos palmas, cuyo prefijo `LDP-`
+> ya vive en su `src/core/seed/catalogo.ts`.
+
 Y su configuración de facturación, que es de donde sale el consecutivo del ticket:
 
 ```sql
@@ -380,25 +391,23 @@ de arriba.
 - **"Vaciar base" ya no vacía todo**: el kardex y los documentos tienen DELETE revocado y se quedan.
   Conviene avisarlo en Ajustes antes de que alguien lo descubra apretando el botón.
 
-Sus datos para los pasos 2 y 3, cuando llegue el momento:
+**Su código apareció el 3 de septiembre de 2026** —`jd8guti-lab/Las-dos-palmas`, clonado al lado de
+los otros dos proyectos— y con él se hicieron dos cosas antes de conectar nada:
 
-```sql
-insert into tenants (slug, nombre, nit)
-values ('las-dos-palmas', 'Las dos palmas', 'TODO(guti): el NIT real');
-```
+- **`configuracion.tenant_id` no tenía `default public.auth_tenant_id()`.** Era la única de sus 19
+  tablas sin él, y es el mismo bug que dejó el portal de El Labrador en blanco. Corregido en su
+  esquema, con migración para la base ya desplegada y un test que vigila la regla general.
+- **Su factura tenía el bug de impresión** que sacó el ticket en Times New Roman en El Labrador.
+  Mismo archivo, letra por letra; arreglado antes de que saliera en papel.
 
-```sql
-insert into configuracion (tenant_id, negocio, facturacion)
-select id,
-  '{"nombre":"Las dos palmas","propietario":"","nit":"","telefono":"","direccion":"","ciudad":""}'::jsonb,
-  '{"prefijoTicket":"LDP-","consecutivoActual":0,"anchoPapelMm":80}'::jsonb
-from tenants where slug = 'las-dos-palmas';
-```
+**El SQL de registro está en [`backend/registrar-las-dos-palmas.sql`](../backend/registrar-las-dos-palmas.sql)**,
+no aquí: es una sola fila en `tenants` y la sentencia que le pone la empresa al usuario en
+`app_metadata`. Quedan dos `TODO(guti)` por rellenar al pegarlo: el NIT real y el correo del dueño.
 
-**El prefijo es `LDP-` y el consecutivo arranca en 0**, distintos de los de El Labrador. No es un
-detalle de estilo: dos empresas con el mismo prefijo y el mismo número emitirían facturas
-duplicadas. Los datos del negocio van vacíos a propósito — esa aplicación se entrega con ellos en
-blanco para que el dueño los llene en Ajustes, y así salen impresos en su ticket.
+**No lleva `insert into configuracion`, a propósito.** Su siembra ya trae el prefijo `LDP-` con el
+consecutivo en 0 (`src/core/seed/catalogo.ts`), distinto del de El Labrador —dos empresas con el
+mismo prefijo y el mismo número emitirían facturas duplicadas—, y dejar que siembre sola es lo que
+evita el portal vacío del aviso del paso 2. Los datos del negocio los llena el dueño en Ajustes.
 
 ---
 

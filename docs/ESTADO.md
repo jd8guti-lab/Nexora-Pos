@@ -5,7 +5,7 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-03 (**la factura del portal salía sin estilos y ya está arreglada y resincronizada**. Antes: **borrado el andamiaje del quickstart de Supabase** — la ruta `/supabase-demo` y `utils/supabase/`. Antes: **esquema `labrador` corrido y expuesto**; falta rehacer `configuracion` y cargar el catálogo. Antes: **`feat/portal-clientes` fusionada a `main`**: un esquema de Postgres por aplicación, el portal reducido a la puerta de entrada y la resolución de tenant en el middleware. Antes, en esa misma rama: **la aplicación de Las dos palmas cambió fuerte** —carga por canastillas, devoluciones, merma de venta y los reportes a pantalla—; no se compila aquí, pero su esquema SQL cambió con ella)
+Última actualización: 2026-09-03 (**apareció el código de Las dos palmas y su app ya está en el portal**, con dos bugs del diseño compartido cerrados antes de conectar. Antes: **la factura del portal salía sin estilos y ya está arreglada y resincronizada**. Antes: **borrado el andamiaje del quickstart de Supabase** — la ruta `/supabase-demo` y `utils/supabase/`. Antes: **esquema `labrador` corrido y expuesto**; falta rehacer `configuracion` y cargar el catálogo. Antes: **`feat/portal-clientes` fusionada a `main`**: un esquema de Postgres por aplicación, el portal reducido a la puerta de entrada y la resolución de tenant en el middleware. Antes, en esa misma rama: **la aplicación de Las dos palmas cambió fuerte** —carga por canastillas, devoluciones, merma de venta y los reportes a pantalla—; no se compila aquí, pero su esquema SQL cambió con ella)
 
 ---
 
@@ -26,7 +26,7 @@ Dónde está cada pieza, para que la próxima sesión no lo vuelva a averiguar.
 | `labrador.configuracion` | 🔶 **con la forma equivocada** — ver la migración de abajo |
 | `configuracion.tenant_id` sin `default` | 🔶 corregido en el repo de Papas, **falta correr el SQL** |
 | Login del portal | ✅ el cliente entra y la app carga con su negocio |
-| Esquema `palmas` en la base | ⛔ bloqueado: no aparece el código fuente de la app. Auditable igual con `backend/auditar-esquema-tenant.sql` |
+| Esquema `palmas` en la base | 🔶 el código ya apareció (2026-09-03) y su app está en `public/portal/las-dos-palmas/`. Falta correr el auditor, registrar la empresa y crear su usuario |
 | Datos de negocio en Supabase | ⏳ ninguno todavía — el catálogo se siembra desde Ajustes |
 
 **Lo único que falta para operar**, en orden:
@@ -143,6 +143,37 @@ escritura. Queda anotado como pendiente en el repo de Papas.
 **Las dos palmas se queda como está**, en IndexedDB, hasta que aparezca su código. No está en
 `jd8guti-lab`, ni en la cuenta personal, ni en el disco. Lo único que existe es el bundle
 desplegado; de él saqué su modelo de datos, por si algún día se decide reconstruirlo.
+
+### Las dos palmas: apareció su código (3 de septiembre de 2026)
+
+`jd8guti-lab/Las-dos-palmas`, rama `main`. Clonado en `ProyectosINF/Las-dos-palmas`, al lado de los
+otros dos proyectos. Con eso se cae el bloqueo que tenía esta sección desde el 31 de agosto.
+
+Su adaptador de Supabase ya estaba escrito y probado contra un Postgres real. **Lo que faltaba era
+la conexión**, y leyendo su código antes de tocar la base aparecieron dos bugs del diseño
+compartido, los dos ya corregidos y subidos (`f001e45` en su repo):
+
+1. **`configuracion.tenant_id` sin `default public.auth_tenant_id()`** — la única de sus 19 tablas
+   sin él. Es el mismo bug que dejó el portal de El Labrador en blanco: el navegador nunca manda
+   ese valor, el upsert insertaba un nulo, no colisionaba con la fila existente —NULL nunca
+   colisiona— y moría contra la llave primaria. Se cerró en tres sitios: el default en su esquema,
+   la migración `docs/migraciones/2026-09-03-configuracion-tenant-id-default.sql` para la base ya
+   desplegada, y un test que comprueba la regla **general** —ninguna columna `tenant_id` sin
+   default— probado quitando el default para ver que señala `configuracion`.
+2. **El bug de impresión de la factura**, idéntico al de El Labrador, con sus tres tests.
+
+**Su app ya está en `public/portal/las-dos-palmas/`**, construida con `VITE_PERSISTENCIA=supabase` y
+la ruta base del portal (2,8 MB).
+
+**Y una corrección a la guía, que es donde nació una trampa.** El paso 2 de
+`docs/PUESTA-EN-MARCHA-SUPABASE.md` mandaba insertar la fila de `configuracion` a mano. Esa fila es
+la marca de "esta base ya se usó" que lee `sembrarSiEstaVacia()`: insertarla es exactamente lo que
+dejó a El Labrador con el portal vacío. Para Las dos palmas **no se inserta** —su siembra ya trae
+el prefijo `LDP-` y el consecutivo en 0—, y la guía ahora lo avisa donde se toma esa decisión.
+
+**Lo que falta, y lo corres tú:** el auditor sobre `palmas`, y
+`backend/registrar-las-dos-palmas.sql` —una fila en `tenants` y el `app_metadata` del usuario—, con
+dos `TODO(guti)`: el NIT real y el correo del dueño.
 
 ### La factura salía sin estilos (3 de septiembre de 2026)
 
@@ -1036,6 +1067,7 @@ Una línea por sesión: fecha, qué se hizo, cómo quedó la verificación.
 | 2026-08-31 | Factura de El Labrador: impresión desde un iframe aparte, ancho a cargo del driver, letra a 13 px/600 y pie `www.nexora-pos.online`. **Cambio hecho en el repo del cliente**; aquí solo documentación | En Papas El Labrador: typecheck · lint · test (659/659) · build en verde, y comprobado en el navegador. Aquí: sin cambios de código — `sync-tenant-app.mjs` sigue bloqueado sin Supabase |
 | 2026-08-31 | Las dos palmas entra como segunda empresa: su factura con el arreglo de impresión y su app lista para `/portal/las-dos-palmas/`. Encontrado y corregido en los DOS repos el logo y el isotipo con ruta absoluta, que daban 404 bajo el subcamino. Aquí: dominio definitivo `nexora-pos.online` y §8.b del instructivo | En Las dos palmas: typecheck · lint · test (708/708) · build en verde, y comprobado en el navegador, incluido el build servido bajo su subcamino. Aquí: los cinco en verde |
 | 2026-08-31 | Un esquema de Postgres por aplicación (`labrador`, `palmas`, y `public` solo para lo compartido) y el adaptador de Supabase de Las dos palmas, escrito y probado. Encontrados y corregidos tres errores de su SQL que nunca se había ejecutado, y un `on conflict do update` contra tablas con UPDATE revocado que habría fallado en los DOS proyectos | En Las dos palmas: typecheck · lint · test (780/780) · build. En Papas El Labrador: 661/661 · build. Aquí: los cinco en verde |
+| 2026-09-03 | Apareció el código de Las dos palmas: dos bugs del diseño compartido cerrados antes de conectar (el default de `configuracion` y la impresión), su app construida contra Supabase y servida en el portal, y corregida la trampa de la guía que dejó vacío a El Labrador | En Las dos palmas: typecheck · lint · test (869/869, +4) · build en verde, y cada test probado contra el defecto que caza. Aquí: los cinco en verde |
 | 2026-09-03 | La factura del portal salía sin estilos: su documento pedía el CSS por red y perdía la carrera. Arreglado en el repo de Papas y **resincronizado aquí** | En Papas: typecheck · lint · test (706/706, +3) · build en verde, y reproducido y verificado en el navegador. Aquí: los cinco en verde, home en 113 kB |
 | 2026-09-03 | Borrado el andamiaje del quickstart: la ruta `/supabase-demo` y el `utils/supabase/` que era su único consumidor. Borradas cuatro ramas viejas, tres por fusionadas y `feat/dashboard-portal-supabase` archivada en la etiqueta `archivo/dashboard-portal-supabase`. Anotada la trampa 28 | typecheck · lint · test (107/107) · contrast (32/32 + 3 excepciones) · build en verde, home sigue en 113 kB y el build baja de 20 a 19 rutas |
 | 2026-09-02 | Conexión real a Supabase: esquema `labrador` corrido y expuesto, dos bugs de adaptador corregidos (`vaciarTodo`, `aplicar_lote`) y la ruta base del router sin barra final | typecheck · lint · test (107/107 Nexora, 668/668 Papas) · contrast · build en verde |
