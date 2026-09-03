@@ -26,7 +26,7 @@ Dónde está cada pieza, para que la próxima sesión no lo vuelva a averiguar.
 | `labrador.configuracion` | 🔶 **con la forma equivocada** — ver la migración de abajo |
 | `configuracion.tenant_id` sin `default` | 🔶 corregido en el repo de Papas, **falta correr el SQL** |
 | Login del portal | ✅ el cliente entra y la app carga con su negocio |
-| Esquema `palmas` en la base | 🔶 el código ya apareció (2026-09-03) y su app está en `public/portal/las-dos-palmas/`. Falta correr el auditor, registrar la empresa y crear su usuario |
+| Esquema `palmas` en la base | ⛔ **no existe**: `pg_namespace` solo devuelve `labrador` y `public` (2026-09-03). Su app ya está en `public/portal/las-dos-palmas/`; falta correr su SQL, exponerlo, registrar la empresa y crear su usuario |
 | Datos de negocio en Supabase | ⏳ ninguno todavía — el catálogo se siembra desde Ajustes |
 
 **Lo único que falta para operar**, en orden:
@@ -116,11 +116,17 @@ instanciar **su** adaptador.
 
 Pero los cuatro bugs de la puesta en marcha de Papas no eran del adaptador de Papas: salen del
 **diseño compartido** —`aplicar_lote` + los `revoke`, y la forma de `configuracion`— que Las Dos
-Palmas copió. Su esquema `palmas` tiene 19 tablas y un kardex de solo-agregar: la misma trampa que
+Palmas copió. Su esquema `palmas` define 19 tablas y un kardex de solo-agregar: la misma trampa que
 `historial_precios`.
 
-Así que en vez de esperar al código, se busca la **forma** de los bugs en el esquema, que sí está
-desplegado: **`backend/auditar-esquema-tenant.sql`**. Siete comprobaciones, cada una salida de un
+> ⚠️ **Corregido el 2026-09-03:** aquí decía que ese esquema "sí está desplegado". **Es falso, y la
+> frase salió de leer el archivo SQL en vez de la base.** Consultado `pg_namespace` ese mismo día,
+> la base solo tiene `labrador` (18 tablas) y `public` (`tenants`): `palmas` **no existe todavía**.
+> El auditor sigue sirviendo —está escrito contra el catálogo, no contra un esquema concreto—, pero
+> contra `palmas` no se pudo correr porque no hay nada que auditar hasta que se corra su SQL.
+
+Así que en vez de esperar al código, se busca la **forma** de los bugs en el esquema:
+**`backend/auditar-esquema-tenant.sql`**. Siete comprobaciones, cada una salida de un
 bug real, y todas apoyadas en `has_table_privilege('authenticated', ...)` — que es lo que de verdad
 aplica, y lo que nadie miró: el SQL Editor corre como `postgres` y se salta los `revoke`.
 
@@ -595,7 +601,7 @@ Separarlos daría dos contraseñas al mismo cliente.
 |---|---|
 | `public` | Lo compartido: `tenants` y `auth_tenant_id()` |
 | `labrador` | Las 18 tablas de Papas El Labrador |
-| `palmas` | Las 19 tablas de Las dos palmas |
+| `palmas` | Las 19 tablas de Las dos palmas. **Todavía no existe en la base** (comprobado el 2026-09-03): falta correr su SQL |
 
 **Hay un paso manual nuevo en Supabase:** Settings → API → *Exposed schemas*, agregar `labrador` y
 `palmas`. Sin eso PostgREST devuelve 404 en todo y parece que la aplicación está rota. Está en el
