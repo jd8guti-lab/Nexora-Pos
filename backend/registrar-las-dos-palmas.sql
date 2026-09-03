@@ -8,8 +8,8 @@
 --   hay que EXPONER el esquema en Settings -> API, que es el paso que mas se olvida.
 --
 -- LO QUE FALTA RELLENAR
---   Dos datos reales, marcados con TODO(guti). No los invento: un NIT equivocado sale impreso en
---   la factura de un negocio real.
+--   Un dato real, marcado con TODO(guti): el correo del usuario del portal, en el paso 3. El NIT
+--   ya no hace falta aqui — ver la nota del paso 1.
 -- =============================================================================
 
 
