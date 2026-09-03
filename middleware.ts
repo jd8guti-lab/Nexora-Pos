@@ -1,6 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { rutaDeTenant, slugDeRuta, tenantDeMetadatos } from "@/lib/portal/tenant";
+import {
+  faltaLaBarraFinal,
+  rutaDeTenant,
+  slugDeRuta,
+  tenantDeMetadatos,
+} from "@/lib/portal/tenant";
 
 /**
  * The portal gate.
@@ -75,6 +80,12 @@ export async function middleware(request: NextRequest) {
 
   // A client may only reach its own company's app.
   if (tenant.slug !== slug) {
+    return NextResponse.redirect(new URL(rutaDeTenant(tenant.slug), request.url));
+  }
+
+  // `/portal/<slug>` without the trailing slash serves the app to a router that cannot match it,
+  // and the client gets a blank page. Send them one redirect further, to the URL the app expects.
+  if (faltaLaBarraFinal(pathname)) {
     return NextResponse.redirect(new URL(rutaDeTenant(tenant.slug), request.url));
   }
 

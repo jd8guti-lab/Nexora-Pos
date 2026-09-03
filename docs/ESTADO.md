@@ -150,6 +150,24 @@ escritura. Queda anotado como pendiente en el repo de Papas.
 `jd8guti-lab`, ni en la cuenta personal, ni en el disco. Lo único que existe es el bundle
 desplegado; de él saqué su modelo de datos, por si algún día se decide reconstruirlo.
 
+### `/portal/<slug>` sin barra final servía una página en blanco (3 de septiembre de 2026)
+
+Lo encontró el dueño entrando a Las dos palmas, pero **no era de Las dos palmas**: le pasaba a
+cualquier empresa, Papas incluida.
+
+El middleware servía `index.html` para `/portal/las-dos-palmas`, y el router de esa app se
+construye con `basename="/portal/las-dos-palmas/"`. React Router no casa una URL que no empiece por
+el basename —`/portal/las-dos-palmas` no empieza por `/portal/las-dos-palmas/`—, así que no pintaba
+nada. La consola lo decía con todas las letras: *"is not able to match the URL … so the <Router>
+won't render anything"*.
+
+**Por qué llevaba ahí desde el principio sin verse:** entrar por el login nunca produce esa forma,
+porque `rutaDeTenant()` pone la barra. Solo aparece si alguien teclea la URL o la guarda en
+favoritos sin ella.
+
+Arreglado en el middleware, que ahora redirige a la ruta con barra antes de servir nada, y encerrado
+en `faltaLaBarraFinal()` con sus tests — que es donde se puede probar sin levantar Next.
+
 ### Las dos palmas: apareció su código (3 de septiembre de 2026)
 
 `jd8guti-lab/Las-dos-palmas`, rama `main`. Clonado en `ProyectosINF/Las-dos-palmas`, al lado de los

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { rutaDeTenant, slugDeRuta, tenantDeMetadatos } from "./tenant";
+import {
+  faltaLaBarraFinal,
+  rutaDeTenant,
+  slugDeRuta,
+  tenantDeMetadatos,
+} from "./tenant";
 
 describe("tenantDeMetadatos", () => {
   it("reads the company out of app_metadata", () => {
@@ -48,5 +53,32 @@ describe("slugDeRuta", () => {
 describe("rutaDeTenant", () => {
   it("ends with a slash so the app's own router takes over cleanly", () => {
     expect(rutaDeTenant("papas-el-labrador")).toBe("/portal/papas-el-labrador/");
+  });
+});
+
+/**
+ * The blank page of 3 September 2026. `/portal/las-dos-palmas` served the app, and the app's router
+ * —`basename="/portal/las-dos-palmas/"`— matched nothing and rendered nothing.
+ */
+describe("faltaLaBarraFinal", () => {
+  it.each(["/portal/las-dos-palmas", "/portal/papas-el-labrador"])(
+    "%s is the shape that renders a blank page",
+    (ruta) => {
+      expect(faltaLaBarraFinal(ruta)).toBe(true);
+    },
+  );
+
+  it.each([
+    "/portal/las-dos-palmas/",
+    "/portal/las-dos-palmas/pedidos",
+    "/portal/las-dos-palmas/assets/index-abc.js",
+    "/portal",
+    "/portal/",
+  ])("%s is fine as it is", (ruta) => {
+    expect(faltaLaBarraFinal(ruta)).toBe(false);
+  });
+
+  it("redirects to exactly what the app's basename expects", () => {
+    expect(rutaDeTenant("las-dos-palmas")).toBe("/portal/las-dos-palmas/");
   });
 });
