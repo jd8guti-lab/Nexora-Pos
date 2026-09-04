@@ -203,8 +203,9 @@ En el repo de Papas (`fb3c9038`): `agregarDesdeRespaldo()` sube lo que falta com
 borrar ni pisar nada, y sube el consecutivo al mayor de los dos. `restaurarRespaldo()` ahora se
 niega con documentos dentro. Su bundle ya está resincronizado aquí.
 
-**Falta lo mismo en Las dos palmas**, que comparte el diseño y tiene el mismo agujero: hoy no
-estorba porque su base está vacía.
+**Y ya está también en Las dos palmas** (`4e7b6ef`), traído antes de que muerda: su base todavía
+está vacía, pero el diseño es el mismo. Las dos aplicaciones quedan con el mismo botón y la misma
+negativa.
 
 ### Las dos palmas: apareció su código (3 de septiembre de 2026)
 
