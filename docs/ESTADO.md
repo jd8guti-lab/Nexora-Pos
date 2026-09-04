@@ -189,6 +189,35 @@ dos URLs.
 El middleware volvió a como estaba, con un comentario que dice por qué no se redirige ahí. Que
 alguien lo vuelva a intentar es cuestión de tiempo: parece lo obvio.
 
+### "El dominio no carga" — y el sitio estaba bien (3 de septiembre de 2026)
+
+Reporte: *"entro a https://www.nexora-pos.online y no carga"*. **No era del despliegue.** Medido:
+
+| Prueba | Resultado |
+| --- | --- |
+| El sitio desde un servidor de fuera | ✅ 200, con el contenido correcto |
+| `www` desde la red del usuario | ⛔ sin conexión, ni en 443 ni en 80 |
+| El apex `nexora-pos.online` desde esa red | ✅ 308 → `www` (y ahí muere) |
+| `tracert` al IP de `www` | muere **en el salto 1**, el router del usuario |
+| `tracert` al IP del apex | sale normal por el ISP, seis saltos |
+
+**Qué pasa.** El DNS está en el registrador (`registrar-servers.com`, Namecheap), no en Vercel.
+El apex es un registro A a `216.198.79.1` —el anycast viejo de Vercel, que esa red alcanza—, y
+`www` es un CNAME a `d40fedd99f709653.vercel-dns-017.com`, que resuelve al rango **`216.150.x.x`**,
+al que esa red no llega. Como el apex redirige a `www`, el sitio entero queda inalcanzable desde
+ahí, aunque esté perfectamente sano.
+
+**Comprobado que el atajo funciona:** sirviendo `www` por `216.198.79.1`
+(`curl --resolve www.nexora-pos.online:443:216.198.79.1`) responde 200, y `/portal` también.
+
+**El arreglo que lo cierra para toda la red**: en el DNS del registrador, cambiar el `www` de CNAME
+a un registro **A → `216.198.79.1`**. Vercel sirve por cabecera `Host`, así que el proyecto sigue
+resolviéndose igual.
+
+**Y lo que hay que preguntar antes de darlo por cerrado:** si el negocio usa ese mismo proveedor de
+internet, el portal está inalcanzable también en el mostrador. Eso no es un detalle de red: es la
+aplicación caída para quien factura.
+
 ### Se cerró el pendiente de restaurar respaldos (3 de septiembre de 2026)
 
 Estaba anotado como "la aplicación tiene que negarse a restaurar sobre una base con documentos", y
