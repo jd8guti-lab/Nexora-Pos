@@ -5,7 +5,63 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-03 (**apareció el código de Las dos palmas y su app ya está en el portal**, con dos bugs del diseño compartido cerrados antes de conectar. Antes: **la factura del portal salía sin estilos y ya está arreglada y resincronizada**. Antes: **borrado el andamiaje del quickstart de Supabase** — la ruta `/supabase-demo` y `utils/supabase/`. Antes: **esquema `labrador` corrido y expuesto**; falta rehacer `configuracion` y cargar el catálogo. Antes: **`feat/portal-clientes` fusionada a `main`**: un esquema de Postgres por aplicación, el portal reducido a la puerta de entrada y la resolución de tenant en el middleware. Antes, en esa misma rama: **la aplicación de Las dos palmas cambió fuerte** —carga por canastillas, devoluciones, merma de venta y los reportes a pantalla—; no se compila aquí, pero su esquema SQL cambió con ella)
+Última actualización: 2026-09-03, cierre de sesión. **Lee el bloque de abajo antes que nada.**
+
+---
+
+## Dónde quedamos — 3 de septiembre de 2026, fin de la sesión
+
+Los tres repositorios están limpios y sincronizados con `origin/main`.
+
+### Lo que espera acción del usuario (no se puede avanzar sin él)
+
+1. **Cargar el respaldo de El Labrador.** `ElLabrador_respaldo_2026-09-03.json` (87 pedidos del 31
+   de agosto al 3 de septiembre, tickets `038327`→`038413`, consecutivo 38413). Va por el botón
+   nuevo: Ajustes → **"Agregar desde un respaldo"**. NO por "Restaurar", que ahora se niega.
+2. **La captura de Productos** en Las dos palmas. Pidió que el bloque de doble crema no aparezca
+   ahí, pero en ese módulo el bloque **es la definición** (`recepcion.modo = BLOQUES` y
+   `kgPorBloque`), de donde Existencias saca el conteo: quitarlo rompe justo lo que pide conservar.
+   Sin ver qué está mirando, cualquier cambio es a ciegas. Pedidos y Transformaciones **no se
+   tocan**: los puso él mismo el 2 de septiembre, con argumento de negocio.
+3. **El error al crear pedidos en Las dos palmas** — lo único que bloquea la operación. Hace falta
+   el mensaje en pantalla, la línea roja de la consola y la petición fallida con su código. Las
+   tres causas que el código admite están en la tabla de la sección de esa tarea; una de ellas
+   —permisos de ejecución sobre las funciones— **ya quedó descartada midiendo**.
+
+### Lo que el usuario puede correr cuando quiera
+
+- `Las-dos-palmas/docs/migraciones/2026-09-03-historial-precios-cascada.sql`, y después
+  `notify pgrst, 'reload schema';`.
+- `grant execute on all functions in schema palmas to authenticated, service_role;` y lo mismo con
+  **`labrador`** (no "papas": ese esquema no existe).
+- **El DNS**: cambiar `www` de CNAME a un registro **A → `216.198.79.1`** en el registrador. Ver la
+  sección "El dominio no carga".
+
+### Estado real de la base, hasta donde se comprobó
+
+| Pieza | Estado |
+| --- | --- |
+| Esquema `palmas` | ✅ creado y expuesto; `anon` recibe `42501` |
+| Fila de `tenants` para `las-dos-palmas` | ✅ insertada con el uuid que ya tenía el usuario |
+| Cascada de `historial_precios` | ⏳ la migración existe, sin correr |
+| Siembra del catálogo de Las dos palmas | ❓ **sin comprobar**: la consulta de la foto del estado
+  quedó sin respuesta. Si `configuracion` tiene una fila, el default funciona y el bug de El
+  Labrador está descartado ahí |
+
+### Dónde está cada cosa
+
+Los tres proyectos son hermanos en el disco: `ProyectosINF/Nexora-Pos`,
+`ProyectosINF/Las-dos-palmas` y `ProyectosINF/Papas-el-Labrador/Papas-el-Labrador` (ojo con la
+carpeta repetida). Las apps de cliente **no se compilan aquí**: se construyen en su repo y entran a
+`public/portal/<slug>/` con `scripts/sync-tenant-app.mjs`, y **ese commit es el que las despliega**.
+
+### Lo hecho hoy, en orden
+
+La factura que salía sin estilos · el código de Las dos palmas y su conexión · el default que le
+faltaba a `configuracion` · la cascada de `historial_precios` · la pantalla en blanco del
+`basename` —y la redirección que la "arregló" y tumbó el login, revertida— · la carga aditiva en
+las dos empresas · el botón de cerrar sesión en Papas · el `grant` de las funciones · y el dominio,
+que no era del despliegue sino de la red del usuario.
 
 ---
 
