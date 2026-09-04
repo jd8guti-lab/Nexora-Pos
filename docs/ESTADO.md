@@ -189,6 +189,23 @@ dos URLs.
 El middleware volvió a como estaba, con un comentario que dice por qué no se redirige ahí. Que
 alguien lo vuelva a intentar es cuestión de tiempo: parece lo obvio.
 
+### Se cerró el pendiente de restaurar respaldos (3 de septiembre de 2026)
+
+Estaba anotado como "la aplicación tiene que negarse a restaurar sobre una base con documentos", y
+llegó el caso real antes de lo previsto: había que subir a Papas la facturación del 2 y el 3 de
+septiembre —85 pedidos, tickets hasta `JOS-LL-038413`— sobre una base con 41 facturas dentro.
+
+Restaurar no servía: empieza vaciando. Contra Supabase muere a media escritura por
+`lineas_pedido → productos`; contra la base local hace algo peor, que es funcionar y borrar
+facturas reales sin avisar.
+
+En el repo de Papas (`fb3c9038`): `agregarDesdeRespaldo()` sube lo que falta comparando por id, sin
+borrar ni pisar nada, y sube el consecutivo al mayor de los dos. `restaurarRespaldo()` ahora se
+niega con documentos dentro. Su bundle ya está resincronizado aquí.
+
+**Falta lo mismo en Las dos palmas**, que comparte el diseño y tiene el mismo agujero: hoy no
+estorba porque su base está vacía.
+
 ### Las dos palmas: apareció su código (3 de septiembre de 2026)
 
 `jd8guti-lab/Las-dos-palmas`, rama `main`. Clonado en `ProyectosINF/Las-dos-palmas`, al lado de los
