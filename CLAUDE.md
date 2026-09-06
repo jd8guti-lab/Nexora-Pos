@@ -165,7 +165,11 @@ producto, y ahí el fondo son píxeles que van de crema casi blanco a negro puro
    el eyebrow y el lead van en `ink-900` y el cuerpo en `ink-900/80`. El acento del claim es
    la excepción autorizada de arriba y no pasa AA.
 3. Mete ese peor caso en `scripts/contrast.mjs` como pseudo-token, para que quede auditado.
-   Hoy son `hero-bg-min` (`#FDB870`) y `hero-bg-h1` (`#FBCEA9`).
+   Hoy son `hero-bg-min` (`#FDB870`), `hero-bg-h1` (`#FBCEA9`) y **`hero-bg-movil` (`#FB983A`)**.
+   El último llegó el 2026-09-04, cuando la imagen del hero pasó a ser el fondo **también en el
+   celular**: ahí `object-cover` escala por el alto y solo enseña el 28,5% del plate, anclado a la
+   izquierda. Es más oscuro que los otros dos, y es lo que deja el acento del `h1` en `ink-900`
+   bajo `xl` — `brand-500` sobre esa banda mide **1,20:1**, naranja sobre naranja.
 4. Compruébalo en el navegador sobre los píxeles compuestos reales, no solo en el modelo. Y
    **mide la caja de las letras, no la del bloque**: un `span` a todo el ancho de la columna
    arrastra la medición sobre píxeles que el texto nunca toca, y te hace perseguir un fallo

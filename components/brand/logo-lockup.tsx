@@ -76,32 +76,49 @@ export function LogoLockup({
     );
   }
 
-  const wordmark = (
-    <span className="inline-flex flex-col">
-      <span
-        className={cn(
-          // font-wordmark, not the body font: this composition stands in for
-          // the real logotype, so it must not follow a body-font change.
-          "font-wordmark leading-none font-bold tracking-[-0.03em]",
-          variant === "dark" ? "text-white" : "text-ink-900",
-        )}
-        style={{ fontSize: Math.round(height * 0.72) }}
-      >
-        nexora
-        <span className={variant === "dark" ? "text-brand-500" : undefined}>-pos</span>
-      </span>
-      {descriptor}
+  const nombre = (
+    <span
+      className={cn(
+        // font-wordmark, not the body font: this composition stands in for
+        // the real logotype, so it must not follow a body-font change.
+        "font-wordmark leading-none font-bold tracking-[-0.03em]",
+        variant === "dark" ? "text-white" : "text-ink-900",
+      )}
+      style={{ fontSize: Math.round(height * 0.72) }}
+    >
+      nexora
+      <span className={variant === "dark" ? "text-brand-500" : undefined}>-pos</span>
     </span>
   );
 
   if (variant === "onBrand") {
-    return <span className={cn("inline-flex flex-col", className)}>{wordmark}</span>;
+    return (
+      <span className={cn("inline-flex flex-col", className)}>
+        {nombre}
+        {descriptor}
+      </span>
+    );
   }
 
+  /*
+   * The isotype and the name on one line, the descriptor under BOTH.
+   *
+   * It used to be [N][column: name / descriptor], with the row centred: the N
+   * then centred itself against two lines, so it sat lower than the name and
+   * the name read as floating above it rather than beside it. The user said so
+   * on 2026-09-04 — "the text should be next to the N, not in the middle".
+   *
+   * Nesting it the other way is also how a lockup is actually built: the mark
+   * and the wordmark are one unit, and the descriptor is a caption under the
+   * unit. With no descriptor the two shapes render identically.
+   */
   return (
-    <span className={cn("inline-flex items-center gap-[0.45em]", className)}>
-      <Isotype size={height} priority={priority} />
-      {wordmark}
+    <span className={cn("inline-flex flex-col", className)}>
+      <span className="inline-flex items-center gap-[0.45em]">
+        <Isotype size={height} priority={priority} />
+        {nombre}
+      </span>
+      {descriptor}
     </span>
   );
 }

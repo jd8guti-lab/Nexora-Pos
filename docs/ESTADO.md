@@ -845,6 +845,47 @@ Qué queda y qué ya se descartó:
 
 ---
 
+## Lo hecho el 4 de septiembre de 2026
+
+### El hero: la imagen es el fondo también en el celular
+
+Lo pidió el usuario: *"en la vista de celular la imagen debe ocupar todo el hero (fondo). No importa
+que no se logre apreciar bien"*. Hasta ahora, bajo `xl`, la imagen era una **banda inferior** de
+`min-h-[20svh] flex-1` y el copy iba encima de blanco; arriba de `xl` sí era el fondo.
+
+Ahora es el fondo en todos los tamaños. Y como el copy pasa a caer sobre píxeles, **hubo que medir
+antes de maquetar** (`CLAUDE.md` §3):
+
+- A 375×812, `object-cover` escala por el ALTO y enseña una ventana de **477 px del plate, el 28,5%
+  de su ancho**. Centrada, esa ventana cae sobre el monitor.
+- Por eso la imagen va **anclada a la izquierda** bajo `xl` (`object-left`), sobre el campo crema
+  que el arte deja libre. El píxel más oscuro de esa banda es **`#FB983A`** (0,433 de luminancia).
+- Contra él: `ink-900` da **7,76:1**, el cuerpo en `ink-900/80` da **5,29:1**, y el naranja del
+  acento del `h1` da **1,20:1** — que no es "por debajo de AA", es naranja sobre naranja.
+
+**El acento del claim pasa a `ink-900` bajo `xl`** y se queda en `brand-500` desde `xl`, donde su
+excepción autorizada tiene su propia medida (4,16–4,18:1). El pseudo-token **`hero-bg-movil`** entra
+en `scripts/contrast.mjs` con sus tres comprobaciones, así que el build vuelve a ser quien lo cuida.
+
+Comprobado en el navegador a 375 px sobre los píxeles compuestos, que es el paso 4 de la regla.
+
+**Lo que cuesta:** en el celular se ve el campo crema y casi nada de los equipos. El usuario aceptó
+eso de antemano. Enseñar más producto solo se puede pagando contraste —velando la imagen, que es
+teñir de blanco el arte— y esa decisión no se toma sin él.
+
+### El portal: el nombre al lado de la N, no encima
+
+`LogoLockup variant="dark"` componía `[N][columna: nombre / descriptor]` y centraba la fila: la N se
+centraba contra **dos** líneas, así que quedaba más abajo que el nombre y el nombre parecía flotar
+sobre ella en vez de ir a su lado. El usuario lo dijo tal cual.
+
+Ahora la N y el nombre son una fila, y el descriptor es un pie **debajo del conjunto** — que además
+es como se arma un lockup de verdad: la marca y el logotipo son una unidad y el descriptor es su
+leyenda. Sin descriptor, las dos formas se pintan igual, así que el nav, el pie y la franja naranja
+no cambian.
+
+---
+
 ## Decisiones
 
 Cada decisión técnica va aquí **con su porqué**, para no volver a discutirla en tres meses.

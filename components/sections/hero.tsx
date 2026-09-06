@@ -81,7 +81,11 @@ export function Hero() {
               {site.claim.underlined}
             </span>
             <span className="block w-fit">{site.claim.middle}</span>
-            <span className="text-brand-500 block w-fit">{site.claim.accent}</span>
+            {/* Orange only from xl. Below that the copy now sits on the plate,
+                and brand-500 over its clear field measures 1.20:1 — orange on
+                orange. `ink-900` gives 7.76:1 there. The xl exception keeps its
+                own measurement (4.16–4.18:1) and is listed in contrast.mjs. */}
+            <span className="xl:text-brand-500 block w-fit">{site.claim.accent}</span>
           </h1>
 
           <p className="text-lead text-ink-900 md:text-h3 mt-5 max-w-xl font-medium md:mt-6 xl:max-w-[27vw]">
@@ -137,7 +141,10 @@ export function Hero() {
           the section's bottom edge, so a mask on the image put its fade
           off-screen: the effect existed and was never visible. On the box the
           fade is always the section's own last 20%. */}
-      <div className="relative min-h-[20svh] flex-1 mask-b-from-80% mask-b-to-100% xl:absolute xl:inset-0 xl:-z-10 xl:min-h-0 xl:flex-none">
+      {/* The image is the hero's background at EVERY size since 2026-09-04, at
+          the user's request: on a phone it used to be a band under the copy.
+          The fade stays on this box, not on the image. */}
+      <div className="absolute inset-0 -z-10 mask-b-from-80% mask-b-to-100%">
         <Image
           src="/brand/hero-mockup.png"
           alt="Panel de nexora-pos con el resumen de ventas del día, el gráfico de ventas del mes y el listado de pedidos, junto a la impresora de recibos, el lector de códigos y una tableta con el catálogo de productos"
@@ -149,7 +156,13 @@ export function Hero() {
           // below instead of ending on a hard horizontal edge. Pure CSS mask,
           // no JavaScript — and it fades to transparent, not to white, so it
           // keeps working whatever section follows.
-          className="absolute inset-0 size-full mask-b-from-88% mask-b-to-100% object-cover object-center xl:relative xl:inset-auto xl:h-auto xl:w-full"
+          // `object-left`, not `object-center`. Cover on a 375×740 viewport
+          // scales by height and shows a 477px-wide window — 28.5% of the
+          // plate. Centred, that window lands on the monitor: the accent line
+          // measured 1.20:1 there, which is not "below AA", it is invisible.
+          // Anchored left it shows the cream field the art keeps clear, whose
+          // darkest pixel is #FB983A — audited in scripts/contrast.mjs.
+          className="absolute inset-0 size-full mask-b-from-88% mask-b-to-100% object-cover object-left xl:relative xl:inset-auto xl:h-auto xl:w-full xl:object-center"
         />
       </div>
     </section>

@@ -44,6 +44,18 @@ const palette = {
 
   "hero-bg-min": "#FDCDA4",
   "hero-bg-h1": "#FEDBB7",
+
+  /* And the phone. Since 2026-09-04 the plate is the hero's background at every
+     size, not a band below the copy, so on a 375x740 viewport the text sits on
+     pixels too. `object-cover` scales by height there and shows a 477px window
+     — 28.5% of the plate — anchored LEFT, on the cream field the art keeps
+     clear. This is the darkest pixel of the leftmost 500px of the image, across
+     its full height: 0.433 luminance, far darker than the desktop cases because
+     the phone window reaches into the warm band the desktop column avoids.
+
+     It is what rules the accent line out of orange below xl: brand-500 over it
+     measures 1.20:1. Recompute if the plate or the mobile anchoring change. */
+  "hero-bg-movil": "#FB983A",
 };
 
 const channel = (v) => {
@@ -113,6 +125,8 @@ const checks = [
   ],
   ["Acento del h1 (brand-600, texto grande) sobre blanco", "brand-600", "white", "large"],
   ["Hero: lead ink-900 sobre el plate", "ink-900", "hero-bg-min", "normal"],
+  ["Hero movil: lead ink-900 sobre el plate", "ink-900", "hero-bg-movil", "normal"],
+  ["Hero movil: acento ink-900 sobre el plate", "ink-900", "hero-bg-movil", "large"],
   ["Proceso: titulares ink-900 sobre el fondo velado", "ink-900", "process-bg", "normal"],
   ["Hero: eyebrow ink-900 sobre el plate", "ink-900", "hero-bg-min", "normal"],
 
@@ -153,6 +167,7 @@ const translucent = [
   ["Eyebrow inverse paper-50/70 sobre ink-900", "paper-50", 0.7, "ink-900", "normal"],
   ["Portal: cuerpo paper-50/65 sobre ink-900", "paper-50", 0.65, "ink-900", "normal"],
   ["Hero: cuerpo ink-900/80 sobre el plate", "ink-900", 0.8, "hero-bg-min", "normal"],
+  ["Hero movil: cuerpo ink-900/80 sobre el plate", "ink-900", 0.8, "hero-bg-movil", "normal"],
   [
     "Proceso: cuerpo ink-900/80 sobre el fondo velado",
     "ink-900",
