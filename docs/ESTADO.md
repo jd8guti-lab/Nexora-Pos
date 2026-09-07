@@ -5,48 +5,60 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-03, cierre de sesión. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-09-04, cierre de sesión. **Lee el bloque de abajo antes que nada.**
 
 ---
 
-## Dónde quedamos — 3 de septiembre de 2026, fin de la sesión
+## Dónde quedamos — 4 de septiembre de 2026, fin de la sesión
 
-Los tres repositorios están limpios y sincronizados con `origin/main`.
+Los tres repositorios están limpios y sincronizados con `origin/main`. Se entregó la tanda de 17
+tareas del usuario, y las dos apps de cliente están desplegadas con ella.
 
-### Lo que espera acción del usuario (no se puede avanzar sin él)
+### Lo que espera acción del usuario
 
-1. **Cargar el respaldo de El Labrador.** `ElLabrador_respaldo_2026-09-03.json` (87 pedidos del 31
-   de agosto al 3 de septiembre, tickets `038327`→`038413`, consecutivo 38413). Va por el botón
-   nuevo: Ajustes → **"Agregar desde un respaldo"**. NO por "Restaurar", que ahora se niega.
-2. **La captura de Productos** en Las dos palmas. Pidió que el bloque de doble crema no aparezca
-   ahí, pero en ese módulo el bloque **es la definición** (`recepcion.modo = BLOQUES` y
-   `kgPorBloque`), de donde Existencias saca el conteo: quitarlo rompe justo lo que pide conservar.
-   Sin ver qué está mirando, cualquier cambio es a ciegas. Pedidos y Transformaciones **no se
-   tocan**: los puso él mismo el 2 de septiembre, con argumento de negocio.
-3. **El error al crear pedidos en Las dos palmas** — lo único que bloquea la operación. Hace falta
-   el mensaje en pantalla, la línea roja de la consola y la petición fallida con su código. Las
-   tres causas que el código admite están en la tabla de la sección de esa tarea; una de ellas
-   —permisos de ejecución sobre las funciones— **ya quedó descartada midiendo**.
+1. **Imprimir una factura de Papas y mirar el papel.** El peso base del ticket quedó en **500**, no
+   en 400, para que la negrita se distinga sin volver al papel gris que él mismo reportó el 31 de
+   agosto. Si en papel se ve bien, se baja a 400 y la negrita resalta más. **Esto no se comprueba
+   con un test.**
+2. **Probar la tanda en las dos apps** y decir qué no cuadra: precio y comisión por bloque, "se
+   acabó este lote" desde Compras, archivar pedidos, factura, kilos por defecto y el vendedor
+   encendido.
+3. **La captura de Productos** de Las dos palmas sigue pendiente desde el 3 de septiembre — pero
+   **la petición del 4 la contradice**: ahora pidió expresamente que el bloque SÍ se maneje en
+   Productos. Se hizo eso. Si aún quiere quitar algo de esa pantalla, hace falta la captura.
 
-### Lo que el usuario puede correr cuando quiera
+### Decisiones tomadas con él que conviene no olvidar
 
-- `Las-dos-palmas/docs/migraciones/2026-09-03-historial-precios-cascada.sql`, y después
-  `notify pgrst, 'reload schema';`.
-- `grant execute on all functions in schema palmas to authenticated, service_role;` y lo mismo con
-  **`labrador`** (no "papas": ese esquema no existe).
-- **El DNS**: cambiar `www` de CNAME a un registro **A → `216.198.79.1`** en el registrador. Ver la
-  sección "El dominio no carga".
+- **Archivar, no borrar.** Borrar los pedidos borraría las ventas, la cartera, las comisiones y la
+  contabilidad, que es justo lo que pedía conservar; y el esquema revoca DELETE sobre `pedidos`.
+  El archivado vive en `localStorage`, o sea **por equipo**. Hacerlo compartido = una columna nueva
+  en `configuracion` y un SQL más. Está ofrecido y sin pedir.
+- **El bloque es cómo se escribe y se lee; el kilo es lo que se guarda.** La alternativa —precio
+  propio del bloque— pedía migración y dejaba dos verdades para el mismo número.
+- **En "Gana por producto" la unidad guardada sigue siendo una `Presentacion`**, con la
+  equivalencia en bloques debajo: BLOQUE no es una presentación (D44) y el `check` de
+  `comisiones.presentacion` tampoco lo admite.
+- **En el celular el hero enseña el campo crema y casi nada de los equipos.** Él lo aceptó de
+  antemano. Enseñar más producto cuesta contraste: `brand-500` sobre esa banda mide 1,20:1.
 
-### Estado real de la base, hasta donde se comprobó
+### SQL: al día
 
-| Pieza | Estado |
-| --- | --- |
-| Esquema `palmas` | ✅ creado y expuesto; `anon` recibe `42501` |
-| Fila de `tenants` para `las-dos-palmas` | ✅ insertada con el uuid que ya tenía el usuario |
-| Cascada de `historial_precios` | ⏳ la migración existe, sin correr |
-| Siembra del catálogo de Las dos palmas | ❓ **sin comprobar**: la consulta de la foto del estado
-  quedó sin respuesta. Si `configuracion` tiene una fila, el default funciona y el bug de El
-  Labrador está descartado ahí |
+`2026-09-04-cliente-sin-telefono.sql` **ya se corrió**. No queda ninguna migración pendiente de las
+que se escribieron hoy.
+
+### Lo hecho hoy, en orden
+
+**Dos Palmas:** por qué no se podía crear ningún pedido (§1.17 de su ESTADO — el guardado borraba
+los abonos y el esquema lo prohíbe; el mismo fallo estaba en compras) · cliente solo con nombre ·
+scroll al cambiar de sección · el bloque en precios, comisiones y Reportes → Ventas · "se acabó este
+lote" desde Compras · archivar pedidos. **910 tests.**
+
+**Papas:** factura —negritas de verdad, el hueco de arriba y "Cliente" en vez de "Servicio"— ·
+kilos por defecto · fecha con hora y filtro de día para los pendientes · el vendedor encendido y
+encima del total · archivar pedidos · scroll. **729 tests.**
+
+**Nexora:** la imagen como fondo del hero también en el celular, con `hero-bg-movil` medido y
+auditado · el nombre al lado de la N en el login del portal · las dos apps sincronizadas.
 
 ### Dónde está cada cosa
 
@@ -55,13 +67,13 @@ Los tres proyectos son hermanos en el disco: `ProyectosINF/Nexora-Pos`,
 carpeta repetida). Las apps de cliente **no se compilan aquí**: se construyen en su repo y entran a
 `public/portal/<slug>/` con `scripts/sync-tenant-app.mjs`, y **ese commit es el que las despliega**.
 
-### Lo hecho hoy, en orden
+### Sigue abierto, sin fecha
 
-La factura que salía sin estilos · el código de Las dos palmas y su conexión · el default que le
-faltaba a `configuracion` · la cascada de `historial_precios` · la pantalla en blanco del
-`basename` —y la redirección que la "arregló" y tumbó el login, revertida— · la carga aditiva en
-las dos empresas · el botón de cerrar sesión en Papas · el `grant` de las funciones · y el dominio,
-que no era del despliegue sino de la red del usuario.
+- Las dos secciones del arte de la home —"Lo que nos define" y los siete módulos— **diseñadas y sin
+  aprobar**. El arte de referencia se perdió; la propuesta está en la conversación, no en el repo.
+  Hoy ninguna de las dos está en ninguna página.
+- El rendimiento del sitio: 82-92 en localhost, sin medir en Vercel.
+- Los ocho `TODO(guti)`.
 
 ---
 
