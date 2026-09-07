@@ -77,6 +77,44 @@ carpeta repetida). Las apps de cliente **no se compilan aquí**: se construyen e
 
 ---
 
+## Las dos apps desplegadas al portal (7 de septiembre de 2026)
+
+`1b541c18`. Las dos se reconstruyeron con `sync-tenant-app.mjs` y entraron a `public/portal/`.
+
+- **Las dos palmas** — la tanda de **D46**: el bloque pasa a ser la unidad de CUENTA (lo que se
+  digita, se lee, se cobra y se comisiona) con el kilo como unidad GUARDADA. Su PR #1 se fusionó
+  antes (5 commits).
+- **Papas el Labrador** — fuera el cartel de "los datos están en la nube" de Ajustes.
+
+**Comprobado en los bundles ANTES de comitear**, que es donde se paga un despliegue mal hecho: el
+cartel fuera de Papas, el "por bloque" dentro de la quesera, y la operación de ejemplo sin viajar
+al build (`cli-trigal` y `prov-planta` ausentes).
+
+### Dos cosas que este día corrigió de lo escrito aquí
+
+1. **El esquema `palmas` sí existe y está expuesto.** La tabla de arriba decía que no. Era cierto
+   el 3 de septiembre y dejó de serlo; se comprobó preguntándole a PostgREST por un esquema
+   inventado, que contesta con la lista de los expuestos. **La lección es la misma de la trampa 1:
+   la fuente autorizada es la base, no lo que este archivo recuerde.**
+2. **Las dos palmas nunca estuvo "corriendo en IndexedDB".** Se afirmó el 7 de septiembre tras
+   buscar JWTs en su bundle y no encontrar ninguno. El fallo era del patrón de búsqueda, no del
+   bundle: las dos apps llevan su anon key y apuntan a Supabase. Se anota porque la afirmación
+   llegó a estar en un informe.
+
+### Lo que este despliegue NO arregla
+
+⚠️ **El `JWT issued at future` de Papas sigue abierto.** Es de la sesión que emite Supabase Auth,
+no del bundle, así que reconstruir no lo toca. Descartado con medidas: el reloj de Supabase, el del
+equipo y la hora real coinciden dentro de 2 s; el anon key tiene `iat` de hace 11 días; y ningún
+código de los tres proyectos firma JWTs. Falta el `iat` del token de sesión del navegador donde
+falla — `Papas-el-Labrador/docs/diagnostico-jwt.js` lo saca.
+
+⛔ **Y no se regenera el JWT Secret.** El anon key está firmado con él y va horneado en los dos
+bundles desplegados: regenerarlo deja a los dos clientes sin app hasta rehacer variables, build y
+despliegue — y no arregla un desfase de reloj.
+
+---
+
 ## Hecho
 
 ### Estado de la conexión a Supabase (2026-09-02)
@@ -94,7 +132,7 @@ Dónde está cada pieza, para que la próxima sesión no lo vuelva a averiguar.
 | `labrador.configuracion` | 🔶 **con la forma equivocada** — ver la migración de abajo |
 | `configuracion.tenant_id` sin `default` | 🔶 corregido en el repo de Papas, **falta correr el SQL** |
 | Login del portal | ✅ el cliente entra y la app carga con su negocio |
-| Esquema `palmas` en la base | ⛔ **no existe**: `pg_namespace` solo devuelve `labrador` y `public` (2026-09-03). Su app ya está en `public/portal/las-dos-palmas/`; falta correr su SQL, exponerlo, registrar la empresa y crear su usuario |
+| Esquema `palmas` en la base | ✅ **existe y está expuesto** (comprobado 2026-09-07). PostgREST responde `Only the following schemas are exposed: public, graphql_public, labrador, palmas`, y `anon` recibe `42501 permission denied for schema palmas`, que es la RLS haciendo su trabajo. *(Hasta el 6 de septiembre aquí decía que no existía; era cierto el 3 y dejó de serlo.)* |
 | Datos de negocio en Supabase | ⏳ ninguno todavía — el catálogo se siembra desde Ajustes |
 
 **Lo único que falta para operar**, en orden:
