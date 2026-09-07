@@ -5,7 +5,34 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-04, cierre de sesión. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-09-07. **Lee el bloque de abajo antes que nada.**
+
+---
+
+## Lo hecho el 7 de septiembre de 2026
+
+**Un rótulo en la línea del pedido de Las dos palmas, y un despliegue.**
+
+- En `LineasPedido.tsx`, "Se vende por" decía **la presentación** (`kilo`) en medio de "Cantidad en
+  bloques" y "Precio por bloque". Ahora dice **la unidad de conteo** (`bloque`). Es rótulo, no dato:
+  la presentación de la línea sigue siendo `KILO` y lo guardado sigue en kilos — el bloque no volvió
+  a ser una presentación (D44 de esa app). Los paquetes y el granel sin bloque no cambian, porque
+  `etiquetaUnidadConteo` cae en `etiquetaPresentacion` cuando la unidad no es un bloque.
+- Lo pidió el dueño mirando la pantalla, y lo fusionó **directo a `main`** de Las-dos-palmas
+  (`956e0ef`) sin PR, por lo pequeño del cambio. Dos pruebas nuevas lo fijan: doble crema dice
+  "bloque", cuajada sigue diciendo "kilo". 940 pruebas en verde.
+- **`public/portal/las-dos-palmas/` sincronizado** con ese build.
+
+⚠️ **Papas el Labrador ya estaba desplegado, contra lo que se creía.** Se reconstruyó en el mismo
+movimiento por si acaso y salió **idéntico byte a byte**: lo que hay en `public/portal/` es su `main`
+de hoy, con el cartel de "los datos están en la nube" fuera (`ed517119`) y la recuperación del token
+sin vigencia (`db7c94de`). Los dos entraron en el despliegue del 6 de septiembre. Antes de rehacer
+un despliegue "pendiente", **corre el sync y mira si `git status` cambia algo**: es la comprobación
+más barata que hay.
+
+El error de **JWT `issued at future`** de Papas sigue siendo lo que ya decía el diagnóstico: reloj
+del equipo contra el del servidor, no algo que arregle un despliegue. Ver
+`Papas-el-Labrador/docs/` (commit `64d5cc26`).
 
 ---
 
