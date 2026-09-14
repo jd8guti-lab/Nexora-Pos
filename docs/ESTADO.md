@@ -32,6 +32,11 @@ de Nuevo pedido no tenía columnas en el celular y el combobox no tenía `min-w-
 el bundle llevaba las dos clases, el CSS definía `repeat(1,minmax(0,1fr))` y D47 seguía dentro.
 Detalle y medidas en §1.28 del ESTADO de esa app.
 
+**Y la factura sin scroll lateral en el celular, desplegada.** Arreglado en Las dos palmas (`fafdca8`):
+`DialogContent` y la rejilla de `DialogoFactura` crecían hasta el ancho del ticket. Con `grid-cols-1`
+la vista previa se encoge en pantallas estrechas y el papel no cambia. Antes de comitear, el bundle
+llevaba las dos clases y conservaba el arreglo de Cliente y D47.
+
 ---
 
 ## Lo hecho el 7 de septiembre de 2026
