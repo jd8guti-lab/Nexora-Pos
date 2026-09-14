@@ -242,22 +242,33 @@ Son la columna vertebral del contenido. No se inventan otros ni se renombran.
 app/
   (marketing)/          layout con nav + footer
     page.tsx            home
-    modulos/  casos/  precios/  contacto/
+    modulos/  casos/  precios/  contacto/  buscar/
     legal/privacidad/  legal/terminos/
-  (portal)/portal/      placeholder — aquí entra el portal después
-  api/contacto/route.ts
+  (portal)/portal/      login del portal — NO hereda nav ni footer
+  api/contacto/route.ts  api/portal/salir/route.ts
   opengraph-image.tsx  sitemap.ts  robots.ts
 components/
-  ui/                   primitivos (button, card, badge, accordion…)
+  ui/                   primitivos (button, card, badge, disclosure…)
   layout/               Section, Container, Grid, Nav, Footer
   sections/             una carpeta o archivo por sección de la home
   brand/                Logo, Isotype, mockups del producto
+  motion/               Reveal + RevealObserver
 content/                TODO el copy, tipado
-lib/                    config.ts, utils.ts, seo.ts
+lib/                    config.ts, utils.ts, seo.ts, lead.ts
+  portal/tenant.ts      resolución de tenant que usa el middleware
+  supabase/browser.ts   el cliente de Supabase del navegador
+backend/                SOLO el SQL de la plataforma. Ver backend/README.md
+scripts/                contrast.mjs, sync-tenant-app.mjs, crear-*.mjs
 public/brand/           logos normalizados
+public/portal/<slug>/   el build YA COMPILADO de cada app cliente. Se versiona
 docs/                   ESTADO.md y demás
-middleware.ts           vacío; aquí irá la resolución de tenant
+middleware.ts           resolución de tenant: sesión, slug y rewrite a index.html
 ```
+
+**No hay `frontend/` ni `backend/` de aplicación aquí.** `backend/` es solo SQL de plataforma, y un
+`frontend/` en la raíz es basura: llegó a versionarse uno con 22.496 archivos —todos de
+`node_modules`, ni uno de código— y 260 MB. Está en `.gitignore`. El `frontend/` de verdad es el del
+repositorio de cada app cliente, y se construye allá.
 
 **Regla de contenido:** ningún componente lleva copy hardcodeado. Textos, módulos, planes, FAQ y
 casos viven en `content/*.ts` con tipos explícitos. Cambiar un texto no debe tocar JSX.

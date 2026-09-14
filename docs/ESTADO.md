@@ -5,7 +5,66 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-07. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-09-13. **Lee el bloque de abajo antes que nada.**
+
+---
+
+## Limpieza del repositorio (13 de septiembre de 2026)
+
+No toca ni una línea de producto: saca del repositorio lo que no era del repositorio y cuadra los
+documentos que se habían quedado afirmando cosas falsas. Se hizo **antes** de empezar los cambios
+de un cliente, para no construir sobre un mapa equivocado.
+
+### Lo que salió
+
+| Qué | Por qué |
+| --- | --- |
+| `frontend/` — **22.496 archivos, 260 MB** | TODOS de `node_modules` y **ni uno de código fuente**; nunca hubo código ahí, comprobado en toda la historia de git. El `.gitignore` ignoraba `frontend/dist/` pero no `frontend/node_modules/`. Obligó a parchear `vitest.config.mts` y `eslint.config.mjs` para que las herramientas no lo escanearan |
+| `eslint.json` — 2,7 MB | Volcado accidental de `eslint -f json -o eslint.json`, con las rutas absolutas de la máquina de quien lo generó (`C:\Users\GHOSTBOY\…`) dentro |
+| `lib/portal.ts` | **Código muerto**: cero importadores en todo el repositorio. Duplicaba a `lib/portal/tenant.ts`, que es el que usa el middleware. Peor: sus `portalRolePanels` traían métricas inventadas —«12 usuarios», «$24.8K», «96% de cobranza»—, que es exactamente lo que prohíbe §7 |
+| `lib/supabase.ts` | **Código muerto**, cero importadores. Duplicaba a `lib/supabase/browser.ts` |
+
+Los dos `lib/` sobraron del andamiaje inicial del portal y sobrevivieron a la fusión de
+`feat/portal-clientes` porque nadie los volvió a mirar: **un merge limpio no significa que no haya
+quedado nada duplicado.** `frontend/` y `eslint.json` siguen en el historial, así que recuperarlos
+es un `git show`; lo que se acabó es que pesen en cada clon.
+
+### `/buscar` ya no sirve una página vacía
+
+La página entera existe para el widget de Google Custom Search, y sin
+`NEXT_PUBLIC_GOOGLE_SEARCH_ENGINE_ID` el widget renderiza `null`: lo que se servía era un titular
+sobre una sección en blanco. Ahora responde **404** mientras no haya motor configurado.
+
+**Sigue sin estar en el nav ni en `sitemap.ts`, a propósito y pendiente de tu decisión.** El widget
+baja un script de `cse.google.com`, y meter un script de terceros en la barra de todas las páginas
+es una decisión del dueño y del presupuesto de JS (§6), no un efecto secundario de que la página
+exista.
+
+### Los documentos que mentían
+
+1. **`docs/PUESTA-EN-MARCHA.md` mandaba ejecutar un SQL obsoleto.** Su «PASO 1» apuntaba a
+   `backend/esquema-supabase.sql`, que `backend/README.md` marca **OBSOLETO, no lo ejecutes**:
+   correrlo aborta en su primera sentencia contra una base que ya tiene `public.tenants`. También
+   mandaba a la rama `portal-clientes` (borrada), se declaraba «listos para conectar un proyecto
+   real» con dos empresas ya desplegadas, y llevaba rutas absolutas de una máquina concreta.
+   **Se vació y quedó como puntero** a `PUESTA-EN-MARCHA-SUPABASE.md`, con la lista de lo que decía
+   mal para que nadie lo reconstruya de memoria.
+2. **El `README.md` afirmaba que las apps escribían en IndexedDB y no en Supabase.** El propio
+   `ESTADO.md` del 7 de septiembre ya lo había desmentido —el fallo era del patrón de búsqueda sobre
+   los bundles, no de los bundles—, pero el README nunca se corrigió.
+3. **El `README.md` decía Plus Jakarta Sans.** La fuente es **Figtree** desde la decisión 44
+   (2026-08-27); la 41 quedó superada y este archivo tampoco lo decía en su Fase 2.
+4. **`PUESTA-EN-MARCHA-SUPABASE.md` decía que nada estaba fusionado a `main`** y listaba dos
+   repositorios. Son tres, y todo está en `main` desde el 2026-09-02.
+5. **`CLAUDE.md` §5 describía un proyecto anterior**: `(portal)` como «placeholder» y `middleware.ts`
+   «vacío», sin `backend/`, `scripts/` ni `public/portal/`.
+6. Aquí mismo: el registro de Las dos palmas decía «dos `TODO(guti)`» y desde `e39981f4` es uno.
+
+### La regla que deja
+
+**Dos documentos que explican el mismo procedimiento acaban contradiciéndose, y el que se actualiza
+no es siempre el que alguien abre.** Un procedimiento, un archivo. Cuando un documento y la realidad
+no coinciden, el orden de autoridad es: la base de datos → el código → `docs/ESTADO.md` → el resto.
 
 ---
 
@@ -398,7 +457,8 @@ el prefijo `LDP-` y el consecutivo en 0—, y la guía ahora lo avisa donde se t
 
 **Lo que falta, y lo corres tú:** el auditor sobre `palmas`, y
 `backend/registrar-las-dos-palmas.sql` —una fila en `tenants` y el `app_metadata` del usuario—, con
-dos `TODO(guti)`: el NIT real y el correo del dueño.
+un `TODO(guti)`: el correo del dueño. _(Decía "dos, el NIT y el correo"; el NIT llegó el 3 de
+septiembre — ver `e39981f4`. Corregido el 2026-09-13.)_
 
 ### La factura salía sin estilos (3 de septiembre de 2026)
 
@@ -487,7 +547,7 @@ parece autorizado a correr. Recuperable con
 - **Tailwind v4** con todos los tokens de marca en `app/globals.css` (`@theme`): paleta,
   escala tipográfica fluida con `clamp()`, degradado de marca, sombras, breakpoints, y el
   bloque global de `prefers-reduced-motion`.
-- **Poppins** vía `next/font/google`, pesos 300–700, `display: swap`. _(Sustituida por Plus Jakarta Sans en la sesión del 2026-08-26 — ver la decisión 41. Poppins sigue cargada con un solo peso, solo para el wordmark.)_
+- **Poppins** vía `next/font/google`, pesos 300–700, `display: swap`. _(Sustituida por Plus Jakarta Sans el 2026-08-26 —decisión 41— y esa, a su vez, por **Figtree** el 2026-08-27 —decisión 44—, que es la que corre hoy. Poppins sigue cargada con un solo peso, solo para el wordmark.)_
 - **Assets de marca normalizados** (ver el mapeo abajo) más `icon.png`, `apple-icon.png` y
   `favicon.ico` generados con la convención de App Router.
 - **`content/`**: `types.ts`, `site.ts`, `nav.ts`. Cero copy en JSX.

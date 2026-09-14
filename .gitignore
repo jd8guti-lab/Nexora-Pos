@@ -45,8 +45,14 @@ next-env.d.ts
 # Informes de Lighthouse generados a mano
 lh*.json
 
-# Build de la app anidada (venia de main con codificacion UTF-16 rota)
-frontend/dist/
+# Volcados de informes de ESLint (`eslint -f json -o eslint.json`). Se subió uno de 2,7 MB por
+# accidente, con las rutas absolutas de la máquina de quien lo generó dentro.
+eslint.json
+
+# `frontend/` NO es parte de este proyecto. Llegó a versionarse con 22.496 archivos, TODOS de
+# `node_modules` y ni uno de código fuente, y pesaba 260 MB. El `frontend/` que sí existe es el del
+# repositorio de cada app cliente, y se construye allá — ver `scripts/sync-tenant-app.mjs`.
+frontend/
 
 # Respaldos comprimidos del proyecto: nexora-pos.zip pesa 325 MB y GitHub
 # rechaza cualquier archivo de mas de 100 MB.

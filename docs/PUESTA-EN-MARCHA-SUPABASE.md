@@ -10,22 +10,24 @@ toca datos de un negocio que factura.
 
 ## Dónde está todo
 
-Son **dos repositorios**, y hay que clonar los dos:
+Son **tres repositorios**, y hay que clonar los tres:
 
-| Repositorio | Qué es | Rama con este trabajo |
-|---|---|---|
-| [`jd8guti-lab/Nexora-Pos`](https://github.com/jd8guti-lab/Nexora-Pos) | El sitio público y **el portal**: login, middleware y los scripts | `feat/portal-clientes` |
-| [`jd8guti-lab/Papas-el-Labrador`](https://github.com/jd8guti-lab/Papas-el-Labrador) | La aplicación del cliente y **el esquema SQL** | `feat/supabase-multi-tenant` |
+| Repositorio | Qué es |
+|---|---|
+| [`jd8guti-lab/Nexora-Pos`](https://github.com/jd8guti-lab/Nexora-Pos) | El sitio público y **el portal**: login, middleware y los scripts |
+| [`jd8guti-lab/Papas-el-Labrador`](https://github.com/jd8guti-lab/Papas-el-Labrador) | La aplicación de El Labrador y **su esquema SQL** |
+| [`jd8guti-lab/Las-dos-palmas`](https://github.com/jd8guti-lab/Las-dos-palmas) | La aplicación de Las dos palmas y **su esquema SQL** |
 
-**Ninguna de las dos está fusionada a `main` todavía.** Se dejaron en rama a propósito: hasta que
-los pasos de este documento estén hechos y verificados, `main` sigue teniendo la versión anterior,
-que funciona.
+**Todo este trabajo ya está en `main` en los tres.** Hasta el 2026-09-02 vivía en ramas
+(`feat/portal-clientes`, `feat/supabase-multi-tenant`) y este documento decía que no estaba
+fusionado; se fusionó y las ramas se borraron. Si alguien te manda a esas ramas, están muertas.
 
 Archivos que vas a tocar:
 
 | Archivo | Repo | Para qué |
 |---|---|---|
-| `docs/esquema-supabase.sql` | Papas | El SQL completo. Paso 1 |
+| `docs/esquema-supabase.sql` | Cada app cliente | El SQL de esa empresa. Paso 1 |
+| `backend/auditar-esquema-tenant.sql` | Nexora | Audita el esquema recién creado. Paso 1 |
 | `scripts/crear-usuario-portal.mjs` | Nexora | Crea usuarios. Paso 3 |
 | `scripts/sync-tenant-app.mjs` | Nexora | Construye y trae la app del cliente. Paso 6 |
 | `.env.example` | Nexora | La plantilla de variables. Paso 5 |
@@ -46,12 +48,13 @@ levanta uno con PGlite y corre su esquema entero — no hace falta Docker):
 - El portal: login, resolución de tenant en el middleware, y que sin sesión no baje ni el
   JavaScript de la app.
 
-**Falta, y es lo que hace este documento:** conectar un proyecto de Supabase real, crear el
-usuario, sembrar los datos y desplegar.
+**Ya hecho también, contra el proyecto de Supabase real:** las dos empresas están conectadas,
+desplegadas y sirviéndose desde `public/portal/`. Los esquemas `labrador` y `palmas` existen y
+están expuestos. Este documento **ya no es una lista de pendientes: es el procedimiento** para
+montar la empresa **siguiente**, y el registro de por qué cada paso es como es.
 
-**No se pudo probar sin ese proyecto**, así que hay que mirarlo con atención en el paso 7:
-Supabase Auth de verdad, Realtime, que PostgREST acepte las consultas con tablas embebidas, y que
-los esquemas queden **expuestos** en Settings → API.
+Si vienes a agregar una empresa nueva, el camino corto es el **§8.b**; los pasos 1 a 7 son la
+referencia completa de lo que hace cada cosa.
 
 **Dos cosas que quedaron a medias a propósito, y conviene saberlas antes de entregar:**
 
