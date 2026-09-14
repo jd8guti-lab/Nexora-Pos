@@ -48,6 +48,15 @@ rejillas con la misma forma sin desbordar hoy; está en §1.28 del ESTADO de esa
 pestañas, 41 estados, a 320 y 768 px: cero diferencias. Antes de comitear, el bundle no tenía ninguna
 rejilla con columnas por breakpoint sin columna base, y conservaba los arreglos anteriores y D47.
 
+**Y Papas el Labrador, sin desbordes, desplegado.** Medido a 320 px, se salían de lado Pedidos,
+Ventas y Productos (la fila de pestañas), Nuevo pedido, Inicio, la factura, el abono del cliente,
+Balance y Ajustes; cinco de ellos también a 375. Arreglado en Papas `09ac0659` con la misma tanda que
+Las dos palmas —la línea de `tabs.tsx` que allá ya existía, `grid-cols-1` en sus 52 rejillas, `min-w-0`
+en Cliente— más `flex-wrap` en Balance y botones que parten línea en Ajustes. Medido antes y después a
+320, 375 y 768 px: sin desbordes nuevos. Antes de comitear, el bundle llevaba todas las clases, el CSS
+las definía, el cartel de la nube seguía fuera y solo cambió `public/portal/papas-el-labrador/`.
+Detalle en el ESTADO de Papas.
+
 ---
 
 ## Lo hecho el 7 de septiembre de 2026
