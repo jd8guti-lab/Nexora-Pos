@@ -5,7 +5,23 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-07. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-09-14. **Lee el bloque de abajo antes que nada.**
+
+---
+
+## Lo hecho el 14 de septiembre de 2026
+
+**D47 de Las dos palmas, desplegado.** La cuajada se compra por total de kilos y precio por kilo, y
+se le paga al proveedor por los kilos que entran tras canastilla y desuere. Doble crema sin cambios.
+Se siguió `Las-dos-palmas/docs/ENTREGA-D47.md` paso por paso:
+
+- **Migración primero**, corrida a mano en el SQL Editor. Comprobación: `kg_bruto_total` y
+  `precio_por_kilo_compra` existen y son nullable; `con_total_nuevo = 0` sobre 2 líneas viejas.
+- **Build** desde `c98783b` (fusión D47 `f97cb8d`) con el `.env.local` del 3 de septiembre, que es el
+  mismo que lleva producción. Antes de comitear, el bundle contenía "A cuánto el kilo" y "Cuántos kilos
+  en total", conservaba "Bloques por canastilla" y no llevaba datos de ejemplo.
+- ⚠️ `docs/PUESTA-EN-MARCHA.md` está **obsoleto** y manda a correr un SQL que rompe la base. No se usa.
+- Pendiente: la comprobación en producción del paso 6 (compra de prueba y su anulación).
 
 ---
 
