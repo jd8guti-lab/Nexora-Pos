@@ -43,6 +43,11 @@ desbordaban el abono del cliente, la lista de Pedidos con un nombre largo (la p�
 comitear, el bundle llevaba las tres clases y conservaba los arreglos anteriores y D47. Quedan 58
 rejillas con la misma forma sin desbordar hoy; está en §1.28 del ESTADO de esa app.
 
+**Y esas rejillas, barridas y desplegadas.** `45965b9` le pone `grid-cols-1` de base a las 59 (56 en
+`className` y 3 en un ternario que la primera cuenta no veía). Medido antes y después en 16 rutas y sus
+pestañas, 41 estados, a 320 y 768 px: cero diferencias. Antes de comitear, el bundle no tenía ninguna
+rejilla con columnas por breakpoint sin columna base, y conservaba los arreglos anteriores y D47.
+
 ---
 
 ## Lo hecho el 7 de septiembre de 2026
