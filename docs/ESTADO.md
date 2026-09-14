@@ -24,8 +24,8 @@ Se siguió `Las-dos-palmas/docs/ENTREGA-D47.md` paso por paso:
 - **Desplegado con `20855ff8` y comprobado en producción.** El paso 6 cuadró entero: etiquetas
   nuevas, 3 canastillas · 200 kg · $9.500 → 191,00 kg y $1.814.500, guardó, Existencias subió, la
   compra de prueba quedó anulada y el doble crema no cambió.
-- Queda sin correr la suite de Las dos palmas con D47 dentro: el build pasó `tsc -b`, pero `lint` y
-  `test` no. Está anotado en §0 del ESTADO de esa app.
+- La suite de Las dos palmas, corrida después con D47 dentro: `lint` con 0 errores (un aviso anterior,
+  del 3 de septiembre) y **978 pruebas** en verde. Detalle en §0 del ESTADO de esa app.
 
 ---
 
