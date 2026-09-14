@@ -27,6 +27,11 @@ Se siguió `Las-dos-palmas/docs/ENTREGA-D47.md` paso por paso:
 - La suite de Las dos palmas, corrida después con D47 dentro: `lint` con 0 errores (un aviso anterior,
   del 3 de septiembre) y **978 pruebas** en verde. Detalle en §0 del ESTADO de esa app.
 
+**Y el desborde de Cliente a 375 px, desplegado.** Arreglado en Las dos palmas (`d73cc93`): la rejilla
+de Nuevo pedido no tenía columnas en el celular y el combobox no tenía `min-w-0`. Antes de comitear,
+el bundle llevaba las dos clases, el CSS definía `repeat(1,minmax(0,1fr))` y D47 seguía dentro.
+Detalle y medidas en §1.28 del ESTADO de esa app.
+
 ---
 
 ## Lo hecho el 7 de septiembre de 2026
