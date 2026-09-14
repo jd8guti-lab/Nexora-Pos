@@ -37,6 +37,12 @@ Detalle y medidas en §1.28 del ESTADO de esa app.
 la vista previa se encoge en pantallas estrechas y el papel no cambia. Antes de comitear, el bundle
 llevaba las dos clases y conservaba el arreglo de Cliente y D47.
 
+**Y tres desbordes más, desplegados.** Se midieron los demás diálogos de Las dos palmas a 320 px y
+desbordaban el abono del cliente, la lista de Pedidos con un nombre largo (la página a 409 px) e Inicio
+(la página a 333 px). Arreglado en `a1ccb3e`, con la misma causa y el mismo `grid-cols-1`. Antes de
+comitear, el bundle llevaba las tres clases y conservaba los arreglos anteriores y D47. Quedan 58
+rejillas con la misma forma sin desbordar hoy; está en §1.28 del ESTADO de esa app.
+
 ---
 
 ## Lo hecho el 7 de septiembre de 2026
