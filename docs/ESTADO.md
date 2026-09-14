@@ -57,6 +57,14 @@ en Cliente— más `flex-wrap` en Balance y botones que parten línea en Ajustes
 las definía, el cartel de la nube seguía fuera y solo cambió `public/portal/papas-el-labrador/`.
 Detalle en el ESTADO de Papas.
 
+**Y Realtime en Las dos palmas, que nunca se arrancaba, desplegado.** Comprobando si funcionaba entre
+dos equipos salió que no podía: `iniciarRealtime` existía desde el adaptador pero nadie lo llamaba, y el
+bundle del portal no creaba el canal. Papas sí lo arranca. Arreglado en `9efce37`
+(`app/sincronizacion.ts`, cuatro pruebas). Antes de comitear, el bundle nuevo abría el canal
+`tenant:<id>` sobre el esquema `palmas` con sus 13 tablas; el anterior no tenía ni la función.
+**Falta, y no sale del código:** confirmar que las tablas de `palmas` y `labrador` están en la
+publicación `supabase_realtime`, y la prueba con dos equipos distintos en las dos apps.
+
 ---
 
 ## Lo hecho el 7 de septiembre de 2026
