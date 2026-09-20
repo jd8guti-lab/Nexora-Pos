@@ -5,7 +5,27 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-14. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-09-20. **Lee el bloque de abajo antes que nada.**
+
+---
+
+## Lo hecho el 20 de septiembre de 2026
+
+**Dos fichas de producto de Papas el Labrador, resueltas sin tocar código.** Llegaron *Papas
+Labrador* (amarilla, entera, lavada, por bulto y por arroba) y *Juan Papas*, duplicado exacto con
+otro nombre. La aplicación ya cubre las dos: "Entera" es un tamaño del catálogo, la arroba es una
+casilla, y **Duplicar** es un botón de cada fila. Son datos de producción de un cliente real, así
+que **los da de alta el dueño**; se entregó la guía, comprobada siguiéndola en la aplicación con la
+base local: `Papas-el-Labrador/docs/ALTA-DE-PRODUCTOS.md`.
+
+Nada de `src/`, ninguna migración, **ningún despliegue**: sin cambio de código no hay build que
+sincronizar ni `public/portal/` que tocar. Detalle y las cuatro trampas del formulario, en el
+ESTADO de Papas.
+
+⚠️ **El catálogo real manda sobre el seed.** `src/core/seed/catalogo.ts` de Papas tiene un catálogo
+mínimo —tres tipos, cuatro tamaños— y leerlo hace concluir que "Entera" no existe como tamaño. La
+operación tiene doce tamaños y seis tipos. Es la trampa 1 otra vez: la fuente autorizada es la
+base, no lo que el repositorio recuerde.
 
 ---
 
