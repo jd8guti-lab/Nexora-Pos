@@ -5,7 +5,79 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-14. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-09-20. **Lee el bloque de abajo antes que nada.**
+
+---
+
+## Juan Papas, la tercera empresa del portal (20 de septiembre de 2026)
+
+**Juan Papas es otra empresa cliente**, no otro usuario de El Labrador. Tiene lo mismo que las otras
+dos: su repositorio, su esquema, su login y su carpeta en el portal.
+
+| Pieza | Valor |
+| --- | --- |
+| Repositorio | `ProyectosINF/Juan-Papas`, hermano de los otros tres. Nació como **copia del de Papas El Labrador** (`fb597fb5`) y desde ahí sigue su propio camino |
+| Esquema | `juan_papas` — creado, **expuesto** y verificado en producción |
+| Slug | `juan-papas` → `/portal/juan-papas/` |
+| Usuario | `juanpapas@user.com`, con su empresa en `app_metadata` |
+| Construido desde | `Juan-Papas@4c2f75db` |
+
+**Sale con la identidad del negocio en `PENDIENTE`** —nombre "Juan Papas (datos pendientes)", NIT,
+teléfono, dirección y ciudad en `PENDIENTE`, prefijo de factura `JP-PEND-`— porque los datos reales
+del cliente todavía no llegaron. **Sirve para enseñar el portal, no para facturar.** Por eso se
+construye con `PERMITIR_DATOS_PENDIENTES=1`: el `npm run build` de esa app se niega a construir con
+la identidad provisional si no se lo dices expresamente. Cuando lleguen, van en
+`Juan-Papas/src/core/seed/catalogo.ts` → `construirConfiguracion()`.
+
+**La base, verificada en producción:** `Juan-Papas/docs/migraciones/verificar-esquema.sql` dio 12
+de 12. Desde fuera, PostgREST expone `public, graphql_public, labrador, palmas, juan_papas`, y sin
+sesión `juan_papas` contesta `42501`: la base niega el acceso aunque la API acepte el esquema.
+
+**El código de nexora-pos no cambió.** El middleware saca la empresa del `app_metadata` y la
+compara con el slug de la URL, sin lista de empresas en ninguna parte. Añadir una empresa es
+datos y un build, no programación.
+
+### Lo que costó la copia, para la próxima empresa que salga de otra
+
+La copia se llevó **los datos de El Labrador**, y viajaban en el bundle que descarga el navegador:
+sus 84 clientes con teléfono y dirección, sus 24 proveedores y sus 52 productos, un cliente real
+con su NIT metido entre los datos de ejemplo, el teléfono, el NIT y la dirección del dueño como
+textos de ejemplo de los formularios, los nombres del dueño y del trabajador, un número de factura
+real como ejemplo, y el nombre de la empresa escrito a mano en más de diez sitios — incluidos los
+nombres de los archivos que se descargan (`ElLabrador_…xlsx`). Todo fuera antes de desplegar.
+
+**El peor era invisible:** en `configuracion.ts`, una configuración que llegara sin prefijo caía en
+`JOS-LL-`, el de El Labrador, y las dos empresas habrían numerado sus facturas igual.
+
+⚠️ **Antes de cada despliegue de una app copiada, barrer el bundle construido**, no el código, y
+**sin distinguir mayúsculas**: el nombre viejo apareció escrito junto (`ElLabrador_`), y la búsqueda
+de siempre lo busca con espacio.
+
+```
+grep -rliE "labrador|fukubar|jose moreno|16645676|3164164263|jos-ll" public/portal/<slug>/
+```
+
+### Dos correcciones a lo que decía este archivo
+
+1. **Los datos de ejemplo SÍ viajan en el bundle.** Lo de arriba decía que la operación de ejemplo
+   "no viajaba al build" (`cli-trigal` y `prov-planta` ausentes). El bundle de Papas El Labrador que
+   está hoy en producción sí trae `cli-trigal` y la operación de práctica, y el de Juan Papas
+   también: el botón que los carga no se compila, pero el módulo entra igual. Son inventados, así
+   que no es un riesgo de datos. Sí es peso de más.
+2. **Contar líneas de un bundle engaña.** `grep -c` cuenta líneas, y un bundle minificado son muy
+   pocas: un `0` o un `1` no dicen cuántas veces aparece algo. Y un punto en el patrón no casa una
+   letra con tilde (`Panader.a` no encontró "Panadería", que sí estaba). Para saber si algo está,
+   `grep -o` y búscalo literal.
+
+### Lo que falta
+
+- **Que el usuario cierre sesión y vuelva a entrar**: su empresa viaja dentro del token.
+- **Los datos reales del negocio.**
+- **El repositorio de Juan Papas no tiene remoto.** `jd8guti-lab` es una cuenta de usuario, no una
+  organización: `gh` aquí es Ghostboy-999, colaborador de Nexora-Pos, y **un colaborador no puede
+  crear repositorios en la cuenta de otro**. Lo crea el usuario entrando como `jd8guti-lab`.
+- **El PR #3 va a chocar con esta entrada**: añade su propia sección del 20 de septiembre justo
+  aquí arriba. Se resuelve quedándose con las dos.
 
 ---
 
