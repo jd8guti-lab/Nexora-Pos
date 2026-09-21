@@ -73,9 +73,12 @@ grep -rliE "labrador|fukubar|jose moreno|16645676|3164164263|jos-ll" public/port
 
 - **Que el usuario cierre sesión y vuelva a entrar**: su empresa viaja dentro del token.
 - **Los datos reales del negocio.**
-- **El repositorio de Juan Papas no tiene remoto.** `jd8guti-lab` es una cuenta de usuario, no una
-  organización: `gh` aquí es Ghostboy-999, colaborador de Nexora-Pos, y **un colaborador no puede
-  crear repositorios en la cuenta de otro**. Lo crea el usuario entrando como `jd8guti-lab`.
+- **Juan Papas no tiene repositorio propio: vive como rama `juan-papas` de
+  `jd8guti-lab/Papas-el-Labrador`** (decisión del usuario, 20 de septiembre de 2026). Comparte la
+  historia desde `fb597fb5`, así que la rama sale limpia. **Falta subirla**: el push desde el
+  asistente lo bloqueó el control de permisos, y los comandos están en el ESTADO de Juan Papas.
+  ⛔ **Esa rama no se fusiona nunca en `main`**: sería un *fast-forward* sin conflictos que dejaría
+  a El Labrador con el esquema, la semilla y la identidad de Juan Papas.
 - **El PR #3 va a chocar con esta entrada**: añade su propia sección del 20 de septiembre justo
   aquí arriba. Se resuelve quedándose con las dos.
 
