@@ -5,9 +5,17 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-23. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-09-24. **Lee el bloque de abajo antes que nada.**
 
 ---
+
+## La historia de "punto Cali" subida a Las dos palmas (24 de septiembre de 2026)
+
+**No toca este repositorio**: es una carga de datos en el esquema `palmas`, sin cambios de código,
+esquema ni despliegue de `Nexora-Pos`. El paso a paso, las decisiones del socio, el script que la
+generó y la prueba que se escribió contra el esquema real antes de tocar producción viven en
+`Las-dos-palmas/docs/ESTADO.md` (§0, 24 de septiembre) y en
+`Las-dos-palmas/docs/cargas/2026-09-punto-cali/`.
 
 ## Las dos historias de `main`, unidas (23 de septiembre de 2026)
 
