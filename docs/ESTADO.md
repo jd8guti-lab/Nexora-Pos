@@ -5,7 +5,154 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-13. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-09-23. **Lee el bloque de abajo antes que nada.**
+
+---
+
+## Las dos historias de `main`, unidas (23 de septiembre de 2026)
+
+La limpieza del 13 de septiembre (`ff4f28e5`) se comiteó en un equipo y **nunca se subió**; mientras
+tanto David subió once commits encima de la versión anterior (D47, los desbordes, Realtime y Juan
+Papas). Las dos ramas solo se cruzaban en este archivo, y se unió quedándose con todo: las entradas
+de David van arriba por fecha y la limpieza debajo. Con esta unión `frontend/`, `eslint.json`,
+`lib/portal.ts` y `lib/supabase.ts` salen también del `main` de GitHub, donde seguían.
+
+**La lección, para los dos equipos:** antes de empezar, `git fetch` y compara con `origin/main`; y
+un commit de limpieza se sube el mismo día, porque este archivo lo tocan las dos partes en cada
+tarea y cualquier retraso es un conflicto seguro.
+
+---
+
+## Juan Papas, la tercera empresa del portal (20 de septiembre de 2026)
+
+**Juan Papas es otra empresa cliente**, no otro usuario de El Labrador. Tiene lo mismo que las otras
+dos: su repositorio, su esquema, su login y su carpeta en el portal.
+
+| Pieza | Valor |
+| --- | --- |
+| Repositorio | `ProyectosINF/Juan-Papas`, hermano de los otros tres. Nació como **copia del de Papas El Labrador** (`fb597fb5`) y desde ahí sigue su propio camino |
+| Esquema | `juan_papas` — creado, **expuesto** y verificado en producción |
+| Slug | `juan-papas` → `/portal/juan-papas/` |
+| Usuario | `juanpapas@user.com`, con su empresa en `app_metadata` |
+| Construido desde | `Juan-Papas@4c2f75db` |
+
+**Sale con la identidad del negocio en `PENDIENTE`** —nombre "Juan Papas (datos pendientes)", NIT,
+teléfono, dirección y ciudad en `PENDIENTE`, prefijo de factura `JP-PEND-`— porque los datos reales
+del cliente todavía no llegaron. **Sirve para enseñar el portal, no para facturar.** Por eso se
+construye con `PERMITIR_DATOS_PENDIENTES=1`: el `npm run build` de esa app se niega a construir con
+la identidad provisional si no se lo dices expresamente. Cuando lleguen, van en
+`Juan-Papas/src/core/seed/catalogo.ts` → `construirConfiguracion()`.
+
+**La base, verificada en producción:** `Juan-Papas/docs/migraciones/verificar-esquema.sql` dio 12
+de 12. Desde fuera, PostgREST expone `public, graphql_public, labrador, palmas, juan_papas`, y sin
+sesión `juan_papas` contesta `42501`: la base niega el acceso aunque la API acepte el esquema.
+
+**El código de nexora-pos no cambió.** El middleware saca la empresa del `app_metadata` y la
+compara con el slug de la URL, sin lista de empresas en ninguna parte. Añadir una empresa es
+datos y un build, no programación.
+
+### Lo que costó la copia, para la próxima empresa que salga de otra
+
+La copia se llevó **los datos de El Labrador**, y viajaban en el bundle que descarga el navegador:
+sus 84 clientes con teléfono y dirección, sus 24 proveedores y sus 52 productos, un cliente real
+con su NIT metido entre los datos de ejemplo, el teléfono, el NIT y la dirección del dueño como
+textos de ejemplo de los formularios, los nombres del dueño y del trabajador, un número de factura
+real como ejemplo, y el nombre de la empresa escrito a mano en más de diez sitios — incluidos los
+nombres de los archivos que se descargan (`ElLabrador_…xlsx`). Todo fuera antes de desplegar.
+
+**El peor era invisible:** en `configuracion.ts`, una configuración que llegara sin prefijo caía en
+`JOS-LL-`, el de El Labrador, y las dos empresas habrían numerado sus facturas igual.
+
+⚠️ **Antes de cada despliegue de una app copiada, barrer el bundle construido**, no el código, y
+**sin distinguir mayúsculas**: el nombre viejo apareció escrito junto (`ElLabrador_`), y la búsqueda
+de siempre lo busca con espacio.
+
+```
+grep -rliE "labrador|fukubar|jose moreno|16645676|3164164263|jos-ll" public/portal/<slug>/
+```
+
+### Dos correcciones a lo que decía este archivo
+
+1. **Los datos de ejemplo SÍ viajan en el bundle.** Lo de arriba decía que la operación de ejemplo
+   "no viajaba al build" (`cli-trigal` y `prov-planta` ausentes). El bundle de Papas El Labrador que
+   está hoy en producción sí trae `cli-trigal` y la operación de práctica, y el de Juan Papas
+   también: el botón que los carga no se compila, pero el módulo entra igual. Son inventados, así
+   que no es un riesgo de datos. Sí es peso de más.
+2. **Contar líneas de un bundle engaña.** `grep -c` cuenta líneas, y un bundle minificado son muy
+   pocas: un `0` o un `1` no dicen cuántas veces aparece algo. Y un punto en el patrón no casa una
+   letra con tilde (`Panader.a` no encontró "Panadería", que sí estaba). Para saber si algo está,
+   `grep -o` y búscalo literal.
+
+### Lo que falta
+
+- **Que el usuario cierre sesión y vuelva a entrar**: su empresa viaja dentro del token.
+- **Los datos reales del negocio.**
+- **Juan Papas no tiene repositorio propio: vive como rama `juan-papas` de
+  `jd8guti-lab/Papas-el-Labrador`** (decisión del usuario, 20 de septiembre de 2026). Comparte la
+  historia desde `fb597fb5`, así que la rama sale limpia. **Falta subirla**: el push desde el
+  asistente lo bloqueó el control de permisos, y los comandos están en el ESTADO de Juan Papas.
+  ⛔ **Esa rama no se fusiona nunca en `main`**: sería un *fast-forward* sin conflictos que dejaría
+  a El Labrador con el esquema, la semilla y la identidad de Juan Papas.
+- **El PR #3 va a chocar con esta entrada**: añade su propia sección del 20 de septiembre justo
+  aquí arriba. Se resuelve quedándose con las dos.
+
+---
+
+## Lo hecho el 14 de septiembre de 2026
+
+**D47 de Las dos palmas, desplegado.** La cuajada se compra por total de kilos y precio por kilo, y
+se le paga al proveedor por los kilos que entran tras canastilla y desuere. Doble crema sin cambios.
+Se siguió `Las-dos-palmas/docs/ENTREGA-D47.md` paso por paso:
+
+- **Migración primero**, corrida a mano en el SQL Editor. Comprobación: `kg_bruto_total` y
+  `precio_por_kilo_compra` existen y son nullable; `con_total_nuevo = 0` sobre 2 líneas viejas.
+- **Build** desde `c98783b` (fusión D47 `f97cb8d`) con el `.env.local` del 3 de septiembre, que es el
+  mismo que lleva producción. Antes de comitear, el bundle contenía "A cuánto el kilo" y "Cuántos kilos
+  en total", conservaba "Bloques por canastilla" y no llevaba datos de ejemplo.
+- ⚠️ `docs/PUESTA-EN-MARCHA.md` está **obsoleto** y manda a correr un SQL que rompe la base. No se usa.
+- **Desplegado con `20855ff8` y comprobado en producción.** El paso 6 cuadró entero: etiquetas
+  nuevas, 3 canastillas · 200 kg · $9.500 → 191,00 kg y $1.814.500, guardó, Existencias subió, la
+  compra de prueba quedó anulada y el doble crema no cambió.
+- La suite de Las dos palmas, corrida después con D47 dentro: `lint` con 0 errores (un aviso anterior,
+  del 3 de septiembre) y **978 pruebas** en verde. Detalle en §0 del ESTADO de esa app.
+
+**Y el desborde de Cliente a 375 px, desplegado.** Arreglado en Las dos palmas (`d73cc93`): la rejilla
+de Nuevo pedido no tenía columnas en el celular y el combobox no tenía `min-w-0`. Antes de comitear,
+el bundle llevaba las dos clases, el CSS definía `repeat(1,minmax(0,1fr))` y D47 seguía dentro.
+Detalle y medidas en §1.28 del ESTADO de esa app.
+
+**Y la factura sin scroll lateral en el celular, desplegada.** Arreglado en Las dos palmas (`fafdca8`):
+`DialogContent` y la rejilla de `DialogoFactura` crecían hasta el ancho del ticket. Con `grid-cols-1`
+la vista previa se encoge en pantallas estrechas y el papel no cambia. Antes de comitear, el bundle
+llevaba las dos clases y conservaba el arreglo de Cliente y D47.
+
+**Y tres desbordes más, desplegados.** Se midieron los demás diálogos de Las dos palmas a 320 px y
+desbordaban el abono del cliente, la lista de Pedidos con un nombre largo (la página a 409 px) e Inicio
+(la página a 333 px). Arreglado en `a1ccb3e`, con la misma causa y el mismo `grid-cols-1`. Antes de
+comitear, el bundle llevaba las tres clases y conservaba los arreglos anteriores y D47. Quedan 58
+rejillas con la misma forma sin desbordar hoy; está en §1.28 del ESTADO de esa app.
+
+**Y esas rejillas, barridas y desplegadas.** `45965b9` le pone `grid-cols-1` de base a las 59 (56 en
+`className` y 3 en un ternario que la primera cuenta no veía). Medido antes y después en 16 rutas y sus
+pestañas, 41 estados, a 320 y 768 px: cero diferencias. Antes de comitear, el bundle no tenía ninguna
+rejilla con columnas por breakpoint sin columna base, y conservaba los arreglos anteriores y D47.
+
+**Y Papas el Labrador, sin desbordes, desplegado.** Medido a 320 px, se salían de lado Pedidos,
+Ventas y Productos (la fila de pestañas), Nuevo pedido, Inicio, la factura, el abono del cliente,
+Balance y Ajustes; cinco de ellos también a 375. Arreglado en Papas `09ac0659` con la misma tanda que
+Las dos palmas —la línea de `tabs.tsx` que allá ya existía, `grid-cols-1` en sus 52 rejillas, `min-w-0`
+en Cliente— más `flex-wrap` en Balance y botones que parten línea en Ajustes. Medido antes y después a
+320, 375 y 768 px: sin desbordes nuevos. Antes de comitear, el bundle llevaba todas las clases, el CSS
+las definía, el cartel de la nube seguía fuera y solo cambió `public/portal/papas-el-labrador/`.
+Detalle en el ESTADO de Papas.
+
+**Y Realtime en Las dos palmas, que nunca se arrancaba, desplegado.** Comprobando si funcionaba entre
+dos equipos salió que no podía: `iniciarRealtime` existía desde el adaptador pero nadie lo llamaba, y el
+bundle del portal no creaba el canal. Papas sí lo arranca. Arreglado en `9efce37`
+(`app/sincronizacion.ts`, cuatro pruebas). Antes de comitear, el bundle nuevo abría el canal
+`tenant:<id>` sobre el esquema `palmas` con sus 13 tablas; el anterior no tenía ni la función.
+**Falta, y no sale del código:** confirmar que las tablas de `palmas` y `labrador` están en la
+publicación `supabase_realtime`, y la prueba con dos equipos distintos en las dos apps.
 
 ---
 
