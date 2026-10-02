@@ -5,9 +5,26 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-24. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-10-01. **Lee el bloque de abajo antes que nada.**
 
 ---
+
+## Fix de Papas el Labrador desplegado: las escrituras reintentan un token sin vigencia (1 de octubre de 2026)
+
+**El código es de `Papas-el-Labrador`, no de aquí** — esto solo documenta el despliegue.
+
+Reporte del dueño: al imprimir una factura, a veces la información no quedaba guardada. Se
+encontró que la mitigación del 7 de septiembre para el error "JWT issued at future" (token
+rechazado por su vigencia: pedir uno nuevo y reintentar una vez) solo estaba conectada en la carga
+inicial de datos, nunca en las escrituras — así que guardar la factura al imprimir podía fallar sin
+reintentar, con la pestaña abierta desde hace rato. Se extendió la misma receta ya probada al único
+punto por donde pasan todas las escrituras. TDD, 4 tests nuevos, 743 tests en verde. Detalle
+completo, y lo que falta para confirmar del todo la causa, en `Papas-el-Labrador/docs/ESTADO.md`
+(1 de octubre de 2026).
+
+**Desplegado:** `scripts/sync-tenant-app.mjs papas-el-labrador` desde el commit `b8f14663` de
+Papas el Labrador, con el `.env.local` que ya traía el proyecto. Solo cambió
+`public/portal/papas-el-labrador/`.
 
 ## La historia de "punto Cali" subida a Las dos palmas (24 de septiembre de 2026)
 
