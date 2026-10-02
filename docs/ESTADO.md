@@ -9,6 +9,23 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
 ---
 
+## Papas el Labrador: "No encontramos ese pedido" era el tope de 1000 filas (2 de octubre de 2026, tarde)
+
+**El código es de `Papas-el-Labrador`, no de aquí**: esto solo documenta el despliegue.
+
+El error siguió después del despliegue de la mañana. **La causa, confirmada:** `labrador.pedidos`
+tiene 1047 filas, y PostgREST entrega como mucho 1000 por respuesta, sin avisar. La recarga que
+dispara Realtime al guardar traía 1000 pedidos, el nuevo quedaba fuera y la factura no lo
+encontraba. Ahora todas las listas se leen por páginas (`leerPaginado()`, commit `f6bfd89a` de Papas
+el Labrador), y el banco de pruebas corta en 1000 como Supabase. 765 tests en verde. Detalle en
+`Papas-el-Labrador/docs/ESTADO.md`.
+
+⚠️ **Vale para las otras empresas.** Las dos palmas y Juan Papas leen por el mismo camino; si su
+adaptador no pagina, les pasará lo mismo cuando una tabla pase de 1000 filas. Está sin revisar.
+
+**Desplegado:** `node scripts/sync-tenant-app.mjs papas-el-labrador <ruta>` desde `f6bfd89a`, con el
+`.env.local` que ya traía el proyecto. Solo cambió `public/portal/papas-el-labrador/`.
+
 ## Papas el Labrador: el reintento por vigencia del token espera, y la carga no pisa datos nuevos (2 de octubre de 2026)
 
 **El código es de `Papas-el-Labrador`, no de aquí** — esto solo documenta el despliegue.
