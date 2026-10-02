@@ -33,14 +33,15 @@ usuario: "cada fix definitivo, que se mantenga"):
 falla si un `.select(` de listas se salta `leerPaginado()`. Contra el código anterior caza
 exactamente las consultas que cortaban. Las RPC no devuelven listas en ninguna de las tres.
 
-**Abierto en Las dos palmas, por decidir:**
+**Las dos palmas, cerrado el mismo día** (`35c4dfd`, pedido del usuario): se portaron los otros
+tres arreglos de El Labrador —token rechazado por su hora, `Failed to fetch` en español, carga vieja
+que pisa la nueva—, adaptados a su código; ahí faltaba hasta la mitigación del 7 de septiembre. Y la
+ayuda del prefijo en Ajustes, que enseñaba `JOS-LL-038327` (prefijo y factura reales de El Labrador)
+desde su primer commit, ahora dice `LDP-000123`; una guarda,
+`src/test/sin-datos-de-otra-empresa.guarda.test.ts`, falla si vuelve a entrar un dato de El
+Labrador a su código. 1024 tests en verde; bundle barrido, limpio.
 
-1. No tiene los otros tres arreglos de El Labrador (token sin vigencia, `Failed to fetch` en
-   español, carga vieja que pisa la nueva). Comparte proyecto de Supabase, así que el desfase de
-   reloj le puede tocar igual. Es código distinto: hay que portarlo, no copiarlo.
-2. Su pantalla de configuración trae de ayuda `Va antes del consecutivo: JOS-LL-038327`, el prefijo
-   y un número de factura reales de El Labrador, desde su primer commit (`7bec414`). Ya estaba en
-   producción antes de hoy.
+Con esto **las tres apps tienen los mismos cuatro arreglos**, cada una con su guarda de paginación.
 
 **Desplegado:** `node scripts/sync-tenant-app.mjs papas-el-labrador <ruta>` desde `f6bfd89a`, con el
 `.env.local` que ya traía el proyecto. Después, `juan-papas` desde `2ff3c626` y `las-dos-palmas`
