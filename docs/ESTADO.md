@@ -5,9 +5,32 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-10-01. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-10-02. **Lee el bloque de abajo antes que nada.**
 
 ---
+
+## Papas el Labrador: el reintento por vigencia del token espera, y la carga no pisa datos nuevos (2 de octubre de 2026)
+
+**El código es de `Papas-el-Labrador`, no de aquí** — esto solo documenta el despliegue.
+
+El dueño reportó "No se pudo abrir la base de datos" (con la causa "La sesión viene con una hora que
+el servidor no acepta…") y "FACTURA — No encontramos ese pedido" al facturar. Dos arreglos, en el
+commit `6d57eff3` de Papas el Labrador:
+
+1. El reintento por `JWT issued at future` pedía sesión nueva y leía al instante, con un token aún más
+   recién emitido —justo el que rechaza un servidor con el reloj unas décimas atrás—, así que no
+   podía curar lo que empeoraba. Ahora espera ~1,5 s y prueba con el mismo token; solo después pide
+   sesión nueva. Corrige también el reintento de escrituras desplegado el 1 de octubre.
+2. `cargar()` podía pisar un pedido recién guardado con una lectura más vieja que él, y la factura
+   (que lo busca en el store) decía que no existía. Ahora una carga vieja se descarta y se vuelve a
+   leer si llegó un cambio a media lectura.
+
+⚠️ Las dos causas están documentadas como **probables, no reproducidas en vivo**: el desfase de reloj
+no se puede provocar a voluntad. Detalle y qué pedir si vuelve a pasar, en
+`Papas-el-Labrador/docs/ESTADO.md` (2 de octubre de 2026).
+
+**Desplegado:** `scripts/sync-tenant-app.mjs papas-el-labrador` desde `6d57eff3`, con el `.env.local`
+que ya traía el proyecto. Solo cambió `public/portal/papas-el-labrador/`.
 
 ## Dos fixes de Papas el Labrador desplegados: factura que no guardaba al imprimir (1 de octubre de 2026)
 
