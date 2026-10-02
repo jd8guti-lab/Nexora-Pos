@@ -9,21 +9,27 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
 ---
 
-## Fix de Papas el Labrador desplegado: las escrituras reintentan un token sin vigencia (1 de octubre de 2026)
+## Dos fixes de Papas el Labrador desplegados: factura que no guardaba al imprimir (1 de octubre de 2026)
 
 **El código es de `Papas-el-Labrador`, no de aquí** — esto solo documenta el despliegue.
 
-Reporte del dueño: al imprimir una factura, a veces la información no quedaba guardada. Se
-encontró que la mitigación del 7 de septiembre para el error "JWT issued at future" (token
-rechazado por su vigencia: pedir uno nuevo y reintentar una vez) solo estaba conectada en la carga
-inicial de datos, nunca en las escrituras — así que guardar la factura al imprimir podía fallar sin
-reintentar, con la pestaña abierta desde hace rato. Se extendió la misma receta ya probada al único
-punto por donde pasan todas las escrituras. TDD, 4 tests nuevos, 743 tests en verde. Detalle
-completo, y lo que falta para confirmar del todo la causa, en `Papas-el-Labrador/docs/ESTADO.md`
-(1 de octubre de 2026).
+Reporte del dueño: al imprimir una factura, a veces la información no quedaba guardada.
 
-**Desplegado:** `scripts/sync-tenant-app.mjs papas-el-labrador` desde el commit `b8f14663` de
-Papas el Labrador, con el `.env.local` que ya traía el proyecto. Solo cambió
+1. **Primer intento** (commit `b8f14663`): la mitigación del 7 de septiembre para "JWT issued at
+   future" (token rechazado por su vigencia) solo reintentaba en la carga inicial de datos, nunca
+   en las escrituras. Se corrigió — sigue siendo una mejora válida — pero el dueño después confirmó
+   que **no era la causa de este reporte**.
+2. **La causa real** (commit `f6f5a84d`): se le fue el internet a mitad de facturar, dos veces. El
+   error se mostraba crudo y en inglés (`Failed to fetch`). Ahora `errores.ts` lo traduce: dice que
+   se perdió la conexión y que es seguro repetirlo. No reintenta solo — una conexión caída no se
+   arregla reintentando al instante.
+
+TDD en los dos, 10 tests nuevos en total, 749 tests en verde. Detalle completo, con la lección de
+por qué costó dos vueltas (faltaba el mensaje de error exacto del primer reporte), en
+`Papas-el-Labrador/docs/ESTADO.md` (1 de octubre de 2026).
+
+**Desplegado:** `scripts/sync-tenant-app.mjs papas-el-labrador` dos veces, la última desde el
+commit `f6f5a84d` de Papas el Labrador, con el `.env.local` que ya traía el proyecto. Solo cambió
 `public/portal/papas-el-labrador/`.
 
 ## La historia de "punto Cali" subida a Las dos palmas (24 de septiembre de 2026)
