@@ -20,11 +20,34 @@ encontraba. Ahora todas las listas se leen por páginas (`leerPaginado()`, commi
 el Labrador), y el banco de pruebas corta en 1000 como Supabase. 765 tests en verde. Detalle en
 `Papas-el-Labrador/docs/ESTADO.md`.
 
-⚠️ **Vale para las otras empresas.** Las dos palmas y Juan Papas leen por el mismo camino; si su
-adaptador no pagina, les pasará lo mismo cuando una tabla pase de 1000 filas. Está sin revisar.
+**Las otras dos empresas tenían el mismo defecto y ya están arregladas y desplegadas** (pedido del
+usuario: "cada fix definitivo, que se mantenga"):
+
+| App | Commit | Qué entró |
+| --- | --- | --- |
+| Papas el Labrador | `111e0a0a` | La guarda (abajo). Sin redespliegue: solo tests |
+| Juan Papas | `2ff3c626` (rama `juan-papas`) | La paginación **y los otros tres arreglos de El Labrador** que no tenía: su código era idéntico al de antes de ellos. Desplegado con `PERMITIR_DATOS_PENDIENTES=1`; barrido del bundle limpio |
+| Las dos palmas | `d7b6c6b` | La paginación, adaptada a su adaptador. Ahí el primero en llegar a 1000 sería el kardex |
+
+**La guarda que lo mantiene**, en las tres: `paginacion.guarda.test.ts` lee `repositorios.ts` y
+falla si un `.select(` de listas se salta `leerPaginado()`. Contra el código anterior caza
+exactamente las consultas que cortaban. Las RPC no devuelven listas en ninguna de las tres.
+
+**Abierto en Las dos palmas, por decidir:**
+
+1. No tiene los otros tres arreglos de El Labrador (token sin vigencia, `Failed to fetch` en
+   español, carga vieja que pisa la nueva). Comparte proyecto de Supabase, así que el desfase de
+   reloj le puede tocar igual. Es código distinto: hay que portarlo, no copiarlo.
+2. Su pantalla de configuración trae de ayuda `Va antes del consecutivo: JOS-LL-038327`, el prefijo
+   y un número de factura reales de El Labrador, desde su primer commit (`7bec414`). Ya estaba en
+   producción antes de hoy.
 
 **Desplegado:** `node scripts/sync-tenant-app.mjs papas-el-labrador <ruta>` desde `f6bfd89a`, con el
-`.env.local` que ya traía el proyecto. Solo cambió `public/portal/papas-el-labrador/`.
+`.env.local` que ya traía el proyecto. Después, `juan-papas` desde `2ff3c626` y `las-dos-palmas`
+desde `d7b6c6b`.
+
+⚠️ **`sync-tenant-app.mjs` pide la ruta del proyecto** como segundo argumento (o
+`RUTA_APP_TENANT`); solo con el slug falla sin construir nada.
 
 ## Papas el Labrador: el reintento por vigencia del token espera, y la carga no pisa datos nuevos (2 de octubre de 2026)
 
