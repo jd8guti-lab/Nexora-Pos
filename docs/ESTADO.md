@@ -21,6 +21,7 @@ podía descartar una carga buena si la siguiente fallaba. Detalle en `Papas-el-L
 | App | Commit | Desplegado |
 | --- | --- | --- |
 | Papas el Labrador | `5c62622f` | sí |
+| Juan Papas | `a18063e8` (rama `juan-papas`) | sí, barrido limpio |
 
 ## Papas el Labrador: "No encontramos ese pedido" era el tope de 1000 filas (2 de octubre de 2026, tarde)
 
