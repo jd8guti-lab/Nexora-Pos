@@ -9,6 +9,57 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
 ---
 
+## Dónde quedamos — 3 de octubre de 2026, fin de la sesión
+
+**Los cuatro repositorios están limpios y al día con su remoto:**
+
+| Repo | Rama | Último commit |
+| --- | --- | --- |
+| Nexora-Pos | `main` | `f1c550ef` |
+| Papas-el-Labrador | `main` | `5c62622f` |
+| Juan-Papas | `juan-papas` | `a18063e8` |
+| Las-dos-palmas | `main` | `3a5504a` |
+
+**Las tres apps cliente están desplegadas en el portal y Vercel dio `success`.** Tienen los mismos
+arreglos:
+
+1. Las listas se leen por páginas: PostgREST corta en 1000 filas sin avisar.
+2. Las escrituras reintentan cuando el token llega con una hora que el servidor rechaza.
+3. **El reintento de las lecturas, que no había corrido nunca**: se clasificaba el mensaje ya
+   traducido, no su causa.
+4. Las cargas se aplican en orden sin perder un éxito.
+5. El error de conexión se ve en español.
+
+Cada arreglo tiene su guarda en los tests. Además, Las dos palmas lee la doble crema en bloques en
+toda la app y su menú lateral se desplaza entero.
+
+**Lo que espera acción del usuario:**
+
+1. **Recargar la app una vez en cada equipo** de las tres empresas, para tomar la versión nueva.
+2. **Si vuelve "No se pudo abrir la base de datos"**, preguntar cuánto tardó la pantalla.
+   - Unos 3 s: el reintento corrió y el desfase de reloj de Supabase es mayor que la espera; lo
+     siguiente es medirlo.
+   - Al instante: ese equipo no recargó.
+3. **Probar en Las dos palmas** un pedido de doble crema con faltante, su factura impresa (bloques
+   y precio por bloque) y el menú en el celular acostado.
+4. **PR #3** (`docs/fichas-producto-papas`): sigue abierto desde el 20 de septiembre.
+5. **Juan Papas**: faltan sus datos reales del negocio. Hoy factura con `PENDIENTE`.
+6. **Papas**: imprimir una factura y decidir el peso de letra del ticket (500 o 400). Sigue pendiente
+   desde el 4 de septiembre.
+
+**El sitio web, en pausa desde agosto** (ver "En curso" y "Siguiente"):
+- Las secciones "Lo que nos define" y los siete módulos, sin aprobar.
+- Lighthouse de rendimiento en 82-92 en localhost; falta medirlo en Vercel.
+- Los `TODO(guti)`.
+
+**Reglas que salieron de estas sesiones** (también en la memoria del asistente):
+- Cada arreglo, definitivo: causa confirmada con datos antes de desplegar, aplicado en todas las
+  apps afectadas y con una guarda que impida que vuelva.
+- Un test que simula un error con un formato distinto del real prueba una ficción.
+- En las apps cliente no se corre Prettier: no tienen configuración y reformatea archivos enteros.
+
+---
+
 ## Las dos palmas: la doble crema en bloques en toda la app, y el menú que se desplaza (3 de octubre de 2026)
 
 **El código es de `Las-dos-palmas`** (`c91a150` y `3a5504a`). Esta entrada solo documenta el
@@ -217,8 +268,8 @@ grep -rliE "labrador|fukubar|jose moreno|16645676|3164164263|jos-ll" public/port
 - **Los datos reales del negocio.**
 - **Juan Papas no tiene repositorio propio: vive como rama `juan-papas` de
   `jd8guti-lab/Papas-el-Labrador`** (decisión del usuario, 20 de septiembre de 2026). Comparte la
-  historia desde `fb597fb5`, así que la rama sale limpia. **Falta subirla**: el push desde el
-  asistente lo bloqueó el control de permisos, y los comandos están en el ESTADO de Juan Papas.
+  historia desde `fb597fb5`. **Ya está subida** (comprobado el 2 de octubre de 2026 con
+  `git ls-remote`).
   ⛔ **Esa rama no se fusiona nunca en `main`**: sería un *fast-forward* sin conflictos que dejaría
   a El Labrador con el esquema, la semilla y la identidad de Juan Papas.
 - **El PR #3 va a chocar con esta entrada**: añade su propia sección del 20 de septiembre justo
@@ -979,6 +1030,9 @@ Lo que se arregló aquí, medido antes y después:
 ---
 
 ## En curso
+
+> **En pausa desde finales de agosto de 2026.** Desde entonces todo el trabajo ha sido el portal y
+> las apps cliente (ver los bloques de arriba). Lo de abajo es dónde se quedó el sitio web.
 
 **Rehacer cinco secciones siguiendo el arte de referencia** (los PNG en la raíz), una por una y
 verificando cada una antes de seguir. Hecho: **nav**, **hero** y **"El problema"**. Faltan: "Lo que nos define" (seis tarjetas) y los siete módulos con la tarjeta oscura
