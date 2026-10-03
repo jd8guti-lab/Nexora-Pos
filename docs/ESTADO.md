@@ -72,10 +72,14 @@ toda la app y su menú lateral se desplaza entero.
    corrió.
    - Al instante y sin la edad del token: ese equipo no recargó la versión nueva.
    - **Pedir a Supabase PostgREST ≥ 14.18**: es la corrección de fondo.
-3. **Clientes duplicados en Las dos palmas:** pendiente la consulta de solo lectura que se le dio al
-   usuario. Sospechosos: la carga de punto Cali (clientes `xls-cli-…` creados sin buscar los
-   existentes) y que la app solo impide repetir el teléfono, que es opcional desde el 4 de
-   septiembre.
+3. ~~**Clientes duplicados en Las dos palmas.**~~ **Resuelto el 3 de octubre.**
+   - Había uno solo: Amanda Tobar.
+   - Venía de la carga de punto Cali: el Excel la escribe "Amanda Tobar" y "Amanda", y la carga no
+     junta nombres distintos.
+   - Se unió con `Las-dos-palmas/docs/cargas/2026-09-punto-cali/2026-10-03-unir-amanda-tobar.sql`,
+     probado antes en PGlite. La comprobación en producción dio `1 | 2 | false`.
+   - La sospecha del teléfono opcional quedó descartada.
+   - Detalle en `Las-dos-palmas/docs/ESTADO.md` §0.
 4. **Probar en Las dos palmas** un pedido de doble crema con faltante, su factura impresa (bloques
    y precio por bloque) y el menú en el celular acostado.
 5. **PR #3** (`docs/fichas-producto-papas`): sigue abierto desde el 20 de septiembre.
