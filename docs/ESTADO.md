@@ -5,9 +5,22 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-10-02. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-10-03. **Lee el bloque de abajo antes que nada.**
 
 ---
+
+## El reintento de las lecturas no corría nunca: arreglado en las tres apps (3 de octubre de 2026)
+
+**El código es de cada app cliente.** Papas el Labrador volvió a mostrar "No se pudo abrir la base de
+datos — la sesión viene con una hora que el servidor no acepta". La causa raíz: el adaptador envuelve el
+error de PostgREST en uno en español y el reintento buscaba la frase en inglés en el mensaje de afuera,
+así que **ninguna lectura se reintentó desde el 7 de septiembre**. Además, `cargar()` (2 de octubre)
+podía descartar una carga buena si la siguiente fallaba. Detalle en `Papas-el-Labrador/docs/ESTADO.md`
+(3 de octubre).
+
+| App | Commit | Desplegado |
+| --- | --- | --- |
+| Papas el Labrador | `5c62622f` | sí |
 
 ## Papas el Labrador: "No encontramos ese pedido" era el tope de 1000 filas (2 de octubre de 2026, tarde)
 
