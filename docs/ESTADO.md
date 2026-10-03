@@ -9,6 +9,24 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
 ---
 
+## Las dos palmas: la doble crema en bloques en toda la app, y el menú que se desplaza (3 de octubre de 2026)
+
+**El código es de `Las-dos-palmas`** (`c91a150` y `3a5504a`). Esta entrada solo documenta el
+despliegue.
+
+- **Doble crema "únicamente en bloques"** en todos los módulos: pedidos, factura y WhatsApp,
+  ventas, reportes y su Excel, existencias, kardex, transformaciones, mínimos, precios pactados,
+  clientes, proveedores y compras.
+  - La factura va con precio por bloque, por decisión del dueño.
+  - Los totales mezclados y las mermas siguen en kilos.
+  - Una guarda cuenta los kilos sueltos de cada pantalla y falla con uno nuevo.
+- **El menú lateral:** medido antes del arreglo, con el celular acostado tenía 2 de 11 opciones a la
+  vista. Ahora se desplaza el cajón entero y el fondo no se mueve. Verificado en el navegador a
+  667×375 y 1280×600.
+- **1080 tests en verde.** Bundle barrido: limpio.
+
+Detalle en `Las-dos-palmas/docs/ESTADO.md` §0 (3 de octubre).
+
 ## El reintento de las lecturas no corría nunca: arreglado en las tres apps (3 de octubre de 2026)
 
 **El código es de cada app cliente.** Papas el Labrador volvió a mostrar "No se pudo abrir la base de
