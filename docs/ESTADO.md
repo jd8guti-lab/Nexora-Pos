@@ -9,16 +9,47 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
 ---
 
+## "JWT issued at future" tiene causa: un error de PostgREST (3 de octubre de 2026, noche)
+
+El error volvió, ahora también en Las dos palmas ("…no se pudo listar gastos. Revisa que la fecha y
+la hora de este equipo…").
+
+**La causa raíz, confirmada en fuentes públicas** (supabase/discussions #48123):
+- PostgREST valida el token con una hora en caché que a veces se queda vieja, y rechaza tokens
+  recién emitidos.
+- Se corrigió en **PostgREST v14.18**, pero Supabase devolvió los proyectos alojados a la **v14.5**,
+  y el usuario no puede actualizarse solo.
+- No es la hora del equipo. Pedir sesión nueva —lo que hacían los dos arreglos anteriores— lo
+  empeora.
+
+**Arreglado en las tres apps y desplegado:**
+
+| App | Commit |
+| --- | --- |
+| Papas el Labrador | `4e795280` |
+| Juan Papas | `4da6f44a` |
+| Las dos palmas | `51499df` |
+
+Qué hace ahora:
+- Esperas de 1, 2, 4 y 8 s con el mismo token.
+- Sesión nueva solo si el token está vencido.
+- El mensaje ya no manda a revisar la hora.
+- Al rendirse, muestra la edad del token: "token de hace 0 s" confirma esta causa; "token de dentro
+  de N s" apuntaría al reloj del equipo.
+
+**Pendiente del usuario:** pedir a Supabase, por soporte, que el proyecto `ptypwhpthexblwhwdkat` pase a
+PostgREST ≥ 14.18. Es la corrección de fondo.
+
 ## Dónde quedamos — 3 de octubre de 2026, fin de la sesión
 
 **Los cuatro repositorios están limpios y al día con su remoto:**
 
 | Repo | Rama | Último commit |
 | --- | --- | --- |
-| Nexora-Pos | `main` | `f1c550ef` |
-| Papas-el-Labrador | `main` | `5c62622f` |
-| Juan-Papas | `juan-papas` | `a18063e8` |
-| Las-dos-palmas | `main` | `3a5504a` |
+| Nexora-Pos | `main` | (este commit) |
+| Papas-el-Labrador | `main` | `4e795280` |
+| Juan-Papas | `juan-papas` | `4da6f44a` |
+| Las-dos-palmas | `main` | `51499df` |
 
 **Las tres apps cliente están desplegadas en el portal y Vercel dio `success`.** Tienen los mismos
 arreglos:
@@ -36,15 +67,20 @@ toda la app y su menú lateral se desplaza entero.
 **Lo que espera acción del usuario:**
 
 1. **Recargar la app una vez en cada equipo** de las tres empresas, para tomar la versión nueva.
-2. **Si vuelve "No se pudo abrir la base de datos"**, preguntar cuánto tardó la pantalla.
-   - Unos 3 s: el reintento corrió y el desfase de reloj de Supabase es mayor que la espera; lo
-     siguiente es medirlo.
-   - Al instante: ese equipo no recargó.
-3. **Probar en Las dos palmas** un pedido de doble crema con faltante, su factura impresa (bloques
+2. **Si vuelve "No se pudo abrir la base de datos"**, pedir el pantallazo: el mensaje trae la edad
+   del token (ver el bloque de arriba), y la pantalla tarda unos 15 s en salir si el reintento
+   corrió.
+   - Al instante y sin la edad del token: ese equipo no recargó la versión nueva.
+   - **Pedir a Supabase PostgREST ≥ 14.18**: es la corrección de fondo.
+3. **Clientes duplicados en Las dos palmas:** pendiente la consulta de solo lectura que se le dio al
+   usuario. Sospechosos: la carga de punto Cali (clientes `xls-cli-…` creados sin buscar los
+   existentes) y que la app solo impide repetir el teléfono, que es opcional desde el 4 de
+   septiembre.
+4. **Probar en Las dos palmas** un pedido de doble crema con faltante, su factura impresa (bloques
    y precio por bloque) y el menú en el celular acostado.
-4. **PR #3** (`docs/fichas-producto-papas`): sigue abierto desde el 20 de septiembre.
-5. **Juan Papas**: faltan sus datos reales del negocio. Hoy factura con `PENDIENTE`.
-6. **Papas**: imprimir una factura y decidir el peso de letra del ticket (500 o 400). Sigue pendiente
+5. **PR #3** (`docs/fichas-producto-papas`): sigue abierto desde el 20 de septiembre.
+6. **Juan Papas**: faltan sus datos reales del negocio. Hoy factura con `PENDIENTE`.
+7. **Papas**: imprimir una factura y decidir el peso de letra del ticket (500 o 400). Sigue pendiente
    desde el 4 de septiembre.
 
 **El sitio web, en pausa desde agosto** (ver "En curso" y "Siguiente"):
