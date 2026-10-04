@@ -22,7 +22,10 @@ reporte del dueño de ese día: sus puntos 1 a 3 ya estaban desplegados, y estos
   que sea el dueño.
 - **La consulta de parecidos** (`Las-dos-palmas/docs/consultas/2026-10-03-clientes-parecidos.sql`)
   encontró 7 parejas, todas de la carga de punto Cali. En 6, el nombre completo va hasta el 10 de
-  septiembre y el corto desde el 14. **El SQL de unión está en preparación.**
+  septiembre y el corto desde el 14. **Unidas el mismo día** con
+  `Las-dos-palmas/docs/cargas/2026-09-punto-cali/2026-10-03-unir-siete-parejas.sql`, probado antes
+  en PGlite. La comprobación en producción dio exactamente los pedidos esperados. Con Amanda, la
+  carga dejó 8 duplicados y ya no queda ninguno visible.
 - El paquete desplegado trae los textos nuevos, apunta al proyecto de Supabase y no lleva datos de
   ejemplo.
 
