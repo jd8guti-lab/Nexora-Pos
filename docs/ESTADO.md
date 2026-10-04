@@ -9,6 +9,23 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
 ---
 
+## Las dos palmas: nombres parecidos y PIN de fábrica (3 de octubre de 2026, noche)
+
+El código es de `Las-dos-palmas` (`85bac36`); esta entrada documenta el despliegue. Respondía al
+reporte del dueño de ese día: sus puntos 1 a 3 ya estaban desplegados, y estos son el 4 y el 5.
+
+- **Nombres parecidos.** Al crear o editar un cliente, la app avisa "¿Es la misma persona?" si ya
+  hay uno cuyo nombre contiene todas las palabras del otro ("Eliud" / "Eliud Ibarra"). Avisa, no
+  bloquea.
+- **PIN de fábrica.** El 1234 sirve una vez: quien entra con él tiene que poner uno propio, y no
+  se puede volver a él. **El primero que entre a administrador fija el PIN de todos los equipos**:
+  que sea el dueño.
+- **La consulta de parecidos** (`Las-dos-palmas/docs/consultas/2026-10-03-clientes-parecidos.sql`)
+  encontró 7 parejas, todas de la carga de punto Cali. En 6, el nombre completo va hasta el 10 de
+  septiembre y el corto desde el 14. **El SQL de unión está en preparación.**
+- El paquete desplegado trae los textos nuevos, apunta al proyecto de Supabase y no lleva datos de
+  ejemplo.
+
 ## "JWT issued at future" tiene causa: un error de PostgREST (3 de octubre de 2026, noche)
 
 El error volvió, ahora también en Las dos palmas ("…no se pudo listar gastos. Revisa que la fecha y
