@@ -17,16 +17,46 @@ factura…` de este repo.
 
 **Cómo se desplegó:**
 - **799 tests en verde** en Juan Papas, después de `npm ci`.
-- **El SQL:** la consulta 0 encontró un solo producto hecho a mano, "Capira cero lavada", con el SKU
-  `CAP-CER-LAV`, el mismo que trae la migración para "Papa Capira Cero". El paso 2 lo saltó por SKU:
-  no quedó duplicado y la consulta 4 da **15** productos nuevos, no 16. Con el que ya estaba son
-  los 16. No había proveedores; entraron los 4.
-  - Si el dueño quiere el nombre igual a los demás, lo renombra desde Productos. Es solo el nombre.
+- **El SQL** se corrió en la tarde, no en la mañana. Ver el bloque de abajo, "La migración que no
+  había corrido".
 - **El paquete** se construyó con `PERMITIR_DATOS_PENDIENTES=1`, porque la identidad sigue en
   `PENDIENTE`.
 - **El barrido** solo encontró "labrador" en el proveedor (`proveedor-el-labrador`, "El labrador").
   El paquete trae "Solo guardar" y "Solo en esta factura", y apunta al proyecto de Supabase.
 - Los cinco chequeos de Nexora en verde.
+
+### La migración que no había corrido (6 de octubre de 2026, tarde)
+
+El dueño reportó que no aparecían ni los productos ni los proveedores. **La migración del catálogo
+no había llegado a la base**, aunque esta entrada decía que sí:
+- En la mañana se reportó que la consulta 4 había dado `15 | 4`, y se dio por bueno sin mirarlo en la
+  base.
+- `pg_stat_user_tables` mostró después la verdad: en toda la historia de la tabla de productos se
+  había insertado **una** fila, y en la de proveedores **cero**. Nada se borró.
+- Tampoco existían los tamaños "Tercera" y "Rechazo" del paso 1.
+
+**Además**, "Capira cero lavada", el único producto, estaba **desactivado** desde el 1 de octubre.
+Por eso la app mostraba cero productos. La app y el despliegue estaban bien.
+
+**Descartado con datos, por si vuelve a pasar algo parecido:**
+- El usuario, los pedidos y la empresa `juan-papas` tienen el mismo `tenant_id`.
+- El rol `authenticated` puede leer las dos tablas.
+- La app lee con `select *`, sin filtros.
+- El paquete desplegado habla con el esquema `juan_papas`.
+- Las consultas están en `Juan-Papas/docs/consultas/2026-10-06-diagnostico-catalogo*.sql`.
+
+**Arreglado:**
+- Los pasos 1 a 3, corridos de nuevo con `returning`. El editor mostró las filas escritas: Tercera
+  y Rechazo, los 15 productos y los 4 proveedores.
+- "Capira cero lavada" reactivado y renombrado a "Papa Capira Cero"
+  (`Juan-Papas/docs/migraciones/2026-10-06-reactivar-capira-cero.sql`), por decisión del usuario.
+- Quedan **16 productos activos y 4 proveedores**.
+
+⚠️ **La trampa, y su guarda.** En el SQL Editor de Supabase, un `insert` sin `returning` responde
+"Success. No rows returned" tanto si escribió filas como si no, así que no hay forma de saber desde
+la pantalla si corrió. La migración ya termina cada `insert` en `returning`. **Regla: un SQL que
+escribe en producción se da por corrido solo con la salida pegada del editor, no con un número
+contado de memoria.**
 
 Lo que pidió el dueño de Juan Papas:
 1. La factura ya no imprime el NIT del negocio. El `Nit/CC:` del cliente se queda, si lo tiene.
@@ -48,8 +78,8 @@ un dato filtrado.
 
 **Lo que falta:**
 - Que el dueño recargue la app en cada equipo.
-- Revisar en `/portal/juan-papas/`, con login:
-  - los 16 productos y los 4 proveedores;
+- Revisar en `/portal/juan-papas/`, con login y después de Ctrl+F5:
+  - Productos dice "16 activos de 16", y están los 4 proveedores;
   - un pedido con "Solo en esta factura" y "Solo guardar", que no debe crear cliente;
   - la factura, sin la línea "Nit".
 - Confirmar con el dueño dos supuestos: Rechazo es papa entera sin versión "Sin Lavar", y
