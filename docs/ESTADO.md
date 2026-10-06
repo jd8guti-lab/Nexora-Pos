@@ -11,8 +11,22 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
 ## Juan Papas: factura sin NIT, "Solo guardar", cliente de un solo nombre y su catálogo (6 de octubre de 2026)
 
-**El código está hecho, probado y subido a la rama `juan-papas`** de `jd8guti-lab/Papas-el-Labrador`
-(`1ea9291`). **Todavía NO está desplegado en el portal**: eso lo hace David (ver "Lo que falta").
+**El código está en la rama `juan-papas`** de `jd8guti-lab/Papas-el-Labrador` (`1ea9291`).
+**Desplegado en el portal el 6 de octubre** con el commit `deploy: Juan Papas sin NIT en la
+factura…` de este repo.
+
+**Cómo se desplegó:**
+- **799 tests en verde** en Juan Papas, después de `npm ci`.
+- **El SQL:** la consulta 0 encontró un solo producto hecho a mano, "Capira cero lavada", con el SKU
+  `CAP-CER-LAV`, el mismo que trae la migración para "Papa Capira Cero". El paso 2 lo saltó por SKU:
+  no quedó duplicado y la consulta 4 da **15** productos nuevos, no 16. Con el que ya estaba son
+  los 16. No había proveedores; entraron los 4.
+  - Si el dueño quiere el nombre igual a los demás, lo renombra desde Productos. Es solo el nombre.
+- **El paquete** se construyó con `PERMITIR_DATOS_PENDIENTES=1`, porque la identidad sigue en
+  `PENDIENTE`.
+- **El barrido** solo encontró "labrador" en el proveedor (`proveedor-el-labrador`, "El labrador").
+  El paquete trae "Solo guardar" y "Solo en esta factura", y apunta al proyecto de Supabase.
+- Los cinco chequeos de Nexora en verde.
 
 Lo que pidió el dueño de Juan Papas:
 1. La factura ya no imprime el NIT del negocio. El `Nit/CC:` del cliente se queda, si lo tiene.
@@ -33,10 +47,11 @@ nombre; cualquier otra (`ElLabrador_`, `jose moreno`, `16645676`, `jos-ll`, `fuk
 un dato filtrado.
 
 **Lo que falta:**
-- Correr `Juan-Papas/docs/migraciones/2026-10-06-catalogo-y-proveedores.sql` en Supabase. La base de
-  producción ya está abierta y no recibe la semilla nueva sola. El SQL solo agrega.
-- Construir y desplegar: `PERMITIR_DATOS_PENDIENTES=1 node scripts/sync-tenant-app.mjs juan-papas
-  ../Juan-Papas`, barrer el bundle y subir `main`.
+- Que el dueño recargue la app en cada equipo.
+- Revisar en `/portal/juan-papas/`, con login:
+  - los 16 productos y los 4 proveedores;
+  - un pedido con "Solo en esta factura" y "Solo guardar", que no debe crear cliente;
+  - la factura, sin la línea "Nit".
 - Confirmar con el dueño dos supuestos: Rechazo es papa entera sin versión "Sin Lavar", y
   Troquelada y Pelada son procesadas (arroba/kilo) de tipo Capira.
 
