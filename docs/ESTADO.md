@@ -148,7 +148,7 @@ toda la app y su menú lateral se desplaza entero.
    - Detalle en `Las-dos-palmas/docs/ESTADO.md` §0.
 4. **Probar en Las dos palmas** un pedido de doble crema con faltante, su factura impresa (bloques
    y precio por bloque) y el menú en el celular acostado.
-5. **PR #3** (`docs/fichas-producto-papas`): conflicto resuelto el 6 de octubre; listo para fusionar.
+5. ~~**PR #3**~~ (`docs/fichas-producto-papas`): **fusionado el 6 de octubre** (`7c9eaab6`).
 6. **Juan Papas**: faltan sus datos reales del negocio. Hoy factura con `PENDIENTE`.
 7. **Papas**: imprimir una factura y decidir el peso de letra del ticket (500 o 400). Sigue pendiente
    desde el 4 de septiembre.
@@ -400,7 +400,7 @@ mínimo —tres tipos, cuatro tamaños— y leerlo hace concluir que "Entera" no
 operación tiene doce tamaños y seis tipos. Es la trampa 1 otra vez: la fuente autorizada es la
 base, no lo que el repositorio recuerde.
 
-(Llegó por el PR #3, abierto el 20 de septiembre. El conflicto con `main` se resolvió el 6 de octubre.)
+(Llegó por el PR #3, abierto el 20 de septiembre y fusionado el 6 de octubre como `7c9eaab6`.)
 
 ---
 
