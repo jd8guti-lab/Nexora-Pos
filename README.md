@@ -110,7 +110,7 @@ Los tokens de marca están en `app/globals.css` (bloque `@theme`), no en un `tai
 ## Marca en corto
 
 `nexora-pos` siempre en minúscula. Naranja `#FF7A00` como **acento**, nunca como fondo
-mayoritario. Plus Jakarta Sans (Poppins solo para el wordmark). Español de Colombia, tuteo, sin humo, sin emojis. El detalle completo está
+mayoritario. Figtree (Poppins solo para el wordmark). Español de Colombia, tuteo, sin humo, sin emojis. El detalle completo está
 en [CLAUDE.md](CLAUDE.md) — respétalo.
 
 ## Lo que falta
@@ -128,16 +128,17 @@ Ver [docs/ESTADO.md](docs/ESTADO.md). En grande:
 5. **Assets pendientes:** el logo sobre fondo oscuro y los SVG vectoriales. Mientras no
    existan, sobre `ink-900` y sobre la franja naranja el nombre se compone en Poppins (token `font-wordmark`) con
    los tokens de marca — nunca se recolorea el PNG.
-6. **Conectar Supabase de verdad.** Hoy las apps de los clientes escriben en IndexedDB del
-   navegador, no en la base: comprobado capturando su tráfico, cero peticiones a `*.supabase.co`.
-   El código para conectarlas ya está escrito y probado; faltan los pasos operativos de
-   [docs/PUESTA-EN-MARCHA-SUPABASE.md](docs/PUESTA-EN-MARCHA-SUPABASE.md), empezando por
-   `backend/0-limpiar-public.sql`.
-7. **Las dos palmas: su app ya está en el portal, falta registrarla en la base.** Su código
-   apareció el 3 de septiembre de 2026 (`jd8guti-lab/Las-dos-palmas`) y su build ya vive en
-   `public/portal/las-dos-palmas/`, construido contra Supabase. Lo que queda son dos sentencias
-   que se corren a mano: [backend/registrar-las-dos-palmas.sql](backend/registrar-las-dos-palmas.sql),
-   con el NIT y el correo del dueño por rellenar.
+6. **El `JWT issued at future` de Papas.** Es de la sesión que emite Supabase Auth, no del bundle:
+   reconstruir y desplegar no lo toca. Descartados el reloj de Supabase, el del equipo y el `iat`
+   del anon key. Falta el `iat` del token del navegador donde falla.
+7. **Las dos palmas: queda un `TODO(guti)` en su registro.** El correo del dueño en
+   [backend/registrar-las-dos-palmas.sql](backend/registrar-las-dos-palmas.sql). El NIT ya está.
+
+> **Lo que decía aquí sobre IndexedDB era falso.** Hasta el 2026-09-13 este README afirmaba que las
+> apps de los clientes escribían en IndexedDB y no en Supabase. Las dos llevan su anon key y apuntan
+> a la base; la afirmación salió de un patrón de búsqueda mal hecho sobre los bundles y el
+> `ESTADO.md` del 7 de septiembre ya la había desmentido. **Antes de repetir un diagnóstico de este
+> archivo, míralo contra `docs/ESTADO.md`, que es el que se actualiza en cada tarea.**
 
 > **Ojo:** ningún componente lleva copy hardcodeado. Si quieres cambiar un texto, se cambia en
 > `content/`, no en el JSX.

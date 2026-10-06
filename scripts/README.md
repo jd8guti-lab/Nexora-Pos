@@ -26,7 +26,7 @@ node scripts/crear-usuario-portal.mjs papasellabrador@user.com papas-el-labrador
 3. Asigna el tenant al usuario en `app_metadata.tenant_id`
 4. La contraseña se pide por teclado, no por argumento (seguridad)
 
-**Sale usado en:** PASO 3 de `docs/PUESTA-EN-MARCHA.md`
+**Se usa en:** el paso 3 de `docs/PUESTA-EN-MARCHA-SUPABASE.md`
 
 ---
 
@@ -45,12 +45,18 @@ node scripts/sync-tenant-app.mjs papas-el-labrador "C:\Users\VICTUS\projects\Pap
 ```
 
 **Qué hace:**
-1. Verifica que `.env.local` existe en Nexora (con claves de Supabase)
-2. Construye `frontend/` del repo de Papas con `npm run build`
-3. Copia el dist a `public/portal/papas-el-labrador/`
+1. Verifica que hay configuración de Supabase (`VITE_*`) **en el repo del cliente**, porque Vite
+   incrusta esas variables en el bundle al construir: lo que no esté ahí en ese momento no existe
+   después
+2. Construye el proyecto del cliente con `npm run build`, con la ruta base `/portal/<slug>/`
+3. Copia su `dist/` a `public/portal/<slug>/`
 4. Imprime los comandos git necesarios para commitear
 
-**Sale usado en:** PASO 6 de `docs/PUESTA-EN-MARCHA.md`
+> El proyecto del cliente se construye **en su propia carpeta**, la que le pasas como segundo
+> argumento. Este repositorio no tiene ni debe tener un `frontend/`: llegó a haber uno con 260 MB de
+> `node_modules` y ni un archivo de código, y está en `.gitignore` para que no vuelva.
+
+**Se usa en:** el paso 6 de `docs/PUESTA-EN-MARCHA-SUPABASE.md`
 
 ---
 
@@ -87,4 +93,4 @@ node scripts/sync-tenant-app.mjs papas-el-labrador "C:\Users\VICTUS\projects\Pap
 
 ---
 
-Ver también: `docs/PUESTA-EN-MARCHA.md`
+Ver también: `docs/PUESTA-EN-MARCHA-SUPABASE.md`

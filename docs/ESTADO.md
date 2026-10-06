@@ -5,18 +5,391 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-09-20. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-10-06. **Lee el bloque de abajo antes que nada.**
 
 ---
 
-## Lo hecho el 20 de septiembre de 2026
+## Juan Papas: factura sin NIT, "Solo guardar", cliente de un solo nombre y su catálogo (6 de octubre de 2026)
+
+**El código está en la rama `juan-papas`** de `jd8guti-lab/Papas-el-Labrador` (`1ea9291`).
+**Desplegado en el portal el 6 de octubre** con el commit `deploy: Juan Papas sin NIT en la
+factura…` de este repo.
+
+**Cómo se desplegó:**
+- **799 tests en verde** en Juan Papas, después de `npm ci`.
+- **El SQL:** la consulta 0 encontró un solo producto hecho a mano, "Capira cero lavada", con el SKU
+  `CAP-CER-LAV`, el mismo que trae la migración para "Papa Capira Cero". El paso 2 lo saltó por SKU:
+  no quedó duplicado y la consulta 4 da **15** productos nuevos, no 16. Con el que ya estaba son
+  los 16. No había proveedores; entraron los 4.
+  - Si el dueño quiere el nombre igual a los demás, lo renombra desde Productos. Es solo el nombre.
+- **El paquete** se construyó con `PERMITIR_DATOS_PENDIENTES=1`, porque la identidad sigue en
+  `PENDIENTE`.
+- **El barrido** solo encontró "labrador" en el proveedor (`proveedor-el-labrador`, "El labrador").
+  El paquete trae "Solo guardar" y "Solo en esta factura", y apunta al proyecto de Supabase.
+- Los cinco chequeos de Nexora en verde.
+
+Lo que pidió el dueño de Juan Papas:
+1. La factura ya no imprime el NIT del negocio. El `Nit/CC:` del cliente se queda, si lo tiene.
+2. El pedido tiene "Guardar e imprimir" y "Solo guardar".
+3. Se puede facturar a un nombre sin crear el cliente ("Solo en esta factura: «…»" en el buscador).
+   El pedido va contra el consumidor final y su deuda se suma a la de él.
+4. 16 productos: las seis capiras (Comercial, Cero, Semicero, Pollera, Porción, Tercera), cada una
+   también "Sin Lavar", más Rechazo, Troquelada, Amarilla Picada y Pelada, con las presentaciones de
+   El Labrador. Sin precio.
+5. Proveedores: María Bonita, El labrador, Diego Muñoz, La especial.
+
+**799 tests en verde**, probado en el navegador en modo local. Detalle en
+`Juan-Papas/docs/ESTADO.md` (6 de octubre).
+
+⚠️ **El barrido del bundle ahora encuentra "labrador" a propósito**: "El labrador" es un proveedor
+real de Juan Papas. Al barrer `public/portal/juan-papas/`, la única coincidencia válida es ese
+nombre; cualquier otra (`ElLabrador_`, `jose moreno`, `16645676`, `jos-ll`, `fukubar`) sigue siendo
+un dato filtrado.
+
+**Lo que falta:**
+- Que el dueño recargue la app en cada equipo.
+- Revisar en `/portal/juan-papas/`, con login:
+  - los 16 productos y los 4 proveedores;
+  - un pedido con "Solo en esta factura" y "Solo guardar", que no debe crear cliente;
+  - la factura, sin la línea "Nit".
+- Confirmar con el dueño dos supuestos: Rechazo es papa entera sin versión "Sin Lavar", y
+  Troquelada y Pelada son procesadas (arroba/kilo) de tipo Capira.
+
+## Las dos palmas: nombres parecidos y PIN de fábrica (3 de octubre de 2026, noche)
+
+El código es de `Las-dos-palmas` (`85bac36`); esta entrada documenta el despliegue. Respondía al
+reporte del dueño de ese día: sus puntos 1 a 3 ya estaban desplegados, y estos son el 4 y el 5.
+
+- **Nombres parecidos.** Al crear o editar un cliente, la app avisa "¿Es la misma persona?" si ya
+  hay uno cuyo nombre contiene todas las palabras del otro ("Eliud" / "Eliud Ibarra"). Avisa, no
+  bloquea.
+- **PIN de fábrica.** El 1234 sirve una vez: quien entra con él tiene que poner uno propio, y no
+  se puede volver a él. **El primero que entre a administrador fija el PIN de todos los equipos**:
+  que sea el dueño.
+- **La consulta de parecidos** (`Las-dos-palmas/docs/consultas/2026-10-03-clientes-parecidos.sql`)
+  encontró 7 parejas, todas de la carga de punto Cali. En 6, el nombre completo va hasta el 10 de
+  septiembre y el corto desde el 14. **Unidas el mismo día** con
+  `Las-dos-palmas/docs/cargas/2026-09-punto-cali/2026-10-03-unir-siete-parejas.sql`, probado antes
+  en PGlite. La comprobación en producción dio exactamente los pedidos esperados. Con Amanda, la
+  carga dejó 8 duplicados y ya no queda ninguno visible.
+- El paquete desplegado trae los textos nuevos, apunta al proyecto de Supabase y no lleva datos de
+  ejemplo.
+
+## "JWT issued at future" tiene causa: un error de PostgREST (3 de octubre de 2026, noche)
+
+El error volvió, ahora también en Las dos palmas ("…no se pudo listar gastos. Revisa que la fecha y
+la hora de este equipo…").
+
+**La causa raíz, confirmada en fuentes públicas** (supabase/discussions #48123):
+- PostgREST valida el token con una hora en caché que a veces se queda vieja, y rechaza tokens
+  recién emitidos.
+- Se corrigió en **PostgREST v14.18**, pero Supabase devolvió los proyectos alojados a la **v14.5**,
+  y el usuario no puede actualizarse solo.
+- No es la hora del equipo. Pedir sesión nueva —lo que hacían los dos arreglos anteriores— lo
+  empeora.
+
+**Arreglado en las tres apps y desplegado:**
+
+| App | Commit |
+| --- | --- |
+| Papas el Labrador | `4e795280` |
+| Juan Papas | `4da6f44a` |
+| Las dos palmas | `51499df` |
+
+Qué hace ahora:
+- Esperas de 1, 2, 4 y 8 s con el mismo token.
+- Sesión nueva solo si el token está vencido.
+- El mensaje ya no manda a revisar la hora.
+- Al rendirse, muestra la edad del token: "token de hace 0 s" confirma esta causa; "token de dentro
+  de N s" apuntaría al reloj del equipo.
+
+**Pendiente del usuario:** pedir a Supabase, por soporte, que el proyecto `ptypwhpthexblwhwdkat` pase a
+PostgREST ≥ 14.18. Es la corrección de fondo.
+
+## Dónde quedamos — 3 de octubre de 2026, fin de la sesión
+
+**Los cuatro repositorios están limpios y al día con su remoto:**
+
+| Repo | Rama | Último commit |
+| --- | --- | --- |
+| Nexora-Pos | `main` | (este commit) |
+| Papas-el-Labrador | `main` | `4e795280` |
+| Juan-Papas | `juan-papas` | `4da6f44a` |
+| Las-dos-palmas | `main` | `51499df` |
+
+**Las tres apps cliente están desplegadas en el portal y Vercel dio `success`.** Tienen los mismos
+arreglos:
+
+1. Las listas se leen por páginas: PostgREST corta en 1000 filas sin avisar.
+2. Las escrituras reintentan cuando el token llega con una hora que el servidor rechaza.
+3. **El reintento de las lecturas, que no había corrido nunca**: se clasificaba el mensaje ya
+   traducido, no su causa.
+4. Las cargas se aplican en orden sin perder un éxito.
+5. El error de conexión se ve en español.
+
+Cada arreglo tiene su guarda en los tests. Además, Las dos palmas lee la doble crema en bloques en
+toda la app y su menú lateral se desplaza entero.
+
+**Lo que espera acción del usuario:**
+
+1. **Recargar la app una vez en cada equipo** de las tres empresas, para tomar la versión nueva.
+2. **Si vuelve "No se pudo abrir la base de datos"**, pedir el pantallazo: el mensaje trae la edad
+   del token (ver el bloque de arriba), y la pantalla tarda unos 15 s en salir si el reintento
+   corrió.
+   - Al instante y sin la edad del token: ese equipo no recargó la versión nueva.
+   - **Pedir a Supabase PostgREST ≥ 14.18**: es la corrección de fondo.
+3. ~~**Clientes duplicados en Las dos palmas.**~~ **Resuelto el 3 de octubre.**
+   - Había uno solo: Amanda Tobar.
+   - Venía de la carga de punto Cali: el Excel la escribe "Amanda Tobar" y "Amanda", y la carga no
+     junta nombres distintos.
+   - Se unió con `Las-dos-palmas/docs/cargas/2026-09-punto-cali/2026-10-03-unir-amanda-tobar.sql`,
+     probado antes en PGlite. La comprobación en producción dio `1 | 2 | false`.
+   - La sospecha del teléfono opcional quedó descartada.
+   - Detalle en `Las-dos-palmas/docs/ESTADO.md` §0.
+4. **Probar en Las dos palmas** un pedido de doble crema con faltante, su factura impresa (bloques
+   y precio por bloque) y el menú en el celular acostado.
+5. **PR #3** (`docs/fichas-producto-papas`): conflicto resuelto el 6 de octubre; listo para fusionar.
+6. **Juan Papas**: faltan sus datos reales del negocio. Hoy factura con `PENDIENTE`.
+7. **Papas**: imprimir una factura y decidir el peso de letra del ticket (500 o 400). Sigue pendiente
+   desde el 4 de septiembre.
+
+**El sitio web, en pausa desde agosto** (ver "En curso" y "Siguiente"):
+- Las secciones "Lo que nos define" y los siete módulos, sin aprobar.
+- Lighthouse de rendimiento en 82-92 en localhost; falta medirlo en Vercel.
+- Los `TODO(guti)`.
+
+**Reglas que salieron de estas sesiones** (también en la memoria del asistente):
+- Cada arreglo, definitivo: causa confirmada con datos antes de desplegar, aplicado en todas las
+  apps afectadas y con una guarda que impida que vuelva.
+- Un test que simula un error con un formato distinto del real prueba una ficción.
+- En las apps cliente no se corre Prettier: no tienen configuración y reformatea archivos enteros.
+
+---
+
+## Las dos palmas: la doble crema en bloques en toda la app, y el menú que se desplaza (3 de octubre de 2026)
+
+**El código es de `Las-dos-palmas`** (`c91a150` y `3a5504a`). Esta entrada solo documenta el
+despliegue.
+
+- **Doble crema "únicamente en bloques"** en todos los módulos: pedidos, factura y WhatsApp,
+  ventas, reportes y su Excel, existencias, kardex, transformaciones, mínimos, precios pactados,
+  clientes, proveedores y compras.
+  - La factura va con precio por bloque, por decisión del dueño.
+  - Los totales mezclados y las mermas siguen en kilos.
+  - Una guarda cuenta los kilos sueltos de cada pantalla y falla con uno nuevo.
+- **El menú lateral:** medido antes del arreglo, con el celular acostado tenía 2 de 11 opciones a la
+  vista. Ahora se desplaza el cajón entero y el fondo no se mueve. Verificado en el navegador a
+  667×375 y 1280×600.
+- **1080 tests en verde.** Bundle barrido: limpio.
+
+Detalle en `Las-dos-palmas/docs/ESTADO.md` §0 (3 de octubre).
+
+## El reintento de las lecturas no corría nunca: arreglado en las tres apps (3 de octubre de 2026)
+
+**El código es de cada app cliente.** Papas el Labrador volvió a mostrar "No se pudo abrir la base de
+datos — la sesión viene con una hora que el servidor no acepta". La causa raíz: el adaptador envuelve el
+error de PostgREST en uno en español y el reintento buscaba la frase en inglés en el mensaje de afuera,
+así que **ninguna lectura se reintentó desde el 7 de septiembre**. Además, `cargar()` (2 de octubre)
+podía descartar una carga buena si la siguiente fallaba. Detalle en `Papas-el-Labrador/docs/ESTADO.md`
+(3 de octubre).
+
+| App | Commit | Desplegado |
+| --- | --- | --- |
+| Papas el Labrador | `5c62622f` | sí |
+| Juan Papas | `a18063e8` (rama `juan-papas`) | sí, barrido limpio |
+| Las dos palmas | `24853f1` | sí, barrido limpio |
+
+## Papas el Labrador: "No encontramos ese pedido" era el tope de 1000 filas (2 de octubre de 2026, tarde)
+
+**El código es de `Papas-el-Labrador`, no de aquí**: esto solo documenta el despliegue.
+
+El error siguió después del despliegue de la mañana. **La causa, confirmada:** `labrador.pedidos`
+tiene 1047 filas, y PostgREST entrega como mucho 1000 por respuesta, sin avisar. La recarga que
+dispara Realtime al guardar traía 1000 pedidos, el nuevo quedaba fuera y la factura no lo
+encontraba. Ahora todas las listas se leen por páginas (`leerPaginado()`, commit `f6bfd89a` de Papas
+el Labrador), y el banco de pruebas corta en 1000 como Supabase. 765 tests en verde. Detalle en
+`Papas-el-Labrador/docs/ESTADO.md`.
+
+**Las otras dos empresas tenían el mismo defecto y ya están arregladas y desplegadas** (pedido del
+usuario: "cada fix definitivo, que se mantenga"):
+
+| App | Commit | Qué entró |
+| --- | --- | --- |
+| Papas el Labrador | `111e0a0a` | La guarda (abajo). Sin redespliegue: solo tests |
+| Juan Papas | `2ff3c626` (rama `juan-papas`) | La paginación **y los otros tres arreglos de El Labrador** que no tenía: su código era idéntico al de antes de ellos. Desplegado con `PERMITIR_DATOS_PENDIENTES=1`; barrido del bundle limpio |
+| Las dos palmas | `d7b6c6b` | La paginación, adaptada a su adaptador. Ahí el primero en llegar a 1000 sería el kardex |
+
+**La guarda que lo mantiene**, en las tres: `paginacion.guarda.test.ts` lee `repositorios.ts` y
+falla si un `.select(` de listas se salta `leerPaginado()`. Contra el código anterior caza
+exactamente las consultas que cortaban. Las RPC no devuelven listas en ninguna de las tres.
+
+**Las dos palmas, cerrado el mismo día** (`35c4dfd`, pedido del usuario): se portaron los otros
+tres arreglos de El Labrador —token rechazado por su hora, `Failed to fetch` en español, carga vieja
+que pisa la nueva—, adaptados a su código; ahí faltaba hasta la mitigación del 7 de septiembre. Y la
+ayuda del prefijo en Ajustes, que enseñaba `JOS-LL-038327` (prefijo y factura reales de El Labrador)
+desde su primer commit, ahora dice `LDP-000123`; una guarda,
+`src/test/sin-datos-de-otra-empresa.guarda.test.ts`, falla si vuelve a entrar un dato de El
+Labrador a su código. 1024 tests en verde; bundle barrido, limpio.
+
+Con esto **las tres apps tienen los mismos cuatro arreglos**, cada una con su guarda de paginación.
+
+**Desplegado:** `node scripts/sync-tenant-app.mjs papas-el-labrador <ruta>` desde `f6bfd89a`, con el
+`.env.local` que ya traía el proyecto. Después, `juan-papas` desde `2ff3c626` y `las-dos-palmas`
+desde `d7b6c6b`.
+
+⚠️ **`sync-tenant-app.mjs` pide la ruta del proyecto** como segundo argumento (o
+`RUTA_APP_TENANT`); solo con el slug falla sin construir nada.
+
+## Papas el Labrador: el reintento por vigencia del token espera, y la carga no pisa datos nuevos (2 de octubre de 2026)
+
+**El código es de `Papas-el-Labrador`, no de aquí** — esto solo documenta el despliegue.
+
+El dueño reportó "No se pudo abrir la base de datos" (con la causa "La sesión viene con una hora que
+el servidor no acepta…") y "FACTURA — No encontramos ese pedido" al facturar. Dos arreglos, en el
+commit `6d57eff3` de Papas el Labrador:
+
+1. El reintento por `JWT issued at future` pedía sesión nueva y leía al instante, con un token aún más
+   recién emitido —justo el que rechaza un servidor con el reloj unas décimas atrás—, así que no
+   podía curar lo que empeoraba. Ahora espera ~1,5 s y prueba con el mismo token; solo después pide
+   sesión nueva. Corrige también el reintento de escrituras desplegado el 1 de octubre.
+2. `cargar()` podía pisar un pedido recién guardado con una lectura más vieja que él, y la factura
+   (que lo busca en el store) decía que no existía. Ahora una carga vieja se descarta y se vuelve a
+   leer si llegó un cambio a media lectura.
+
+⚠️ Las dos causas están documentadas como **probables, no reproducidas en vivo**: el desfase de reloj
+no se puede provocar a voluntad. Detalle y qué pedir si vuelve a pasar, en
+`Papas-el-Labrador/docs/ESTADO.md` (2 de octubre de 2026).
+
+**Desplegado:** `scripts/sync-tenant-app.mjs papas-el-labrador` desde `6d57eff3`, con el `.env.local`
+que ya traía el proyecto. Solo cambió `public/portal/papas-el-labrador/`.
+
+## Dos fixes de Papas el Labrador desplegados: factura que no guardaba al imprimir (1 de octubre de 2026)
+
+**El código es de `Papas-el-Labrador`, no de aquí** — esto solo documenta el despliegue.
+
+Reporte del dueño: al imprimir una factura, a veces la información no quedaba guardada.
+
+1. **Primer intento** (commit `b8f14663`): la mitigación del 7 de septiembre para "JWT issued at
+   future" (token rechazado por su vigencia) solo reintentaba en la carga inicial de datos, nunca
+   en las escrituras. Se corrigió — sigue siendo una mejora válida — pero el dueño después confirmó
+   que **no era la causa de este reporte**.
+2. **La causa real** (commit `f6f5a84d`): se le fue el internet a mitad de facturar, dos veces. El
+   error se mostraba crudo y en inglés (`Failed to fetch`). Ahora `errores.ts` lo traduce: dice que
+   se perdió la conexión y que es seguro repetirlo. No reintenta solo — una conexión caída no se
+   arregla reintentando al instante.
+
+TDD en los dos, 10 tests nuevos en total, 749 tests en verde. Detalle completo, con la lección de
+por qué costó dos vueltas (faltaba el mensaje de error exacto del primer reporte), en
+`Papas-el-Labrador/docs/ESTADO.md` (1 de octubre de 2026).
+
+**Desplegado:** `scripts/sync-tenant-app.mjs papas-el-labrador` dos veces, la última desde el
+commit `f6f5a84d` de Papas el Labrador, con el `.env.local` que ya traía el proyecto. Solo cambió
+`public/portal/papas-el-labrador/`.
+
+## La historia de "punto Cali" subida a Las dos palmas (24 de septiembre de 2026)
+
+**No toca este repositorio**: es una carga de datos en el esquema `palmas`, sin cambios de código,
+esquema ni despliegue de `Nexora-Pos`. El paso a paso, las decisiones del socio, el script que la
+generó y la prueba que se escribió contra el esquema real antes de tocar producción viven en
+`Las-dos-palmas/docs/ESTADO.md` (§0, 24 de septiembre) y en
+`Las-dos-palmas/docs/cargas/2026-09-punto-cali/`.
+
+## Las dos historias de `main`, unidas (23 de septiembre de 2026)
+
+La limpieza del 13 de septiembre (`ff4f28e5`) se comiteó en un equipo y **nunca se subió**; mientras
+tanto David subió once commits encima de la versión anterior (D47, los desbordes, Realtime y Juan
+Papas). Las dos ramas solo se cruzaban en este archivo, y se unió quedándose con todo: las entradas
+de David van arriba por fecha y la limpieza debajo. Con esta unión `frontend/`, `eslint.json`,
+`lib/portal.ts` y `lib/supabase.ts` salen también del `main` de GitHub, donde seguían.
+
+**La lección, para los dos equipos:** antes de empezar, `git fetch` y compara con `origin/main`; y
+un commit de limpieza se sube el mismo día, porque este archivo lo tocan las dos partes en cada
+tarea y cualquier retraso es un conflicto seguro.
+
+---
+
+## Juan Papas, la tercera empresa del portal (20 de septiembre de 2026)
+
+**Juan Papas es otra empresa cliente**, no otro usuario de El Labrador. Tiene lo mismo que las otras
+dos: su repositorio, su esquema, su login y su carpeta en el portal.
+
+| Pieza | Valor |
+| --- | --- |
+| Repositorio | `ProyectosINF/Juan-Papas`, hermano de los otros tres. Nació como **copia del de Papas El Labrador** (`fb597fb5`) y desde ahí sigue su propio camino |
+| Esquema | `juan_papas` — creado, **expuesto** y verificado en producción |
+| Slug | `juan-papas` → `/portal/juan-papas/` |
+| Usuario | `juanpapas@user.com`, con su empresa en `app_metadata` |
+| Construido desde | `Juan-Papas@4c2f75db` |
+
+**Sale con la identidad del negocio en `PENDIENTE`** —nombre "Juan Papas (datos pendientes)", NIT,
+teléfono, dirección y ciudad en `PENDIENTE`, prefijo de factura `JP-PEND-`— porque los datos reales
+del cliente todavía no llegaron. **Sirve para enseñar el portal, no para facturar.** Por eso se
+construye con `PERMITIR_DATOS_PENDIENTES=1`: el `npm run build` de esa app se niega a construir con
+la identidad provisional si no se lo dices expresamente. Cuando lleguen, van en
+`Juan-Papas/src/core/seed/catalogo.ts` → `construirConfiguracion()`.
+
+**La base, verificada en producción:** `Juan-Papas/docs/migraciones/verificar-esquema.sql` dio 12
+de 12. Desde fuera, PostgREST expone `public, graphql_public, labrador, palmas, juan_papas`, y sin
+sesión `juan_papas` contesta `42501`: la base niega el acceso aunque la API acepte el esquema.
+
+**El código de nexora-pos no cambió.** El middleware saca la empresa del `app_metadata` y la
+compara con el slug de la URL, sin lista de empresas en ninguna parte. Añadir una empresa es
+datos y un build, no programación.
+
+### Lo que costó la copia, para la próxima empresa que salga de otra
+
+La copia se llevó **los datos de El Labrador**, y viajaban en el bundle que descarga el navegador:
+sus 84 clientes con teléfono y dirección, sus 24 proveedores y sus 52 productos, un cliente real
+con su NIT metido entre los datos de ejemplo, el teléfono, el NIT y la dirección del dueño como
+textos de ejemplo de los formularios, los nombres del dueño y del trabajador, un número de factura
+real como ejemplo, y el nombre de la empresa escrito a mano en más de diez sitios — incluidos los
+nombres de los archivos que se descargan (`ElLabrador_…xlsx`). Todo fuera antes de desplegar.
+
+**El peor era invisible:** en `configuracion.ts`, una configuración que llegara sin prefijo caía en
+`JOS-LL-`, el de El Labrador, y las dos empresas habrían numerado sus facturas igual.
+
+⚠️ **Antes de cada despliegue de una app copiada, barrer el bundle construido**, no el código, y
+**sin distinguir mayúsculas**: el nombre viejo apareció escrito junto (`ElLabrador_`), y la búsqueda
+de siempre lo busca con espacio.
+
+```
+grep -rliE "labrador|fukubar|jose moreno|16645676|3164164263|jos-ll" public/portal/<slug>/
+```
+
+### Dos correcciones a lo que decía este archivo
+
+1. **Los datos de ejemplo SÍ viajan en el bundle.** Lo de arriba decía que la operación de ejemplo
+   "no viajaba al build" (`cli-trigal` y `prov-planta` ausentes). El bundle de Papas El Labrador que
+   está hoy en producción sí trae `cli-trigal` y la operación de práctica, y el de Juan Papas
+   también: el botón que los carga no se compila, pero el módulo entra igual. Son inventados, así
+   que no es un riesgo de datos. Sí es peso de más.
+2. **Contar líneas de un bundle engaña.** `grep -c` cuenta líneas, y un bundle minificado son muy
+   pocas: un `0` o un `1` no dicen cuántas veces aparece algo. Y un punto en el patrón no casa una
+   letra con tilde (`Panader.a` no encontró "Panadería", que sí estaba). Para saber si algo está,
+   `grep -o` y búscalo literal.
+
+### Lo que falta
+
+- **Que el usuario cierre sesión y vuelva a entrar**: su empresa viaja dentro del token.
+- **Los datos reales del negocio.**
+- **Juan Papas no tiene repositorio propio: vive como rama `juan-papas` de
+  `jd8guti-lab/Papas-el-Labrador`** (decisión del usuario, 20 de septiembre de 2026). Comparte la
+  historia desde `fb597fb5`. **Ya está subida** (comprobado el 2 de octubre de 2026 con
+  `git ls-remote`).
+  ⛔ **Esa rama no se fusiona nunca en `main`**: sería un *fast-forward* sin conflictos que dejaría
+  a El Labrador con el esquema, la semilla y la identidad de Juan Papas.
+
+---
+
+## Lo hecho el 20 de septiembre de 2026: dos fichas de producto de Papas
 
 **Dos fichas de producto de Papas el Labrador, resueltas sin tocar código.** Llegaron *Papas
-Labrador* (amarilla, entera, lavada, por bulto y por arroba) y *Juan Papas*, duplicado exacto con
-otro nombre. La aplicación ya cubre las dos: "Entera" es un tamaño del catálogo, la arroba es una
-casilla, y **Duplicar** es un botón de cada fila. Son datos de producción de un cliente real, así
-que **los da de alta el dueño**; se entregó la guía, comprobada siguiéndola en la aplicación con la
-base local: `Papas-el-Labrador/docs/ALTA-DE-PRODUCTOS.md`.
+Labrador* (amarilla, entera, lavada, por bulto y por arroba) y una segunda ficha a nombre de *Juan
+Papas*, idéntica salvo el nombre. Era un producto, no la empresa Juan Papas que entró al portal ese
+mismo día (entrada de arriba). La aplicación ya cubre las dos: "Entera" es un tamaño del catálogo,
+la arroba es una casilla, y **Duplicar** es un botón de cada fila. Son datos de producción de un
+cliente real, así que **los da de alta el dueño**; se entregó la guía, comprobada siguiéndola en la
+aplicación con la base local: `Papas-el-Labrador/docs/ALTA-DE-PRODUCTOS.md`.
 
 Nada de `src/`, ninguna migración, **ningún despliegue**: sin cambio de código no hay build que
 sincronizar ni `public/portal/` que tocar. Detalle y las cuatro trampas del formulario, en el
@@ -26,6 +399,8 @@ ESTADO de Papas.
 mínimo —tres tipos, cuatro tamaños— y leerlo hace concluir que "Entera" no existe como tamaño. La
 operación tiene doce tamaños y seis tipos. Es la trampa 1 otra vez: la fuente autorizada es la
 base, no lo que el repositorio recuerde.
+
+(Llegó por el PR #3, abierto el 20 de septiembre. El conflicto con `main` se resolvió el 6 de octubre.)
 
 ---
 
@@ -84,6 +459,65 @@ bundle del portal no creaba el canal. Papas sí lo arranca. Arreglado en `9efce3
 `tenant:<id>` sobre el esquema `palmas` con sus 13 tablas; el anterior no tenía ni la función.
 **Falta, y no sale del código:** confirmar que las tablas de `palmas` y `labrador` están en la
 publicación `supabase_realtime`, y la prueba con dos equipos distintos en las dos apps.
+
+---
+
+## Limpieza del repositorio (13 de septiembre de 2026)
+
+No toca ni una línea de producto: saca del repositorio lo que no era del repositorio y cuadra los
+documentos que se habían quedado afirmando cosas falsas. Se hizo **antes** de empezar los cambios
+de un cliente, para no construir sobre un mapa equivocado.
+
+### Lo que salió
+
+| Qué | Por qué |
+| --- | --- |
+| `frontend/` — **22.496 archivos, 260 MB** | TODOS de `node_modules` y **ni uno de código fuente**; nunca hubo código ahí, comprobado en toda la historia de git. El `.gitignore` ignoraba `frontend/dist/` pero no `frontend/node_modules/`. Obligó a parchear `vitest.config.mts` y `eslint.config.mjs` para que las herramientas no lo escanearan |
+| `eslint.json` — 2,7 MB | Volcado accidental de `eslint -f json -o eslint.json`, con las rutas absolutas de la máquina de quien lo generó (`C:\Users\GHOSTBOY\…`) dentro |
+| `lib/portal.ts` | **Código muerto**: cero importadores en todo el repositorio. Duplicaba a `lib/portal/tenant.ts`, que es el que usa el middleware. Peor: sus `portalRolePanels` traían métricas inventadas —«12 usuarios», «$24.8K», «96% de cobranza»—, que es exactamente lo que prohíbe §7 |
+| `lib/supabase.ts` | **Código muerto**, cero importadores. Duplicaba a `lib/supabase/browser.ts` |
+
+Los dos `lib/` sobraron del andamiaje inicial del portal y sobrevivieron a la fusión de
+`feat/portal-clientes` porque nadie los volvió a mirar: **un merge limpio no significa que no haya
+quedado nada duplicado.** `frontend/` y `eslint.json` siguen en el historial, así que recuperarlos
+es un `git show`; lo que se acabó es que pesen en cada clon.
+
+### `/buscar` ya no sirve una página vacía
+
+La página entera existe para el widget de Google Custom Search, y sin
+`NEXT_PUBLIC_GOOGLE_SEARCH_ENGINE_ID` el widget renderiza `null`: lo que se servía era un titular
+sobre una sección en blanco. Ahora responde **404** mientras no haya motor configurado.
+
+**Sigue sin estar en el nav ni en `sitemap.ts`, a propósito y pendiente de tu decisión.** El widget
+baja un script de `cse.google.com`, y meter un script de terceros en la barra de todas las páginas
+es una decisión del dueño y del presupuesto de JS (§6), no un efecto secundario de que la página
+exista.
+
+### Los documentos que mentían
+
+1. **`docs/PUESTA-EN-MARCHA.md` mandaba ejecutar un SQL obsoleto.** Su «PASO 1» apuntaba a
+   `backend/esquema-supabase.sql`, que `backend/README.md` marca **OBSOLETO, no lo ejecutes**:
+   correrlo aborta en su primera sentencia contra una base que ya tiene `public.tenants`. También
+   mandaba a la rama `portal-clientes` (borrada), se declaraba «listos para conectar un proyecto
+   real» con dos empresas ya desplegadas, y llevaba rutas absolutas de una máquina concreta.
+   **Se vació y quedó como puntero** a `PUESTA-EN-MARCHA-SUPABASE.md`, con la lista de lo que decía
+   mal para que nadie lo reconstruya de memoria.
+2. **El `README.md` afirmaba que las apps escribían en IndexedDB y no en Supabase.** El propio
+   `ESTADO.md` del 7 de septiembre ya lo había desmentido —el fallo era del patrón de búsqueda sobre
+   los bundles, no de los bundles—, pero el README nunca se corrigió.
+3. **El `README.md` decía Plus Jakarta Sans.** La fuente es **Figtree** desde la decisión 44
+   (2026-08-27); la 41 quedó superada y este archivo tampoco lo decía en su Fase 2.
+4. **`PUESTA-EN-MARCHA-SUPABASE.md` decía que nada estaba fusionado a `main`** y listaba dos
+   repositorios. Son tres, y todo está en `main` desde el 2026-09-02.
+5. **`CLAUDE.md` §5 describía un proyecto anterior**: `(portal)` como «placeholder» y `middleware.ts`
+   «vacío», sin `backend/`, `scripts/` ni `public/portal/`.
+6. Aquí mismo: el registro de Las dos palmas decía «dos `TODO(guti)`» y desde `e39981f4` es uno.
+
+### La regla que deja
+
+**Dos documentos que explican el mismo procedimiento acaban contradiciéndose, y el que se actualiza
+no es siempre el que alguien abre.** Un procedimiento, un archivo. Cuando un documento y la realidad
+no coinciden, el orden de autoridad es: la base de datos → el código → `docs/ESTADO.md` → el resto.
 
 ---
 
@@ -476,7 +910,8 @@ el prefijo `LDP-` y el consecutivo en 0—, y la guía ahora lo avisa donde se t
 
 **Lo que falta, y lo corres tú:** el auditor sobre `palmas`, y
 `backend/registrar-las-dos-palmas.sql` —una fila en `tenants` y el `app_metadata` del usuario—, con
-dos `TODO(guti)`: el NIT real y el correo del dueño.
+un `TODO(guti)`: el correo del dueño. _(Decía "dos, el NIT y el correo"; el NIT llegó el 3 de
+septiembre — ver `e39981f4`. Corregido el 2026-09-13.)_
 
 ### La factura salía sin estilos (3 de septiembre de 2026)
 
@@ -565,7 +1000,7 @@ parece autorizado a correr. Recuperable con
 - **Tailwind v4** con todos los tokens de marca en `app/globals.css` (`@theme`): paleta,
   escala tipográfica fluida con `clamp()`, degradado de marca, sombras, breakpoints, y el
   bloque global de `prefers-reduced-motion`.
-- **Poppins** vía `next/font/google`, pesos 300–700, `display: swap`. _(Sustituida por Plus Jakarta Sans en la sesión del 2026-08-26 — ver la decisión 41. Poppins sigue cargada con un solo peso, solo para el wordmark.)_
+- **Poppins** vía `next/font/google`, pesos 300–700, `display: swap`. _(Sustituida por Plus Jakarta Sans el 2026-08-26 —decisión 41— y esa, a su vez, por **Figtree** el 2026-08-27 —decisión 44—, que es la que corre hoy. Poppins sigue cargada con un solo peso, solo para el wordmark.)_
 - **Assets de marca normalizados** (ver el mapeo abajo) más `icon.png`, `apple-icon.png` y
   `favicon.ico` generados con la convención de App Router.
 - **`content/`**: `types.ts`, `site.ts`, `nav.ts`. Cero copy en JSX.
@@ -722,6 +1157,9 @@ Lo que se arregló aquí, medido antes y después:
 ---
 
 ## En curso
+
+> **En pausa desde finales de agosto de 2026.** Desde entonces todo el trabajo ha sido el portal y
+> las apps cliente (ver los bloques de arriba). Lo de abajo es dónde se quedó el sitio web.
 
 **Rehacer cinco secciones siguiendo el arte de referencia** (los PNG en la raíz), una por una y
 verificando cada una antes de seguir. Hecho: **nav**, **hero** y **"El problema"**. Faltan: "Lo que nos define" (seis tarjetas) y los siete módulos con la tarjeta oscura
