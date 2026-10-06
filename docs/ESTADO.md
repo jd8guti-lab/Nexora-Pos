@@ -5,9 +5,40 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-10-03. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-10-06. **Lee el bloque de abajo antes que nada.**
 
 ---
+
+## Juan Papas: factura sin NIT, "Solo guardar", cliente de un solo nombre y su catálogo (6 de octubre de 2026)
+
+**El código está hecho, probado y subido a la rama `juan-papas`** de `jd8guti-lab/Papas-el-Labrador`
+(`1ea9291`). **Todavía NO está desplegado en el portal**: eso lo hace David (ver "Lo que falta").
+
+Lo que pidió el dueño de Juan Papas:
+1. La factura ya no imprime el NIT del negocio. El `Nit/CC:` del cliente se queda, si lo tiene.
+2. El pedido tiene "Guardar e imprimir" y "Solo guardar".
+3. Se puede facturar a un nombre sin crear el cliente ("Solo en esta factura: «…»" en el buscador).
+   El pedido va contra el consumidor final y su deuda se suma a la de él.
+4. 16 productos: las seis capiras (Comercial, Cero, Semicero, Pollera, Porción, Tercera), cada una
+   también "Sin Lavar", más Rechazo, Troquelada, Amarilla Picada y Pelada, con las presentaciones de
+   El Labrador. Sin precio.
+5. Proveedores: María Bonita, El labrador, Diego Muñoz, La especial.
+
+**799 tests en verde**, probado en el navegador en modo local. Detalle en
+`Juan-Papas/docs/ESTADO.md` (6 de octubre).
+
+⚠️ **El barrido del bundle ahora encuentra "labrador" a propósito**: "El labrador" es un proveedor
+real de Juan Papas. Al barrer `public/portal/juan-papas/`, la única coincidencia válida es ese
+nombre; cualquier otra (`ElLabrador_`, `jose moreno`, `16645676`, `jos-ll`, `fukubar`) sigue siendo
+un dato filtrado.
+
+**Lo que falta:**
+- Correr `Juan-Papas/docs/migraciones/2026-10-06-catalogo-y-proveedores.sql` en Supabase. La base de
+  producción ya está abierta y no recibe la semilla nueva sola. El SQL solo agrega.
+- Construir y desplegar: `PERMITIR_DATOS_PENDIENTES=1 node scripts/sync-tenant-app.mjs juan-papas
+  ../Juan-Papas`, barrer el bundle y subir `main`.
+- Confirmar con el dueño dos supuestos: Rechazo es papa entera sin versión "Sin Lavar", y
+  Troquelada y Pelada son procesadas (arroba/kilo) de tipo Capira.
 
 ## Las dos palmas: nombres parecidos y PIN de fábrica (3 de octubre de 2026, noche)
 
