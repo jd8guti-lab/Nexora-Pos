@@ -148,7 +148,7 @@ toda la app y su menú lateral se desplaza entero.
    - Detalle en `Las-dos-palmas/docs/ESTADO.md` §0.
 4. **Probar en Las dos palmas** un pedido de doble crema con faltante, su factura impresa (bloques
    y precio por bloque) y el menú en el celular acostado.
-5. **PR #3** (`docs/fichas-producto-papas`): sigue abierto desde el 20 de septiembre.
+5. **PR #3** (`docs/fichas-producto-papas`): conflicto resuelto el 6 de octubre; listo para fusionar.
 6. **Juan Papas**: faltan sus datos reales del negocio. Hoy factura con `PENDIENTE`.
 7. **Papas**: imprimir una factura y decidir el peso de letra del ticket (500 o 400). Sigue pendiente
    desde el 4 de septiembre.
@@ -378,8 +378,29 @@ grep -rliE "labrador|fukubar|jose moreno|16645676|3164164263|jos-ll" public/port
   `git ls-remote`).
   ⛔ **Esa rama no se fusiona nunca en `main`**: sería un *fast-forward* sin conflictos que dejaría
   a El Labrador con el esquema, la semilla y la identidad de Juan Papas.
-- **El PR #3 va a chocar con esta entrada**: añade su propia sección del 20 de septiembre justo
-  aquí arriba. Se resuelve quedándose con las dos.
+
+---
+
+## Lo hecho el 20 de septiembre de 2026: dos fichas de producto de Papas
+
+**Dos fichas de producto de Papas el Labrador, resueltas sin tocar código.** Llegaron *Papas
+Labrador* (amarilla, entera, lavada, por bulto y por arroba) y una segunda ficha a nombre de *Juan
+Papas*, idéntica salvo el nombre. Era un producto, no la empresa Juan Papas que entró al portal ese
+mismo día (entrada de arriba). La aplicación ya cubre las dos: "Entera" es un tamaño del catálogo,
+la arroba es una casilla, y **Duplicar** es un botón de cada fila. Son datos de producción de un
+cliente real, así que **los da de alta el dueño**; se entregó la guía, comprobada siguiéndola en la
+aplicación con la base local: `Papas-el-Labrador/docs/ALTA-DE-PRODUCTOS.md`.
+
+Nada de `src/`, ninguna migración, **ningún despliegue**: sin cambio de código no hay build que
+sincronizar ni `public/portal/` que tocar. Detalle y las cuatro trampas del formulario, en el
+ESTADO de Papas.
+
+⚠️ **El catálogo real manda sobre el seed.** `src/core/seed/catalogo.ts` de Papas tiene un catálogo
+mínimo —tres tipos, cuatro tamaños— y leerlo hace concluir que "Entera" no existe como tamaño. La
+operación tiene doce tamaños y seis tipos. Es la trampa 1 otra vez: la fuente autorizada es la
+base, no lo que el repositorio recuerde.
+
+(Llegó por el PR #3, abierto el 20 de septiembre. El conflicto con `main` se resolvió el 6 de octubre.)
 
 ---
 
