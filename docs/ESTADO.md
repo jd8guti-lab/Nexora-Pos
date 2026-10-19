@@ -5,9 +5,18 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-10-06. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-10-19. **Lee el bloque de abajo antes que nada.**
 
 ---
+
+## Juan Papas: la factura sin formato y sin corte es el driver, no el código (19 de octubre de 2026)
+
+Foto del dueño: letra de la impresora, todo a la izquierda, columnas pegadas, tildes cambiadas y
+papel de más sin cortar. El documento que el navegador manda a imprimir sale bien (capturado en el
+navegador), y el código de impresión es el mismo de El Labrador. Es el controlador **"Generic / Text
+Only"** de Windows en el equipo de Juan Papas. **No se tocó código de ninguna app.** El arreglo, en
+el equipo: `Juan-Papas/docs/IMPRESION.md`, paso 1b (`997f617`). Pendiente: que el dueño instale el
+controlador del fabricante y mande foto de un recibo nuevo.
 
 ## Juan Papas: factura sin NIT, "Solo guardar", cliente de un solo nombre y su catálogo (6 de octubre de 2026)
 
