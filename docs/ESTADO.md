@@ -9,16 +9,24 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
 ---
 
-## EN CURSO: cinco correcciones de Las dos palmas (3 de noviembre de 2026)
+## Las dos palmas: cinco correcciones desplegadas (3 de noviembre de 2026)
 
 El cliente pidió: ver la fecha de cada abono, editar y eliminar abonos, categoría de cliente, arreglar
 WhatsApp en el computador y arreglar "Precio por bloque". **El detalle está en
-`Las-dos-palmas/docs/ESTADO.md` §0: empieza por ahí.**
+`Las-dos-palmas/docs/ESTADO.md` §0.**
 
-- **Hecho en el repo de Las dos palmas:** los cinco, con tests y probados en el navegador en modo local.
-- **Falta, en este orden:** que el usuario corra las dos migraciones `2026-11-03-*.sql` y pegue la
-  salida; desplegar al portal; recargar todos los equipos antes de que alguien use Eliminar.
-- **El portal no ha cambiado**, y no se ha corrido nada en Supabase.
+- **Código:** `c6890e5` de Las dos palmas, con 1149 tests en verde y probado en el navegador en modo local.
+- **SQL:** las dos migraciones `2026-11-03-*.sql` corridas, con la salida pegada del editor: las seis
+  columnas de abonos, `puede_borrar` en `false`, categorías `{Panadería,Salsamentaria}` y 34 clientes,
+  0 con categoría.
+- **Paquete:** construido desde la carpeta limpia. Barrido limpio. Los cinco chequeos de Nexora en verde.
+
+**Lo que falta:**
+- ⚠️ **Recargar todos los equipos antes de que alguien use Eliminar**: una versión anterior contaría
+  el abono anulado.
+- Probar en `/portal/las-dos-palmas/`, con login: desde aquí no se puede entrar.
+- WhatsApp en Brave, Chrome y el celular. El síntoma exacto del cliente sigue sin conocerse.
+- Avisarle al cliente que los abonos de la carga de punto Cali traen la fecha de la venta, no la del pago.
 
 ---
 
