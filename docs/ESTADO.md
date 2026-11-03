@@ -12,11 +12,12 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 ## EN CURSO: cinco correcciones de Las dos palmas (3 de noviembre de 2026)
 
 El cliente pidió: ver la fecha de cada abono, editar y eliminar abonos, categoría de cliente, arreglar
-WhatsApp en el computador y arreglar "Precio por bloque". **El detalle y el diseño ya decidido están en
+WhatsApp en el computador y arreglar "Precio por bloque". **El detalle está en
 `Las-dos-palmas/docs/ESTADO.md` §0: empieza por ahí.**
 
-- **Hecho, con commit y sin desplegar:** el punto 5. Escribir `46000` terminaba en $55.000.
-- **Por hacer:** los puntos 1 a 4, con dos migraciones que todavía no existen.
+- **Hecho en el repo de Las dos palmas:** los cinco, con tests y probados en el navegador en modo local.
+- **Falta, en este orden:** que el usuario corra las dos migraciones `2026-11-03-*.sql` y pegue la
+  salida; desplegar al portal; recargar todos los equipos antes de que alguien use Eliminar.
 - **El portal no ha cambiado**, y no se ha corrido nada en Supabase.
 
 ---
