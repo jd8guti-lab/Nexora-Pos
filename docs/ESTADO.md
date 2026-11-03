@@ -5,7 +5,19 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-10-19. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-11-03. **Lee el bloque de abajo antes que nada.**
+
+---
+
+## EN CURSO: cinco correcciones de Las dos palmas (3 de noviembre de 2026)
+
+El cliente pidió: ver la fecha de cada abono, editar y eliminar abonos, categoría de cliente, arreglar
+WhatsApp en el computador y arreglar "Precio por bloque". **El detalle y el diseño ya decidido están en
+`Las-dos-palmas/docs/ESTADO.md` §0: empieza por ahí.**
+
+- **Hecho, con commit y sin desplegar:** el punto 5. Escribir `46000` terminaba en $55.000.
+- **Por hacer:** los puntos 1 a 4, con dos migraciones que todavía no existen.
+- **El portal no ha cambiado**, y no se ha corrido nada en Supabase.
 
 ---
 
