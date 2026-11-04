@@ -29,11 +29,18 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 ⚠️ **Antes de un corte, mira de qué empresa es el respaldo.** Se bajó primero uno de Juan Papas por error.
 Juan Papas no tiene inventario: su dueño lo quitó el 25 de agosto de 2026.
 
-**Hay un arreglo aparte, sin commit ni despliegue, en las tres apps:** vaciar un campo opcional no llegaba
-a la base. Lo tiene la sesión "Borrar campos opcionales", con los comandos de commit, y cada app necesita
-su despliegue. No entró en estos despliegues: se construyeron desde la copia limpia, porque
-**`sync-tenant-app.mjs` construye lo que haya en la carpeta**. El barrido lo confirma: `opcionales` da 0
-en el paquete.
+**Vaciar un campo opcional ya llega a la base, en las tres apps** (desplegado el 4 de noviembre, sin
+haberlo visto funcionar en producción). Antes de desplegar se revisaron todas las pantallas que guardan
+fichas y pedidos: mandan todo, así que solo se borra lo que el usuario vacía. **Falta revisar en
+producción** el rastro que dice el `ESTADO.md` de Papas y de Juan Papas: `historial_precios` puede tener
+filas con `valor_nuevo` en NULL que nunca fueron un cambio real.
+
+⚠️ **Una prueba de Juan Papas falla con carga:** `impresion.test.ts`, "a la hoja de otro origen…", falló
+con las tres suites corriendo a la vez y pasó sola, igual que toda la suite (809). No es de este arreglo.
+Corre las suites una por una.
+
+**El login del portal:** las etiquetas heredaban el centrado de la página y quedaban desalineadas de sus
+campos. Ahora van a la izquierda.
 
 ---
 

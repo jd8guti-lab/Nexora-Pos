@@ -59,7 +59,7 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(entrar)} noValidate className="mt-10 flex w-full flex-col gap-6">
+    <form onSubmit={handleSubmit(entrar)} noValidate className="mt-10 flex w-full flex-col gap-6 text-left">
       <Field label="Correo" error={errors.email?.message} required inverse>
         {(props) => (
           <Input
