@@ -5,7 +5,27 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-11-03. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-11-04. **Lee el bloque de abajo antes que nada.**
+
+---
+
+## EN CURSO: inventario en cero y WhatsApp a grupos, Las dos palmas (4 de noviembre de 2026)
+
+**Empieza por `Las-dos-palmas/docs/ESTADO.md` §0, "Corte de inventario".** El cliente empieza a usar el
+sistema en serio y lo urgente es dejar el inventario en cero sin tocar la plata.
+
+- **Parte 1, inventario:** escrita y probada en local, con 1176 tests y build en verde. **Sin commit, sin
+  desplegar y sin aplicar en producción.** El usuario la está revisando y no ha aprobado el despliegue.
+- **Parte 2, WhatsApp a grupos:** sin empezar. Va después de la Parte 1; el encargo está en ese §0.
+- **La causa supuesta no era:** la carga del Excel no escribió kardex. Falta confirmar en producción de
+  dónde salió el negativo, con `docs/consultas/2026-11-04-origen-del-negativo.sql`.
+- **Solo el usuario puede:** descargar el respaldo, correr el SQL y apretar el botón del corte.
+
+**Hay un arreglo aparte, también sin commit ni despliegue, en las tres apps:** vaciar un campo opcional
+no llegaba a la base. Lo tiene la sesión "Borrar campos opcionales", con los comandos de commit, y cada
+app necesita su despliegue. Está en la misma carpeta de Las dos palmas que la Parte 1:
+**`sync-tenant-app.mjs` construye lo que haya en la carpeta**, así que para no desplegarlo junto hay que
+construir desde la copia limpia que dice ese §0.
 
 ---
 
