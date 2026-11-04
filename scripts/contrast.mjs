@@ -17,6 +17,8 @@ const palette = {
   "ink-900": "#1A1D23",
   "ink-500": "#626976",
   "paper-50": "#EDEDED",
+  // bg-white/5 flattened onto ink-900: the login's fields.
+  "portal-campo": "#25282E",
   white: "#FFFFFF",
 
   /* Not brand tokens: the two worst-case backdrops the hero copy can land on.
@@ -115,6 +117,8 @@ const checks = [
   ["Cuerpo secundario sobre paper-50", "ink-500", "paper-50", "normal"],
   ["Texto sobre ink-900", "white", "ink-900", "normal"],
   ["Texto secundario sobre ink-900", "paper-50", "ink-900", "normal"],
+  ["Portal: texto del campo, blanco", "white", "portal-campo", "normal"],
+  ["Portal: borde de error brand-300 sobre ink-900", "brand-300", "ink-900", "ui"],
   ["Acento de texto naranja sobre blanco", "brand-700", "white", "normal"],
   ["Acento de texto naranja sobre paper-50", "brand-700", "paper-50", "large"],
   [
@@ -166,6 +170,8 @@ const translucent = [
   ],
   ["Eyebrow inverse paper-50/70 sobre ink-900", "paper-50", 0.7, "ink-900", "normal"],
   ["Portal: cuerpo paper-50/65 sobre ink-900", "paper-50", 0.65, "ink-900", "normal"],
+  ["Portal: placeholder paper-50/70 en el campo", "paper-50", 0.7, "portal-campo", "normal"],
+  ["Portal: borde del campo paper-50/40", "paper-50", 0.4, "ink-900", "ui"],
   ["Hero: cuerpo ink-900/80 sobre el plate", "ink-900", 0.8, "hero-bg-min", "normal"],
   ["Hero movil: cuerpo ink-900/80 sobre el plate", "ink-900", 0.8, "hero-bg-movil", "normal"],
   [

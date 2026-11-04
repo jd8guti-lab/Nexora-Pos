@@ -2,11 +2,13 @@ import { useId } from "react";
 import { cn } from "@/lib/utils";
 
 const control = [
-  "w-full rounded-xl border bg-white px-4 text-body text-ink-900",
-  "placeholder:text-ink-500/70",
+  "w-full rounded-xl border px-4 text-body",
   "transition-colors duration-200 ease-brand",
   "disabled:opacity-60",
 ].join(" ");
+
+const controlLight = "bg-white text-ink-900 placeholder:text-ink-500/70";
+const controlInverse = "bg-white/5 text-white placeholder:text-paper-50/70";
 
 /**
  * Field wraps a control with its label, hint and error, and wires the three
@@ -83,9 +85,14 @@ export function Field({
         "aria-invalid": error ? true : undefined,
         className: cn(
           control,
+          inverse ? controlInverse : controlLight,
           error
-            ? "border-brand-700 focus-visible:outline-brand-700"
-            : "border-ink-500/30 hover:border-ink-500/50",
+            ? inverse
+              ? "border-brand-300 focus-visible:outline-brand-300"
+              : "border-brand-700 focus-visible:outline-brand-700"
+            : inverse
+              ? "border-paper-50/40 hover:border-paper-50/60"
+              : "border-ink-500/30 hover:border-ink-500/50",
         ),
       })}
 

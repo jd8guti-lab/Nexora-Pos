@@ -180,6 +180,14 @@
     outline-color: var(--color-white);
   }
 
+  /* The browser paints saved credentials with its own light background, which no utility class can
+     override, and that would bring back the white box on the login. The inset shadow covers it. */
+  .surface-dark input:-webkit-autofill {
+    -webkit-text-fill-color: var(--color-white);
+    box-shadow: inset 0 0 0 100px var(--color-ink-900);
+    caret-color: var(--color-white);
+  }
+
   /* ink-900 on the orange, for the same reason every other pairing is:
      white on brand-500 is 2.61:1. */
   ::selection {

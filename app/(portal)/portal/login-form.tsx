@@ -68,14 +68,20 @@ export function LoginForm() {
             type="email"
             autoComplete="username"
             autoFocus
-            placeholder="tucorreo@empresa.com"
+            placeholder="Escribe el correo"
           />
         )}
       </Field>
 
       <Field label="Contraseña" error={errors.password?.message} required inverse>
         {(props) => (
-          <Input {...props} {...register("password")} type="password" autoComplete="current-password" />
+          <Input
+            {...props}
+            {...register("password")}
+            type="password"
+            autoComplete="current-password"
+            placeholder="Escribe la contraseña de la cuenta"
+          />
         )}
       </Field>
 

@@ -39,8 +39,14 @@ filas con `valor_nuevo` en NULL que nunca fueron un cambio real.
 con las tres suites corriendo a la vez y pasó sola, igual que toda la suite (809). No es de este arreglo.
 Corre las suites una por una.
 
-**El login del portal:** las etiquetas heredaban el centrado de la página y quedaban desalineadas de sus
-campos. Ahora van a la izquierda.
+**El login del portal:**
+- Las etiquetas heredaban el centrado de la página y quedaban desalineadas de sus campos. Ahora van a la
+  izquierda.
+- Los campos ya no son blancos, por pedido del usuario: `Field` con `inverse` les da fondo oscuro, y
+  `npm run contrast` lo audita con el pseudo-token `portal-campo`. El formulario de contacto sigue blanco.
+- Dicen "Escribe el correo" y "Escribe la contraseña de la cuenta".
+- **Sin probar:** el relleno automático del navegador. `globals.css` tiene una regla para que no vuelva a
+  pintar el campo de claro; hay que mirarlo en un equipo con la contraseña guardada.
 
 ---
 
