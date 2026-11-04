@@ -128,10 +128,7 @@ Ver [docs/ESTADO.md](docs/ESTADO.md). En grande:
 5. **Assets pendientes:** el logo sobre fondo oscuro y los SVG vectoriales. Mientras no
    existan, sobre `ink-900` y sobre la franja naranja el nombre se compone en Poppins (token `font-wordmark`) con
    los tokens de marca — nunca se recolorea el PNG.
-6. **El `JWT issued at future` de Papas.** Es de la sesión que emite Supabase Auth, no del bundle:
-   reconstruir y desplegar no lo toca. Descartados el reloj de Supabase, el del equipo y el `iat`
-   del anon key. Falta el `iat` del token del navegador donde falla.
-7. **Las dos palmas: queda un `TODO(guti)` en su registro.** El correo del dueño en
+6. **Las dos palmas: queda un `TODO(guti)` en su registro.** El correo del dueño en
    [backend/registrar-las-dos-palmas.sql](backend/registrar-las-dos-palmas.sql). El NIT ya está.
 
 > **Lo que decía aquí sobre IndexedDB era falso.** Hasta el 2026-09-13 este README afirmaba que las

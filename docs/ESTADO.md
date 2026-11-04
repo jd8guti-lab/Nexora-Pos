@@ -14,8 +14,12 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 **Empieza por `Las-dos-palmas/docs/ESTADO.md` §0, "Corte de inventario".** El cliente empieza a usar el
 sistema en serio y lo urgente es dejar el inventario en cero sin tocar la plata.
 
-- **Parte 1, inventario:** escrita y probada en local, con 1176 tests y build en verde. **Sin commit, sin
-  desplegar y sin aplicar en producción.** El usuario la está revisando y no ha aprobado el despliegue.
+- **Parte 1, inventario:** `09d2cdf` de Las dos palmas, desplegado el 4 de noviembre con el commit
+  `deploy: Las dos palmas con corte de inventario…` de este repo. **Sin aplicar en producción: el botón
+  sigue sin apretar.** Barrido limpio, 1176 tests en la app y los cinco chequeos de Nexora en verde. No
+  se ha visto funcionar en producción: el portal pide login.
+- ⚠️ **Nadie aprieta "Dejar el inventario en cero" antes del respaldo y de la primera consulta de
+  dinero.** Ya le sale a Administración al recargar.
 - **Parte 2, WhatsApp a grupos:** sin empezar. Va después de la Parte 1; el encargo está en ese §0.
 - **La causa supuesta no era:** la carga del Excel no escribió kardex. Falta confirmar en producción de
   dónde salió el negativo, con `docs/consultas/2026-11-04-origen-del-negativo.sql`.
@@ -23,9 +27,9 @@ sistema en serio y lo urgente es dejar el inventario en cero sin tocar la plata.
 
 **Hay un arreglo aparte, también sin commit ni despliegue, en las tres apps:** vaciar un campo opcional
 no llegaba a la base. Lo tiene la sesión "Borrar campos opcionales", con los comandos de commit, y cada
-app necesita su despliegue. Está en la misma carpeta de Las dos palmas que la Parte 1:
-**`sync-tenant-app.mjs` construye lo que haya en la carpeta**, así que para no desplegarlo junto hay que
-construir desde la copia limpia que dice ese §0.
+app necesita su despliegue. No entró en el despliegue de la Parte 1: se construyó desde la copia limpia,
+porque **`sync-tenant-app.mjs` construye lo que haya en la carpeta**. El barrido lo confirma:
+`opcionales` da 0 en el paquete.
 
 ---
 
