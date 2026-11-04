@@ -9,27 +9,31 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
 ---
 
-## EN CURSO: inventario en cero y WhatsApp a grupos, Las dos palmas (4 de noviembre de 2026)
+## Las dos palmas: inventario en cero y WhatsApp a grupos (4 de noviembre de 2026)
 
-**Empieza por `Las-dos-palmas/docs/ESTADO.md` §0, "Corte de inventario".** El cliente empieza a usar el
-sistema en serio y lo urgente es dejar el inventario en cero sin tocar la plata.
+**El detalle está en `Las-dos-palmas/docs/ESTADO.md` §0.**
 
-- **Parte 1, inventario:** `09d2cdf` de Las dos palmas, desplegado el 4 de noviembre con el commit
-  `deploy: Las dos palmas con corte de inventario…` de este repo. **Sin aplicar en producción: el botón
-  sigue sin apretar.** Barrido limpio, 1176 tests en la app y los cinco chequeos de Nexora en verde. No
-  se ha visto funcionar en producción: el portal pide login.
-- ⚠️ **Nadie aprieta "Dejar el inventario en cero" antes del respaldo y de la primera consulta de
-  dinero.** Ya le sale a Administración al recargar.
-- **Parte 2, WhatsApp a grupos:** sin empezar. Va después de la Parte 1; el encargo está en ese §0.
-- **La causa supuesta no era:** la carga del Excel no escribió kardex. Falta confirmar en producción de
-  dónde salió el negativo, con `docs/consultas/2026-11-04-origen-del-negativo.sql`.
-- **Solo el usuario puede:** descargar el respaldo, correr el SQL y apretar el botón del corte.
+- **Inventario: HECHO y aplicado en producción.** Código en `09d2cdf`. Cuajada y Doble crema pasaron de
+  -177,90 y -12,50 kg a 0, y los 13 valores de la consulta de dinero salieron idénticos antes y después.
+- **El negativo salió de pedidos nuevos**, del 2 al 28 de octubre, sin ninguna entrada de inventario. No
+  de la carga del Excel.
+- **WhatsApp a grupos: desplegado** (`b136f73`), con 1189 tests, barrido limpio y los cinco chequeos en
+  verde. Se probó en el navegador solo en modo local. **Falta probarlo en Brave, Chrome y Android.**
 
-**Hay un arreglo aparte, también sin commit ni despliegue, en las tres apps:** vaciar un campo opcional
-no llegaba a la base. Lo tiene la sesión "Borrar campos opcionales", con los comandos de commit, y cada
-app necesita su despliegue. No entró en el despliegue de la Parte 1: se construyó desde la copia limpia,
-porque **`sync-tenant-app.mjs` construye lo que haya en la carpeta**. El barrido lo confirma:
-`opcionales` da 0 en el paquete.
+**Falta:**
+- El conteo físico inicial con "Ajustar inventario": el sistema dice 0 aunque haya queso en la nevera.
+- Que el dueño confirme que canceló la deuda con la planta. Era de $149.319.210 y ahora da $0. Los abonos
+  cuadran, pero eso no prueba que se haya pagado.
+- Quitar la copia limpia de `%TEMP%/claude/palmas-limpia`.
+
+⚠️ **Antes de un corte, mira de qué empresa es el respaldo.** Se bajó primero uno de Juan Papas por error.
+Juan Papas no tiene inventario: su dueño lo quitó el 25 de agosto de 2026.
+
+**Hay un arreglo aparte, sin commit ni despliegue, en las tres apps:** vaciar un campo opcional no llegaba
+a la base. Lo tiene la sesión "Borrar campos opcionales", con los comandos de commit, y cada app necesita
+su despliegue. No entró en estos despliegues: se construyeron desde la copia limpia, porque
+**`sync-tenant-app.mjs` construye lo que haya en la carpeta**. El barrido lo confirma: `opcionales` da 0
+en el paquete.
 
 ---
 
