@@ -20,7 +20,7 @@ const card = cva(
         ghost: "border border-transparent bg-transparent",
       },
       interactive: {
-        true: "group hover:-translate-y-1 hover:shadow-card-hover motion-reduce:hover:translate-y-0",
+        true: "group hover:-translate-y-1 hover:shadow-card-hover",
         false: "",
       },
       padding: {

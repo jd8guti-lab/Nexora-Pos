@@ -14,12 +14,11 @@ import { cn } from "@/lib/utils";
  * that is identical in every one of them. Now it is fifteen plain <div>s and
  * one observer.
  *
- * Two rules still hold, and are enforced in the observer:
+ * One rule still holds, and is enforced in the observer:
  *
  * - Content must never depend on JavaScript to be readable. Nothing is hidden
  *   until the observer arms it, so a page where scripting never runs shows
  *   everything.
- * - `prefers-reduced-motion` disables it entirely, in globals.css.
  */
 export function Reveal({
   children,

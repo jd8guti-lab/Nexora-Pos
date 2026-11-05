@@ -72,25 +72,25 @@ describe("scroll progress", () => {
   });
 });
 
-describe("prefers-reduced-motion", () => {
+describe("without having to switch anything on", () => {
   /*
-    The blanket rule flattens durations but not delays, so a staged entrance would still sit
-    invisible for its delay. Anything new that animates has to be named here.
+    The user's decision, 5 November 2026: the animations have to show on a machine with Windows'
+    animation effects off. That setting is what `prefers-reduced-motion` reports.
   */
-  it.each([".motion-enter", ".hero-parallax", ".hero-settle", ".scroll-progress"])(
-    "turns off %s by name",
+  it.each([".motion-enter", ".hero-settle", ".scroll-progress", ".spinner", "[data-reveal]", "animation-duration"])(
+    "does not turn off %s",
     (selector) => {
-      expect(reducedMotion).toContain(selector);
+      expect(reducedMotion).not.toContain(selector);
     },
   );
 
-  it("keeps the waiting spinner turning: a still one looks like a frozen page", () => {
-    const regla = reducedMotion.slice(reducedMotion.indexOf(".spinner"));
-    expect(regla).toContain("animation-iteration-count: infinite !important");
+  it("keeps parallax as the one exception: it is the motion that can make someone dizzy", () => {
+    expect(reducedMotion).toContain(".hero-parallax");
   });
 
-  it("never leaves a side or zoom entrance hidden: the rule covers every [data-reveal]", () => {
-    expect(reducedMotion).toContain("[data-reveal]");
-    expect(reducedMotion).toContain("opacity: 1 !important");
+  it("no component opts out on its own", () => {
+    for (const ruta of ["components/ui/button.tsx", "components/ui/card.tsx", "components/ui/icon-tile.tsx"]) {
+      expect(readFileSync(join(process.cwd(), ruta), "utf8")).not.toContain("motion-reduce");
+    }
   });
 });

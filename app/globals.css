@@ -423,7 +423,9 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Reduced motion — honoured globally, not per component.
+   Reduced motion. Windows reports this setting when its animation effects are off, and the user
+   decided on 5 November 2026 that the animations have to show anyway. Only what makes someone
+   dizzy stays out: long automatic scrolling, and the image sliding against the text.
 --------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
@@ -431,46 +433,7 @@
     scroll-behavior: auto;
   }
 
-  /* Explicit rather than relying on the blanket rule below: an armed element
-     must never be left at opacity 0 waiting for an animation that has been
-     flattened away. */
-  [data-reveal] {
-    opacity: 1 !important;
-    transform: none !important;
-    animation: none !important;
-  }
-
-  /* The same, by name: these wait out a delay or run off the scroll, and the blanket rule below
-     touches neither. */
-  .motion-enter,
-  .hero-settle,
   .hero-parallax {
     animation: none !important;
-  }
-
-  .scroll-progress {
-    display: none !important;
-  }
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
-  /* The one exception: this is not decoration, it is how you know the page did not freeze. It
-     turns in place and crosses nothing, which is not the motion this setting protects from. */
-  .spinner {
-    animation-duration: 800ms !important;
-    animation-iteration-count: infinite !important;
-  }
-
-  /* The blanket rule flattens durations but not delays, and a stagger made
-     of delays would still play. Kill it explicitly. */
-  .letter-swap-char > span {
-    transition-delay: 0ms !important;
   }
 }

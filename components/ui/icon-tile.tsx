@@ -16,7 +16,6 @@ const tile = cva(
     "inline-flex shrink-0 items-center justify-center rounded-xl",
     // Reacts when the card it sits on is hovered: `group` comes from an interactive Card.
     "ease-brand transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3",
-    "motion-reduce:group-hover:scale-100 motion-reduce:group-hover:rotate-0",
   ],
   {
     variants: {

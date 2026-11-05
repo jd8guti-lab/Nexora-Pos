@@ -293,8 +293,7 @@ token: escribir la altura a mano en el hero ya rompió el encaje una vez, en sil
 ## 6. Calidad — no negociable
 
 **Accesibilidad.** HTML semántico. Un solo `h1` por página. Jerarquía de headings sin saltos.
-`alt` descriptivo. Foco visible. Navegación completa con teclado. `prefers-reduced-motion`
-respetado.
+`alt` descriptivo. Foco visible. Navegación completa con teclado.
 
 **Prefiere el elemento nativo antes que el componente.** La FAQ y la tabla de precios usan
 `components/ui/Disclosure`, que es `<details>`/`<summary>`: abre sin JavaScript, el teclado y el
@@ -322,14 +321,16 @@ respondió y que el CSS da 200 antes de creerte una cifra.
 
 **Animación.** Con presencia, en CSS. Cambió por decisión expresa del usuario el 5 de noviembre de
 2026: antes decía "entradas suaves, hovers, nada más" y prohibía el parallax.
-Se permiten entradas por etapas, parallax, barra de progreso y hovers con movimiento. **Lo que no se
-negocia:** todo se apaga con `prefers-reduced-motion`, nombrando cada clase en ese bloque de
-`globals.css` (`components/motion/motion.test.tsx` lo comprueba), porque la regla general aplana
-duraciones y no retrasos. Y siguen fuera el scroll secuestrado y lo que se mueva solo más de 5 s sin
-poder pausarse (WCAG 2.2.2), que incluye los carruseles automáticos.
+Se permiten entradas por etapas, parallax, barra de progreso y hovers con movimiento. Siguen fuera el
+scroll secuestrado y lo que se mueva solo más de 5 s sin poder pausarse (WCAG 2.2.2), salvo el indicador
+de espera.
 
-**La única excepción es el indicador de espera** (`.spinner`, `Button` con `loading`): sigue girando con
-movimiento reducido, porque es la señal de que la página no se congeló. Toda espera lo lleva.
+**Las animaciones se ven sin activar nada.** También por decisión expresa del usuario, el mismo día:
+`prefers-reduced-motion` es lo que Windows reporta con sus efectos de animación apagados, y dejaba el sitio
+quieto. **Ya no las apaga.** El costo, dicho: quien pidió menos movimiento por un mareo también las ve. Por
+eso esa preferencia solo quita el parallax y el scroll suave, que son lo que más marea, y
+`components/motion/motion.test.tsx` comprueba que no se apague nada más. Las apps de los clientes siguen la
+misma decisión, cada una en su repo.
 
 **Lo que está en pantalla al cargar** —el hero y el login— entra con `.motion-enter`, que es solo CSS
 y no espera a JavaScript. La imagen del hero solo cambia de escala, nunca de opacidad: es el elemento

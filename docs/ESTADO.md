@@ -18,7 +18,17 @@ Pedido del usuario, con el ejemplo de entrar a la cuenta. Ese camino tenía tres
 - **La app del cliente quedaba en blanco** hasta bajar su JavaScript. Cada `index.html` trae ahora el
   indicador dentro de `#root`, en CSS propio: React lo reemplaza al montar.
 
-**Decisión:** `.spinner` sigue girando con movimiento reducido. Es la excepción de §6 de `CLAUDE.md`.
+---
+
+## Las animaciones se ven sin activar nada, y llegan a las apps (5 de noviembre de 2026)
+
+Pedido del usuario: animaciones en la app de cada cliente, y que aparezcan sin tener que activar algo. Su
+Windows tiene los efectos apagados, y `prefers-reduced-motion` lo dejaba todo quieto.
+
+- **Ya no se apagan.** En este sitio esa preferencia solo quita el parallax y el scroll suave, que son lo que
+  más marea. En las apps no hay ninguno de los dos, así que la regla se quitó entera. Ver §6 de `CLAUDE.md`.
+- **Apps:** entrada de cada pantalla (260 ms, sin retraso), botones, tarjetas y pestañas. El detalle está en el
+  `docs/ESTADO.md` de cada una.
 
 ---
 
@@ -37,15 +47,12 @@ Pedido del usuario, para darle un toque más profesional, con el cambio expreso 
 ⚠️ **`Reveal` no se veía.** Su animación solo tenía `to`, y al revelarse el elemento ya no estaba armado:
 iba de "ya está ahí" a "ya está ahí". Ahora tiene `from`. Si tocas esto, mide un cuadro a mitad de camino.
 
-⚠️ **El panel de navegador de Claude y tu Windows reportan movimiento reducido** (`MinAnimate` = 0, los
-efectos de animación de Windows apagados). Ahí no se ve ninguna animación, y es correcto. Para medirlas hace
-falta Chrome con `Emulation.setEmulatedMedia`, y **el panel oculto no avanza las animaciones**: en ese
-estado una medición da opacidad 0 aunque esté bien.
+⚠️ **Para medir, el panel oculto no sirve:** no avanza las animaciones, y da opacidad 0 aunque esté bien.
+Hace falta Chrome con `Emulation.setEmulatedMedia`.
 
 **Medido en Chrome sin ventana, con el servidor de desarrollo:** a 1440 y 320 px la entrada termina en
 opacidad 1 y la barra coincide con lo esperado (0,108 contra 0,108). Parallax de 54 px a mitad de pantalla a
-1440, y 0 a 320, como se quería. Hover: botón -2 px, flecha +4 px. Sin scroll lateral a 320. Con movimiento
-reducido, en el panel, todo visible y sin animar.
+1440, y 0 a 320, como se quería. Hover: botón -2 px, flecha +4 px. Sin scroll lateral a 320. 
 
 **Peso, medido contra la versión anterior en una copia aparte:** JS de la home 126,6 kB antes y 126,5 kB
 ahora; CSS de 14,1 a 14,7 kB. **La home ya estaba por encima del techo de ~120 kB antes de esto**, y sigue

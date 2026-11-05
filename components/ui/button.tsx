@@ -24,11 +24,10 @@ const button = cva(
     "transition-[background-color,border-color,color,box-shadow,transform]",
     "duration-200 ease-brand",
     "hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]",
-    "motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100",
     "disabled:pointer-events-none disabled:opacity-50",
     "[&_svg]:size-[1.15em] [&_svg]:shrink-0",
     "[&_svg]:transition-transform [&_svg]:duration-200 [&_svg]:ease-brand",
-    "hover:[&_svg]:translate-x-1 motion-reduce:hover:[&_svg]:translate-x-0",
+    "hover:[&_svg]:translate-x-1",
   ],
   {
     variants: {
