@@ -22,8 +22,12 @@ const button = cva(
     "font-semibold whitespace-nowrap select-none",
     "transition-[background-color,border-color,color,box-shadow,transform]",
     "duration-200 ease-brand",
+    "hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]",
+    "motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100",
     "disabled:pointer-events-none disabled:opacity-50",
     "[&_svg]:size-[1.15em] [&_svg]:shrink-0",
+    "[&_svg]:transition-transform [&_svg]:duration-200 [&_svg]:ease-brand",
+    "hover:[&_svg]:translate-x-1 motion-reduce:hover:[&_svg]:translate-x-0",
   ],
   {
     variants: {
@@ -33,7 +37,8 @@ const button = cva(
         secondary:
           "border-2 border-ink-900 bg-transparent text-ink-900 hover:bg-ink-900 hover:text-white",
         ghost: "bg-transparent text-ink-900 hover:bg-paper-50",
-        link: "h-auto rounded-none px-0 text-ink-900 underline decoration-brand-500 decoration-2 underline-offset-4 hover:text-brand-700 hover:decoration-brand-700 hover:decoration-[3px]",
+        /** It sits inside a sentence, so it does not lift. */
+        link: "hover:translate-y-0 active:scale-100 h-auto rounded-none px-0 text-ink-900 underline decoration-brand-500 decoration-2 underline-offset-4 hover:text-brand-700 hover:decoration-brand-700 hover:decoration-[3px]",
         /** For ink-900 surfaces: white plate reads 16.9:1 against the ground. */
         inverse: "bg-white text-ink-900 shadow-sm hover:bg-paper-50",
         inverseOutline:

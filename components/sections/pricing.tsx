@@ -59,7 +59,7 @@ export function Pricing() {
       <Grid cols={3} gap="lg" className="mt-12 items-stretch" asChild>
         <ul>
           {pricingPlans.map((plan, i) => (
-            <Reveal as="li" key={plan.id} delay={i * 0.07} className="h-full">
+            <Reveal as="li" key={plan.id} from="zoom" delay={i * 0.07} className="h-full">
               <Card
                 padding="lg"
                 className={cn(

@@ -29,7 +29,7 @@ export function Pillars() {
         <ul>
           {pillars.map((pillar, i) => (
             <Reveal as="li" key={pillar.id} delay={i * 0.06} className="h-full">
-              <Card variant="plain" padding="lg" className="h-full">
+              <Card variant="plain" interactive padding="lg" className="h-full">
                 <IconTile icon={pillar.icon} size="lg" />
                 <Heading as="h3" size="h3" className="mt-5">
                   {pillar.title}

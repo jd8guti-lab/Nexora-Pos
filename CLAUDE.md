@@ -252,7 +252,7 @@ components/
   layout/               Section, Container, Grid, Nav, Footer
   sections/             una carpeta o archivo por sección de la home
   brand/                Logo, Isotype, mockups del producto
-  motion/               Reveal + RevealObserver
+  motion/               Reveal + RevealObserver, ScrollProgress
 content/                TODO el copy, tipado
 lib/                    config.ts, utils.ts, seo.ts, lead.ts
   portal/tenant.ts      resolución de tenant que usa el middleware
@@ -320,10 +320,19 @@ respondió y que el CSS da 200 antes de creerte una cifra.
 **SEO.** Metadata API por página, Open Graph + Twitter card, `sitemap.ts`, `robots.ts`, JSON-LD
 (`Organization` + `SoftwareApplication`), canónicas.
 
-**Animación.** Sobria y funcional: entradas suaves, hovers, nada más. Sin carruseles automáticos,
-sin parallax, sin scroll secuestrado.
+**Animación.** Con presencia, en CSS. Cambió por decisión expresa del usuario el 5 de noviembre de
+2026: antes decía "entradas suaves, hovers, nada más" y prohibía el parallax.
+Se permiten entradas por etapas, parallax, barra de progreso y hovers con movimiento. **Lo que no se
+negocia:** todo se apaga con `prefers-reduced-motion`, nombrando cada clase en ese bloque de
+`globals.css` (`components/motion/motion.test.tsx` lo comprueba), porque la regla general aplana
+duraciones y no retrasos. Y siguen fuera el scroll secuestrado y lo que se mueva solo más de 5 s sin
+poder pausarse (WCAG 2.2.2), que incluye los carruseles automáticos.
 
-Toda animación de entrada pasa por `components/motion/Reveal`, que es **componente de servidor**:
+**Lo que está en pantalla al cargar** —el hero y el login— entra con `.motion-enter`, que es solo CSS
+y no espera a JavaScript. La imagen del hero solo cambia de escala, nunca de opacidad: es el elemento
+más grande de la página.
+
+Toda animación de entrada **al hacer scroll** pasa por `components/motion/Reveal`, que es **componente de servidor**:
 solo emite `data-reveal`. Un único `RevealObserver`, montado en el layout de marketing, los arma
 todos con un solo `IntersectionObserver`. No conviertas `Reveal` en componente cliente — quince
 fronteras de hidratación para el mismo efecto es justo lo que se quitó. **`Reveal` no vuelve a

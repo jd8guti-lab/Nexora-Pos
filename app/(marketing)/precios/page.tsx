@@ -55,7 +55,7 @@ export default function PricingPage() {
         <ul className="mt-12 grid gap-6 md:grid-cols-3">
           {customisation.map((item) => (
             <li key={item.title}>
-              <Card variant="plain" padding="lg" className="h-full">
+              <Card variant="plain" interactive padding="lg" className="h-full">
                 <Heading as="h3" size="h3">
                   {item.title}
                 </Heading>

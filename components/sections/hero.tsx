@@ -6,11 +6,17 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { hero } from "@/content/home";
 import { site } from "@/content/site";
 
+/** The delay of one line in the hero's staged entrance (`.motion-enter`). */
+function enterAt(ms: number) {
+  return { "--enter-delay": `${ms}ms` } as React.CSSProperties;
+}
+
 /**
  * The hero.
  *
  * Deliberately not wrapped in Reveal: this is the first thing on the page and
  * the one block that must never wait on JavaScript, an observer or a scroll.
+ * Its entrance is `.motion-enter`, which is CSS alone.
  *
  * **It is exactly one screen tall.** `100svh` minus the nav, read from the `--spacing-nav` token, at every
  * breakpoint — `svh` rather than `vh` so a phone's collapsing address bar does
@@ -65,7 +71,9 @@ export function Hero() {
         {/* No cap here: a percentage would resolve against this wrapper, not
             the screen. The caps live on the children, in `vw`. */}
         <div>
-          <Eyebrow className="text-ink-900">{site.descriptor}</Eyebrow>
+          <div className="motion-enter" style={enterAt(0)}>
+            <Eyebrow className="text-ink-900">{site.descriptor}</Eyebrow>
+          </div>
 
           {/* One sentence per line, as in the reference art. They are blocks
               rather than a flowing paragraph with breaks: the claim is three
@@ -77,27 +85,34 @@ export function Hero() {
           <h1 className="text-display mt-3 max-w-2xl md:mt-4 xl:max-w-[36vw]">
             {/* Thickness and offset in em so the rule scales with the fluid
                 display size instead of going hairline at the top end. */}
-            <span className="decoration-brand-500 block w-fit underline decoration-[0.07em] underline-offset-[0.14em]">
+            <span style={enterAt(80)} className="motion-enter decoration-brand-500 block w-fit underline decoration-[0.07em] underline-offset-[0.14em]">
               {site.claim.underlined}
             </span>
-            <span className="block w-fit">{site.claim.middle}</span>
+            <span style={enterAt(160)} className="motion-enter block w-fit">
+              {site.claim.middle}
+            </span>
             {/* Orange only from xl. Below that the copy now sits on the plate,
                 and brand-500 over its clear field measures 1.20:1 — orange on
                 orange. `ink-900` gives 7.76:1 there. The xl exception keeps its
                 own measurement (4.16–4.18:1) and is listed in contrast.mjs. */}
-            <span className="xl:text-brand-500 block w-fit">{site.claim.accent}</span>
+            <span style={enterAt(240)} className="motion-enter xl:text-brand-500 block w-fit">
+              {site.claim.accent}
+            </span>
           </h1>
 
-          <p className="text-lead text-ink-900 md:text-h3 mt-5 max-w-xl font-medium md:mt-6 xl:max-w-[27vw]">
+          <p style={enterAt(340)} className="motion-enter text-lead text-ink-900 md:text-h3 mt-5 max-w-xl font-medium md:mt-6 xl:max-w-[27vw]">
             {hero.lead}
           </p>
           {/* Justified, with hyphenation on: the column is narrow and Spanish
               has long words, so without hyphens justification opens rivers. */}
-          <p className="text-body text-ink-900/80 mt-3 max-w-xl text-justify hyphens-auto xl:max-w-[27vw]">
+          <p style={enterAt(420)} className="motion-enter text-body text-ink-900/80 mt-3 max-w-xl text-justify hyphens-auto xl:max-w-[27vw]">
             {hero.body}
           </p>
 
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row md:mt-8 xl:max-w-[27vw]">
+          <div
+            style={enterAt(500)}
+            className="motion-enter mt-5 flex flex-col gap-3 sm:flex-row md:mt-8 xl:max-w-[27vw]"
+          >
             <Button asChild size="lg">
               {/* Opens WhatsApp — it leaves the site, so it says so to the
                   browser as well as to the reader. */}
@@ -144,7 +159,7 @@ export function Hero() {
       {/* The image is the hero's background at EVERY size since 2026-09-04, at
           the user's request: on a phone it used to be a band under the copy.
           The fade stays on this box, not on the image. */}
-      <div className="absolute inset-0 -z-10 mask-b-from-80% mask-b-to-100%">
+      <div className="hero-parallax absolute inset-0 -z-10 mask-b-from-80% mask-b-to-100%">
         <Image
           src="/brand/hero-mockup.png"
           alt="Panel de nexora-pos con el resumen de ventas del día, el gráfico de ventas del mes y el listado de pedidos, junto a la impresora de recibos, el lector de códigos y una tableta con el catálogo de productos"
@@ -162,7 +177,7 @@ export function Hero() {
           // measured 1.20:1 there, which is not "below AA", it is invisible.
           // Anchored left it shows the cream field the art keeps clear, whose
           // darkest pixel is #FB983A — audited in scripts/contrast.mjs.
-          className="absolute inset-0 size-full mask-b-from-88% mask-b-to-100% object-cover object-left xl:relative xl:inset-auto xl:h-auto xl:w-full xl:object-center"
+          className="hero-settle absolute inset-0 size-full mask-b-from-88% mask-b-to-100% object-cover object-left xl:relative xl:inset-auto xl:h-auto xl:w-full xl:object-center"
         />
       </div>
     </section>

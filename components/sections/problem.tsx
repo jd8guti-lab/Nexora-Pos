@@ -135,10 +135,10 @@ export function Problem() {
       {/* `relative` so the badge can sit on the seam between the columns. */}
       <div className="relative mt-12 grid gap-5 md:grid-cols-2 md:gap-6">
         {/* h-full on the wrapper too: the grid stretches this, not the Card. */}
-        <Reveal className="h-full">
+        <Reveal from="left" className="h-full">
           <Column column={problem.canned} variant="canned" />
         </Reveal>
-        <Reveal delay={0.08} className="h-full">
+        <Reveal from="right" delay={0.08} className="h-full">
           <Column column={problem.tailored} variant="tailored" />
         </Reveal>
 

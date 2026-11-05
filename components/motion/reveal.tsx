@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Marks a block for the site's one entrance animation: a short fade and a
- * 12px rise, once, when it reaches the viewport.
+ * Marks a block for the site's scroll entrance: a fade with a short rise, or
+ * from a side or a slight zoom with `from`, once, when it reaches the viewport.
  *
  * **This is a server component on purpose.** It renders nothing but a tag
  * with `data-reveal` on it. All the behaviour lives in a single
@@ -24,18 +24,21 @@ import { cn } from "@/lib/utils";
 export function Reveal({
   children,
   delay = 0,
+  from,
   className,
   as: Tag = "div",
 }: {
   children: React.ReactNode;
   /** Seconds. Use small steps (0.05–0.15) to stagger a row of cards. */
   delay?: number;
+  /** Where it enters from. Without it, it rises. */
+  from?: "left" | "right" | "zoom";
   className?: string;
   as?: "div" | "li" | "section";
 }) {
   return (
     <Tag
-      data-reveal=""
+      data-reveal={from ?? ""}
       className={cn(className)}
       style={delay ? { animationDelay: `${delay}s` } : undefined}
     >

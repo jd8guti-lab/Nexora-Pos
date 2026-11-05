@@ -41,7 +41,7 @@ export default function UseCasesPage() {
         <ul className="flex flex-col gap-6">
           {useCases.map((useCase, i) => (
             <Reveal as="li" key={useCase.id} delay={(i % 3) * 0.05}>
-              <Card padding="lg" id={useCase.id}>
+              <Card interactive padding="lg" id={useCase.id}>
                 <div className="grid gap-6 lg:grid-cols-[auto_1fr_1fr] lg:items-start lg:gap-10">
                   <IconTile icon={useCase.icon} size="lg" />
 

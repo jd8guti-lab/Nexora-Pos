@@ -11,22 +11,30 @@ import { cn } from "@/lib/utils";
  * If you ever need an icon that carries meaning on its own, give it a label
  * and use a tone with real contrast.
  */
-const tile = cva("inline-flex shrink-0 items-center justify-center rounded-xl", {
-  variants: {
-    tone: {
-      brand: "bg-brand-500/12 text-brand-700",
-      solid: "bg-brand-gradient text-ink-900",
-      neutral: "bg-paper-50 text-ink-900",
-      inverse: "bg-white/10 text-brand-500",
+const tile = cva(
+  [
+    "inline-flex shrink-0 items-center justify-center rounded-xl",
+    // Reacts when the card it sits on is hovered: `group` comes from an interactive Card.
+    "ease-brand transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3",
+    "motion-reduce:group-hover:scale-100 motion-reduce:group-hover:rotate-0",
+  ],
+  {
+    variants: {
+      tone: {
+        brand: "bg-brand-500/12 text-brand-700",
+        solid: "bg-brand-gradient text-ink-900",
+        neutral: "bg-paper-50 text-ink-900",
+        inverse: "bg-white/10 text-brand-500",
+      },
+      size: {
+        sm: "size-10 [&_svg]:size-5",
+        md: "size-12 [&_svg]:size-6",
+        lg: "size-14 [&_svg]:size-7",
+      },
     },
-    size: {
-      sm: "size-10 [&_svg]:size-5",
-      md: "size-12 [&_svg]:size-6",
-      lg: "size-14 [&_svg]:size-7",
-    },
+    defaultVariants: { tone: "brand", size: "md" },
   },
-  defaultVariants: { tone: "brand", size: "md" },
-});
+);
 
 type IconTileProps = Omit<React.ComponentPropsWithoutRef<"span">, "children"> &
   VariantProps<typeof tile> & {

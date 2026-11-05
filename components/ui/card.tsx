@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  * card stays raised until you touch something else, which reads as a bug.
  */
 const card = cva(
-  "rounded-card ease-brand relative flex flex-col transition-[box-shadow,transform,border-color] duration-200",
+  "rounded-card ease-brand relative flex flex-col transition-[box-shadow,transform,border-color] duration-300",
   {
     variants: {
       variant: {
@@ -20,7 +20,7 @@ const card = cva(
         ghost: "border border-transparent bg-transparent",
       },
       interactive: {
-        true: "hover:-translate-y-0.5 hover:shadow-card-hover motion-reduce:hover:translate-y-0",
+        true: "group hover:-translate-y-1 hover:shadow-card-hover motion-reduce:hover:translate-y-0",
         false: "",
       },
       padding: {

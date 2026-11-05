@@ -222,13 +222,78 @@
     where scripting never ran — is fully visible. Content must not depend on
     JavaScript to be legible.
   */
-  [data-reveal][data-reveal-armed]:not([data-revealed]) {
+  [data-reveal] {
+    --reveal-from: translateY(20px);
+  }
+
+  [data-reveal="left"] {
+    --reveal-from: translateX(-32px);
+  }
+
+  [data-reveal="right"] {
+    --reveal-from: translateX(32px);
+  }
+
+  [data-reveal="zoom"] {
+    --reveal-from: scale(0.96);
+  }
+
+  [data-reveal][data-reveal-armed]:not([data-revealed]),
+  [data-reveal="left"][data-reveal-armed]:not([data-revealed]),
+  [data-reveal="right"][data-reveal-armed]:not([data-revealed]),
+  [data-reveal="zoom"][data-reveal-armed]:not([data-revealed]) {
     opacity: 0;
-    transform: translateY(12px);
+    transform: var(--reveal-from);
   }
 
   [data-reveal][data-revealed] {
-    animation: reveal 500ms var(--ease-brand) backwards;
+    animation: reveal 700ms var(--ease-brand) backwards;
+  }
+
+  /*
+    The staged entrance of whatever is on screen at load: the hero and the login. Pure CSS, so it
+    runs without JavaScript, and `backwards` rather than `both` so that once it ends the element's
+    transform is free again: `both` would pin it and kill the buttons' hover.
+  */
+  .motion-enter {
+    animation: enter 700ms var(--ease-brand) backwards;
+    animation-delay: var(--enter-delay, 0ms);
+  }
+
+  /* The hero's image settles into place. Scale only, never opacity: it is the page's largest
+     element, and fading it would delay the moment the browser counts it as painted. */
+  .hero-settle {
+    animation: settle 1600ms var(--ease-brand) backwards;
+    transform-origin: left top;
+  }
+
+  .scroll-progress {
+    display: none;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .scroll-progress {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 60;
+      display: block;
+      height: 3px;
+      pointer-events: none;
+      background: linear-gradient(90deg, var(--color-brand-500), var(--color-brand-300));
+      transform-origin: left;
+      animation: scroll-fill linear both;
+      animation-timeline: scroll(root);
+    }
+
+    /* The image drifts slower than the copy as the hero leaves. Above lg only: on a phone the copy
+       sits over the plate's narrow clear field, and it should not slide off it. */
+    @media (min-width: 64rem) {
+      .hero-parallax {
+        animation: parallax linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 100vh;
+      }
+    }
   }
 
   /* Native <details>. Removing the default marker takes both of these:
@@ -294,10 +359,44 @@
   }
 }
 
+/* It needs its `from`: by the time this runs the element has lost its armed state, so a keyframe
+   with only `to` would go from "already there" to "already there" and show nothing. */
 @keyframes reveal {
+  from {
+    opacity: 0;
+    transform: var(--reveal-from);
+  }
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+@keyframes settle {
+  from {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes scroll-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes parallax {
+  to {
+    transform: translateY(12vh);
   }
 }
 
@@ -328,6 +427,18 @@
     opacity: 1 !important;
     transform: none !important;
     animation: none !important;
+  }
+
+  /* The same, by name: these wait out a delay or run off the scroll, and the blanket rule below
+     touches neither. */
+  .motion-enter,
+  .hero-settle,
+  .hero-parallax {
+    animation: none !important;
+  }
+
+  .scroll-progress {
+    display: none !important;
   }
 
   *,

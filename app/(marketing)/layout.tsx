@@ -1,5 +1,6 @@
 import { Footer } from "@/components/layout/footer";
 import { RevealObserver } from "@/components/motion/reveal-observer";
+import { ScrollProgress } from "@/components/motion/scroll-progress";
 import { Nav } from "@/components/layout/nav";
 
 export default function MarketingLayout({
@@ -13,8 +14,11 @@ export default function MarketingLayout({
       >
         Saltar al contenido
       </a>
+      <ScrollProgress />
       <Nav />
-      <main id="contenido" className="flex-1">
+      {/* overflow-x-clip: a block entering from the right starts past the edge of a phone's screen,
+          and without this it would open a horizontal scroll for the length of the entrance. */}
+      <main id="contenido" className="flex-1 overflow-x-clip">
         {children}
       </main>
       <Footer />

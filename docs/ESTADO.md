@@ -5,7 +5,43 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-11-04. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-11-05. **Lee el bloque de abajo antes que nada.**
+
+---
+
+## Animaciones del sitio (5 de noviembre de 2026)
+
+Pedido del usuario, para darle un toque más profesional, con el cambio expreso de la regla de §6 de
+`CLAUDE.md`. **Todo en CSS, sin librerías:** es la cuarta vez que se mira, y las otras tres cayeron por peso.
+
+- **Entrada por etapas** en el hero y el login (`.motion-enter`), sin esperar a JavaScript.
+- **La imagen del hero** se asienta al cargar y se queda atrás al hacer scroll (parallax, desde lg).
+- **Barra de progreso** arriba (`ScrollProgress`), manejada por el navegador con `animation-timeline`. Donde
+  no hay soporte, no aparece.
+- **`Reveal` con dirección:** `from="left" | "right" | "zoom"`.
+- **Hovers:** el botón sube, cede al presionar y su flecha se mueve; la tarjeta sube y su ícono reacciona.
+
+⚠️ **`Reveal` no se veía.** Su animación solo tenía `to`, y al revelarse el elemento ya no estaba armado:
+iba de "ya está ahí" a "ya está ahí". Ahora tiene `from`. Si tocas esto, mide un cuadro a mitad de camino.
+
+⚠️ **El panel de navegador de Claude y tu Windows reportan movimiento reducido** (`MinAnimate` = 0, los
+efectos de animación de Windows apagados). Ahí no se ve ninguna animación, y es correcto. Para medirlas hace
+falta Chrome con `Emulation.setEmulatedMedia`, y **el panel oculto no avanza las animaciones**: en ese
+estado una medición da opacidad 0 aunque esté bien.
+
+**Medido en Chrome sin ventana, con el servidor de desarrollo:** a 1440 y 320 px la entrada termina en
+opacidad 1 y la barra coincide con lo esperado (0,108 contra 0,108). Parallax de 54 px a mitad de pantalla a
+1440, y 0 a 320, como se quería. Hover: botón -2 px, flecha +4 px. Sin scroll lateral a 320. Con movimiento
+reducido, en el panel, todo visible y sin animar.
+
+**Peso, medido contra la versión anterior en una copia aparte:** JS de la home 126,6 kB antes y 126,5 kB
+ahora; CSS de 14,1 a 14,7 kB. **La home ya estaba por encima del techo de ~120 kB antes de esto**, y sigue
+pendiente.
+
+**`Pillars` y `Modules` no se usan en ninguna página**, así que el hover de tarjetas se ve en `/casos` y
+`/precios`. La home no tiene tarjetas con hover.
+
+**Sin medir:** Lighthouse, y el parallax en Safari.
 
 ---
 

@@ -13,6 +13,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+/** The delay of one block in the login's staged entrance (`.motion-enter`). */
+function enterAt(ms: number) {
+  return { "--enter-delay": `${ms}ms` } as React.CSSProperties;
+}
+
 /**
  * The portal's front door.
  *
@@ -27,10 +32,14 @@ export default function PortalPage() {
   return (
     <main className="surface-dark bg-ink-900 flex min-h-dvh flex-col items-center justify-center py-16 text-white">
       <Container className="flex max-w-md flex-col items-center text-center">
-        <LogoLockup variant="dark" height={40} withDescriptor priority />
+        <div className="motion-enter" style={enterAt(0)}>
+          <LogoLockup variant="dark" height={40} withDescriptor priority />
+        </div>
 
-        <h1 className="text-h2 mt-12">Entra a tu sistema</h1>
-        <p className="text-body text-paper-50/75 mt-4">
+        <h1 className="motion-enter text-h2 mt-12" style={enterAt(100)}>
+          Entra a tu sistema
+        </h1>
+        <p className="motion-enter text-body text-paper-50/75 mt-4" style={enterAt(180)}>
           Con el usuario que te entregamos. Si no lo tienes a mano, escríbenos.
         </p>
 
@@ -38,9 +47,11 @@ export default function PortalPage() {
           `useSearchParams` needs a Suspense boundary, or the whole route opts out of static
           rendering at build time.
         */}
-        <Suspense fallback={<div className="mt-10 h-64" aria-hidden />}>
-          <LoginForm />
-        </Suspense>
+        <div className="motion-enter w-full" style={enterAt(260)}>
+          <Suspense fallback={<div className="mt-10 h-64" aria-hidden />}>
+            <LoginForm />
+          </Suspense>
+        </div>
 
         <div className="border-paper-50/15 mt-10 flex w-full flex-col items-center gap-4 border-t pt-8">
           <p className="text-small text-paper-50/65">
