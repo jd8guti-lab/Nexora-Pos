@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -21,12 +21,23 @@ export function LoginForm() {
   const router = useRouter();
   const parametros = useSearchParams();
   const [errorGeneral, setErrorGeneral] = useState<string | undefined>(undefined);
+  // The session is ready but the client's application still has to open. Nothing resets this on
+  // success: the wait ends when this page goes away.
+  const [abriendo, setAbriendo] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<Credenciales>({ resolver: zodResolver(esquema) });
+  const ocupado = isSubmitting || abriendo;
+
+  // The browser's Back can restore this page exactly as it was left, still "waiting".
+  useEffect(() => {
+    const alVolver = () => setAbriendo(false);
+    window.addEventListener("pageshow", alVolver);
+    return () => window.removeEventListener("pageshow", alVolver);
+  }, []);
 
   async function entrar({ email, password }: Credenciales) {
     setErrorGeneral(undefined);
@@ -54,6 +65,7 @@ export function LoginForm() {
     // `?destino=` from a crafted link must not become an open redirect.
     const destino = parametros.get("destino");
     const suyo = rutaDeTenant(tenant.slug);
+    setAbriendo(true);
     router.push(destino?.startsWith(suyo) ? destino : suyo);
     router.refresh();
   }
@@ -93,9 +105,13 @@ export function LoginForm() {
         </p>
       ) : null}
 
-      <Button type="submit" size="lg" disabled={isSubmitting}>
-        {isSubmitting ? "Entrando…" : "Entrar"}
+      <Button type="submit" size="lg" loading={ocupado}>
+        {ocupado ? "Entrando a tu cuenta…" : "Entrar"}
       </Button>
+      {/* The spinner says nothing to a screen reader, and the button's new name is not announced. */}
+      <p role="status" className="sr-only">
+        {ocupado ? "Entrando a tu cuenta…" : ""}
+      </p>
     </form>
   );
 }

@@ -172,9 +172,9 @@ export function ContactForm() {
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <Button type="submit" size="lg" disabled={status === "sending"}>
+        <Button type="submit" size="lg" loading={status === "sending"}>
           {status === "sending" ? "Enviando…" : "Enviar mensaje"}
-          <Send aria-hidden />
+          {status === "sending" ? null : <Send aria-hidden />}
         </Button>
         <p className="text-small text-ink-500">
           Te contactamos por donde prefieras. No compartimos tus datos con nadie.

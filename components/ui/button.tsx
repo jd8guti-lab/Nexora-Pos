@@ -1,5 +1,6 @@
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -65,6 +66,8 @@ export type ButtonProps = React.ComponentPropsWithoutRef<"button"> &
   VariantProps<typeof button> & {
     /** Render as the child element — use to wrap next/link without nesting. */
     asChild?: boolean;
+    /** Waiting on something: it spins and cannot be pressed again. Not with `asChild`. */
+    loading?: boolean;
   };
 
 export function Button({
@@ -72,16 +75,29 @@ export function Button({
   variant,
   size,
   asChild = false,
+  loading = false,
   type,
+  disabled,
+  children,
   ...props
 }: ButtonProps) {
   const Comp = asChild ? Slot : "button";
   return (
     <Comp
       className={cn(button({ variant, size }), className)}
-      {...(asChild ? {} : { type: type ?? "button" })}
+      {...(asChild ? {} : { type: type ?? "button", disabled: disabled || loading })}
+      {...(loading ? { "aria-busy": true } : {})}
       {...props}
-    />
+    >
+      {asChild ? (
+        children
+      ) : (
+        <>
+          {loading ? <Loader2 aria-hidden className="spinner" /> : null}
+          {children}
+        </>
+      )}
+    </Comp>
   );
 }
 

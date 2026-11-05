@@ -267,6 +267,11 @@
     transform-origin: left top;
   }
 
+  /* Waiting on something. */
+  .spinner {
+    animation: spinner 800ms linear infinite;
+  }
+
   .scroll-progress {
     display: none;
   }
@@ -372,6 +377,12 @@
   }
 }
 
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes enter {
   from {
     opacity: 0;
@@ -448,6 +459,13 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* The one exception: this is not decoration, it is how you know the page did not freeze. It
+     turns in place and crosses nothing, which is not the motion this setting protects from. */
+  .spinner {
+    animation-duration: 800ms !important;
+    animation-iteration-count: infinite !important;
   }
 
   /* The blanket rule flattens durations but not delays, and a stagger made

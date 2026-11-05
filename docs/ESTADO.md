@@ -9,6 +9,19 @@ sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
 ---
 
+## Animación de espera (5 de noviembre de 2026)
+
+Pedido del usuario, con el ejemplo de entrar a la cuenta. Ese camino tenía tres huecos:
+- El botón solo cambiaba de texto. Ahora gira: `Button` con `loading`, también en el formulario de contacto.
+- **Volvía a decir "Entrar" mientras la app abría**, porque `router.push` no espera. `abriendo` lo mantiene
+  hasta que la página se va, y `pageshow` lo suelta si el navegador vuelve atrás.
+- **La app del cliente quedaba en blanco** hasta bajar su JavaScript. Cada `index.html` trae ahora el
+  indicador dentro de `#root`, en CSS propio: React lo reemplaza al montar.
+
+**Decisión:** `.spinner` sigue girando con movimiento reducido. Es la excepción de §6 de `CLAUDE.md`.
+
+---
+
 ## Animaciones del sitio (5 de noviembre de 2026)
 
 Pedido del usuario, para darle un toque más profesional, con el cambio expreso de la regla de §6 de

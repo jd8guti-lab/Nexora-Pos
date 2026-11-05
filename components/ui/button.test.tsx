@@ -56,3 +56,21 @@ describe("Button", () => {
     expect(screen.queryByRole("button")).toBeNull();
   });
 });
+
+describe("Button loading", () => {
+  it("spins, says it is busy and cannot be pressed twice", () => {
+    render(<Button loading>Enviando</Button>);
+    const boton = screen.getByRole("button", { name: "Enviando" });
+    expect(boton).toBeDisabled();
+    expect(boton).toHaveAttribute("aria-busy", "true");
+    expect(boton.querySelector(".spinner")).not.toBeNull();
+  });
+
+  it("without it there is no spinner and no aria-busy", () => {
+    render(<Button>Enviar</Button>);
+    const boton = screen.getByRole("button", { name: "Enviar" });
+    expect(boton).toBeEnabled();
+    expect(boton).not.toHaveAttribute("aria-busy");
+    expect(boton.querySelector(".spinner")).toBeNull();
+  });
+});

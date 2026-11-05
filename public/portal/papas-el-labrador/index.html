@@ -15,10 +15,44 @@
       rel="stylesheet"
     />
     <title>El Labrador</title>
+    <style>
+      .arranque {
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        color: #626976;
+        font: 14px Poppins, system-ui, sans-serif;
+      }
+      .arranque-giro {
+        width: 36px;
+        height: 36px;
+        border: 3px solid #ededed;
+        border-top-color: #ff7a00;
+        border-radius: 50%;
+        animation: arranque-giro 800ms linear infinite;
+      }
+      @keyframes arranque-giro {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
     <script type="module" crossorigin src="/portal/papas-el-labrador/assets/index-Bpo45Qyr.js"></script>
     <link rel="stylesheet" crossorigin href="/portal/papas-el-labrador/assets/index-CkBnNY0v.css">
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      Lo que se ve mientras baja el JavaScript, que sin esto es una pantalla en blanco. Va dentro de
+      #root porque React lo reemplaza al montar, y en CSS propio porque el de la app todavia no llego.
+    -->
+    <div id="root">
+      <div class="arranque" role="status">
+        <span class="arranque-giro" aria-hidden="true"></span>
+        <span>Cargando…</span>
+      </div>
+    </div>
   </body>
 </html>

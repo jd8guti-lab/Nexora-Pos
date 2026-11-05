@@ -84,6 +84,11 @@ describe("prefers-reduced-motion", () => {
     },
   );
 
+  it("keeps the waiting spinner turning: a still one looks like a frozen page", () => {
+    const regla = reducedMotion.slice(reducedMotion.indexOf(".spinner"));
+    expect(regla).toContain("animation-iteration-count: infinite !important");
+  });
+
   it("never leaves a side or zoom entrance hidden: the rule covers every [data-reveal]", () => {
     expect(reducedMotion).toContain("[data-reveal]");
     expect(reducedMotion).toContain("opacity: 1 !important");

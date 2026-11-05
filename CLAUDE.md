@@ -328,6 +328,9 @@ negocia:** todo se apaga con `prefers-reduced-motion`, nombrando cada clase en e
 duraciones y no retrasos. Y siguen fuera el scroll secuestrado y lo que se mueva solo más de 5 s sin
 poder pausarse (WCAG 2.2.2), que incluye los carruseles automáticos.
 
+**La única excepción es el indicador de espera** (`.spinner`, `Button` con `loading`): sigue girando con
+movimiento reducido, porque es la señal de que la página no se congeló. Toda espera lo lleva.
+
 **Lo que está en pantalla al cargar** —el hero y el login— entra con `.motion-enter`, que es solo CSS
 y no espera a JavaScript. La imagen del hero solo cambia de escala, nunca de opacidad: es el elemento
 más grande de la página.
