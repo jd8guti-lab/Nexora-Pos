@@ -5,7 +5,38 @@ Dónde va el proyecto, qué se decidió y por qué, y qué trampas ya se pisaron
 **Este archivo se actualiza en cada tarea, en el mismo commit.** Es lo que permite cerrar una
 sesión cuando el contexto se llena y que la siguiente arranque sin perder nada.
 
-Última actualización: 2026-11-05. **Lee el bloque de abajo antes que nada.**
+Última actualización: 2026-11-16. **Lee el bloque de abajo antes que nada.**
+
+---
+
+## Caída: el proyecto de Supabase estaba pausado (16 de noviembre de 2026)
+
+**Síntoma:** Papas el Labrador no podía entrar, y el login decía "Correo o contraseña incorrectos.".
+**No era la contraseña.** El formulario pone ese mismo mensaje ante *cualquier* error de
+`signInWithPassword`, también cuando no hay servidor.
+
+**Causa:** Supabase pausó el proyecto `nexora-pos` (`ptypwhpthexblwhwdkat`) por estar en plan
+gratuito. Con el proyecto pausado el subdominio **deja de existir en DNS** (NXDOMAIN en 8.8.8.8 y
+1.1.1.1). Las tres apps (`papas-el-labrador`, `las-dos-palmas`, `juan-papas`) usan ese proyecto: se
+cayeron las tres.
+
+**Para reanudarlo** Supabase exigía liberar un cupo: el miembro `Ghostboy-999` ya tenía sus 2
+proyectos gratuitos activos (el límite cuenta en toda organización donde es admin u owner). Se pagó
+un plan Pro: cobro de US$13,33, que es US$25/mes prorrateado. **Sin confirmar a qué organización
+se aplicó**: el panel seguía mostrando "Nexora" como FREE. Si fue otra organización, `nexora-pos`
+sigue en gratis y **se puede volver a pausar**. Revisar en Billing → Invoices.
+
+**Verificado:** tras reanudar, `auth/v1/token` contesta `invalid_credentials` a un correo inventado
+(el servicio está arriba). No se tocó código.
+
+**Diagnóstico rápido la próxima vez:**
+
+```bash
+nslookup ptypwhpthexblwhwdkat.supabase.co 8.8.8.8   # NXDOMAIN = proyecto pausado
+```
+
+**Pendiente:** que el login distinga "no hay conexión con el servidor" de "contraseña incorrecta"
+(sin romper la regla de no revelar qué correos existen: eso solo aplica al error de credenciales).
 
 ---
 
