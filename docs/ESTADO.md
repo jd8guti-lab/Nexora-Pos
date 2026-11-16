@@ -20,11 +20,17 @@ gratuito. Con el proyecto pausado el subdominio **deja de existir en DNS** (NXDO
 1.1.1.1). Las tres apps (`papas-el-labrador`, `las-dos-palmas`, `juan-papas`) usan ese proyecto: se
 cayeron las tres.
 
-**Para reanudarlo** Supabase exigía liberar un cupo: el miembro `Ghostboy-999` ya tenía sus 2
-proyectos gratuitos activos (el límite cuenta en toda organización donde es admin u owner). Se pagó
-un plan Pro: cobro de US$13,33, que es US$25/mes prorrateado. **Sin confirmar a qué organización
-se aplicó**: el panel seguía mostrando "Nexora" como FREE. Si fue otra organización, `nexora-pos`
-sigue en gratis y **se puede volver a pausar**. Revisar en Billing → Invoices.
+**Por qué se pausó, según las facturas** (`Invoice-UPJIOQ-00004` y su nota crédito `-CN-1`):
+la organización **estaba en Pro** (US$25/mes, compute Micro, todo el uso de octubre incluido). La
+factura del 31 de octubre vencía ese mismo día. El 16 de noviembre Supabase la **bajó a Free** y
+emitió una nota crédito por US$11,67 (16–29 nov). Saldo: **US$13,33**, el Pro del 31 oct al 15 nov.
+Lo más probable, sin confirmar: **el cobro no pasó** y por eso bajó el plan. Ya en Free, el proyecto
+quedó pausado y, para reanudarlo, había que liberar cupo: el miembro `Ghostboy-999` ya tenía sus 2
+proyectos gratuitos activos (el límite cuenta en toda organización donde es admin u owner).
+
+**Estado ahora: organización en FREE, compute Nano.** Se puede volver a pausar. Para volver a como
+estaba: revisar en Billing el método de pago y el saldo de US$13,33, y subir "Nexora" a Pro otra vez.
+Es un pago: lo decide y lo hace el usuario.
 
 **Verificado:** tras reanudar, `auth/v1/token` contesta `invalid_credentials` a un correo inventado
 (el servicio está arriba). No se tocó código.
